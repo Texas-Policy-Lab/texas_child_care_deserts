@@ -12,19 +12,19 @@ get.census_data_dict <- function(data_in_name,
                                  keep_moe,
                                  keep_annote_moe,
                                  url = "groups/{table}.html", ...) {
-  
+
   url <- paste(endpoint, path, glue::glue(url, table = table), sep = "/")
-  
+
   dct <- data.frame(est = keep_est,
                     annote_est = keep_annote_est,
                     moe = keep_moe,
                     annote_moe = keep_annote_moe) %>% 
     tidyr::gather(variable, keep)
-  
+
   df <- xml2::read_html(url) %>% 
     rvest::html_table(fill = TRUE) %>% 
     .[[1]]
-  
+
   df <- df[!is.na(names(df))]
   
   assertthat::assert_that(all(c("Name", "Label") %in% names(df)))
@@ -42,9 +42,9 @@ get.census_data_dict <- function(data_in_name,
     dplyr::select(-c(value, variable, keep)) %>% 
     dplyr::rename(variable = Name,
                   label = Label)
-  
+
   write.csv(df, file.path(data_in_pth, paste0("data_dic_", data_in_name)), row.names = FALSE)
-  
+
   return(df)
 }
 
