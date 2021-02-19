@@ -1,0 +1,10 @@
+Package: texasccl
+Title: API for Texas Childcare data
+Version: 0.1
+Authors@R: person("Joli", "Holmes", email = "jh111@rice.edu",
+                  role = c("aut", "cre"))
+Description: What the package does (one paragraph)
+Depends: R (>= 3.6.0)
+License: What license is it under?
+LazyData: true
+RoxygenNote: 7.1.1
