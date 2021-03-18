@@ -1,6 +1,7 @@
 #' @title Test attributes
 #' @description Test's that the attributes of the parameters passed in are 
 #' correct
+#' @title attr. List of attributes to test
 test_attr <- function(attr) {
   assertthat::assert_that(c("geography") %in% names(attr),
                           msg = "Table configuration is missing geography parameter")
@@ -15,9 +16,10 @@ test_attr <- function(attr) {
 #' @title Download ACS
 #' @description Passes in a list of parameters to download the ACS census
 #' data using functions from the tidycensus package
-#' @inheritParams tidycensus::get_acs
-#' @param tbls
+#' @param tbls list. List of census tables with attributes to download
 #' @param pth string. The path to download the data to.
+#' @details To find a list of parameters to pass see documentation for 
+#' tidycensus::get_acs
 #' @examples 
 #' \dontrun{
 #' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
