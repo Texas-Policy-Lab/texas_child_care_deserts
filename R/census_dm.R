@@ -11,6 +11,7 @@ test_attr <- function(attr) {
     assertthat::assert_that(all(grepl(attr$table, attr$variables)),
                             msg = "Table name differs from variable root")  
   }
+  return(TRUE)
 }
 
 #' @title Download ACS
