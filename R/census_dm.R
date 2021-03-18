@@ -8,7 +8,7 @@ test_attr <- function(attr) {
   assertthat::assert_that(any(c("variables", "table") %in% names(attr)),
                           msg = "Table configuration is missing variables or table parameter")
   if(all(c("variables", "table") %in% names(attr))) {
-    assertthat::assert_that(all(grepl(attr$table, attr$variables)),
+    assertthat::assert_that(all(attr$table == sub("_.*", "", attr$variables)),
                             msg = "Table name differs from variable root")  
   }
   return(TRUE)
