@@ -219,14 +219,3 @@ get.state_fips_state_name_xwalk <- function(data_in_name,
   write.csv(cnty, file.path(data_in_pth, data_in_name), row.names = FALSE)
 }
 
-#' @title Get ZIP shape
-#' @param data_in_name string. The name to of the data to read in.
-#' @param data_in_pth string. The path to read the data in from.
-#' @export
-get.zip_shape <- function(data_in_name,
-                          data_in_pth,
-                          state = 48) {
-
-  geo <- tigris::zctas(state = state, cb = TRUE)
-
-}
