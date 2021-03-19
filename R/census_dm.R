@@ -24,24 +24,25 @@ test_attr <- function(attr) {
 #' @examples 
 #' \dontrun{
 #' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                                   geography = "tract", county = "48438"))
+#'                                   geography = "tract", county = 439))
 #' pth <- "C:/"
 #' dwnld.acs(tbls = census_tbls, pth = pth)
 #' }
 dwnld.acs <- function(tbls,
                       pth) {
-
   lapply(names(tbls),
          function(name, tbls, pth) {
-
            attr <- tbls[[name]]
            attr$table <- name
-
+           
            test_attr(attr)
-
+           
            df <- do.call(tidycensus::get_acs, attr)
-
-           readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
+           
+           if (!is.null(pth)) {
+             readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
+           }
+           return(TRUE)
          },
          tbls = tbls,
          pth = pth)
