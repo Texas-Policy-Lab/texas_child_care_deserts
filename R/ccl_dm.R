@@ -15,6 +15,9 @@ get.hhsc_ccl_data <- function(name,
 
   download.file(url, destfile = dwnld_pth, mode = "wb")
 
+  df <- readr::read_csv(dwnld_pth)
+
+  return(df)
 }
 
 #' @title HHSC CCL data management
@@ -39,9 +42,9 @@ dm.ccl <- function(ccl_data_in_pth,
                                 "operation_name", "accepts_child_care_subsidies") %in% names(df)),
                           msg = "CCL data frame missing needed variables")
   
-  df <- df %>% 
-    dplyr::rename_all(tolower) %>% 
-    tidyr::separate(location_address_geo, 
+  df <- df %>%
+    dplyr::rename_all(tolower) %>%
+    tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
                     sep = "([(,)])")
 
@@ -85,6 +88,8 @@ dm.ccl <- function(ccl_data_in_pth,
     assertthat::assert_that(all(df$county == county_name))
   }
 
+  test.ccl_dm(df)
+
   write.csv(df, file.path(ccl_data_out_pth, ccl_data_out_name), row.names = FALSE)
 
   return(df)
@@ -93,7 +98,7 @@ dm.ccl <- function(ccl_data_in_pth,
 #' @title Test ccl data management function
 #' @description Tests that data management function works correctly
 #' @param df data.frame. A data frame downloaded from get.hhsc_ccl_data
-test.ccl_dm <- function(df){
+test.ccl_dm <- function(df) {
 
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
@@ -112,3 +117,13 @@ test.ccl_dm <- function(df){
 
 }
 
+process.ccl <- function(name,
+                        url,
+                        raw_pth,
+                        processed_pth) {
+  
+  df <- get.hhsc_ccl_data(name = config,
+                          pth = raw_pth,
+                          url = url)
+  
+}
