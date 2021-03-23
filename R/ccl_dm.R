@@ -2,14 +2,14 @@
 #' @description Returns the most recent HHSC CCL Daycare and Residential Operations 
 #' Data. Link to data: https://data.texas.gov/resource/bc5r-88dy.csv
 #' @param name string. The name to write the raw data to.
-#' @param pth string. The path to write the raw to.
+#' @param raw_pth string. The path to write the raw to.
 #' @export
 dwnld.hhsc_ccl <- function(name,
-                           pth,
+                           raw_pth,
                            url,
                            ...) {
 
-  dwnld_pth <- file.path(pth, name)
+  dwnld_pth <- file.path(raw_pth, name)
 
   download.file(url, destfile = dwnld_pth, mode = "wb")
 
@@ -23,7 +23,7 @@ dwnld.hhsc_ccl <- function(name,
 #' @return data.frame
 dm.county_col <- function(df, county) {
 
-  if ("county" %in% names(df) {
+  if ("county" %in% names(df)) {
   
     df <- df %>%
       dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
@@ -65,7 +65,7 @@ dm.county_col <- function(df, county) {
 dm.hhsc_ccl <- function(df,
                         input_columns,
                         county = NULL,
-                        pth,
+                        processed_pth,
                         name,
                         ...) {
 
@@ -126,19 +126,15 @@ dm.hhsc_ccl <- function(df,
   assertthat::assert_that(all(c(df$after_school, df$head_start, df$subsidy) %in% c(1,0)),
                           msg = "Operation characteristics not binary")
 
-  readr::write_csv(df, file.path(pth, name))
+  readr::write_csv(df, file.path(processed_pth, name))
 
   return(df)
 }
 
 #' @title Process the CCL data
-process.hhsc_ccl <- function(hhsc_ccl,
-                             raw_pth,
-                             processed_pth) {
+process.hhsc_ccl <- function(hhsc_ccl) {
 
-  hhsc_ccl$pth <- raw_pth
   hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
-  hhsc_ccl$pth <- processed_pth
   do.call(dm.hhsc_ccl, hhsc_ccl)
 
 }
