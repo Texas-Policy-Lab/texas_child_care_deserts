@@ -6,12 +6,10 @@
 #' @export
 dwnld.hhsc_ccl <- function(name,
                            pth,
-                           url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
-                           download_date = Sys.Date()) {
+                           url,
+                           ...) {
 
-  fl_name <- glue::glue(as.character(download_date), name, .sep = "_")
-
-  dwnld_pth <- file.path(pth, fl_name)
+  dwnld_pth <- file.path(pth, name)
 
   download.file(url, destfile = dwnld_pth, mode = "wb")
 
@@ -22,25 +20,14 @@ dwnld.hhsc_ccl <- function(name,
 
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and select
-#' @param ccl_data_in_pth string. The path to read the ccl data in from.
-#' @param ccl_data_in_name string. The name of the raw data to read in. Note ccl file name starts with download date in "yyyy-mm-dd" format.
-#' @param ccl_data_out_pth string. The path to write the cleaned ccl data to.
-#' @param ccl_data_out_name string. The name of the data to write out. 
 #' @param county_name string. The name of the county to subset to. Default is NULL.
 #' @return data.frame
-dm.hhsc_ccl <- function(ccl_data_in_pth,
-                        ccl_data_in_name,
-                        ccl_data_out_pth,
-                        ccl_data_out_name,
-                        county_name = NULL) {
+dm.hhsc_ccl <- function(df,
+                        input_columns,
+                        ...) {
 
-  df <- read.csv(file.path(ccl_data_in_pth, ccl_data_in_name), stringsAsFactors = F)
-
-  assertthat::assert_that(all(c("location_address_geo",
-                                "operation_number", "licensed_to_serve_ages", 
-                                "operation_type", "programs_provided", 
-                                "operation_name", "accepts_child_care_subsidies") %in% names(df)),
-                          msg = "CCL data frame missing needed variables")
+  df <- df %>%
+    test_input(input_columns)
 
   df <- df %>%
     dplyr::rename_all(tolower) %>%
@@ -59,7 +46,7 @@ dm.hhsc_ccl <- function(ccl_data_in_pth,
                   after_school = ifelse(grepl("after school care", tolower(programs_provided)), 1, 0),
                   head_start = ifelse(grepl("head start", tolower(operation_name)), 1, 0),
                   subsidy = ifelse(accepts_child_care_subsidies == "Y", 1, 0),
-                  download_date = as.Date(gsub("_.*", "", ccl_data_in_name))) %>% 
+                  download_date = Sys.Date()) %>% 
     dplyr::select(operation_number,
                   operation_name,
                   licensed_capacity = total_capacity,
@@ -78,7 +65,7 @@ dm.hhsc_ccl <- function(ccl_data_in_pth,
                   subsidy,
                   phone_number,
                   email_address,
-                  download_date) 
+                  download_date)
 
   if(!is.null(county_name)) {
 
@@ -118,19 +105,13 @@ test.hhsc_ccl <- function(df) {
 }
 
 #' @title Process the CCL data
-process.hhsc_ccl <- function(name,
-                        url,
-                        raw_pth,
-                        processed_pth) {
+process.hhsc_ccl <- function(hhsc_ccl,
+                             raw_pth,
+                             processed_pth) {
 
-  df <- get.hhsc_ccl(name = config,
-                     pth = raw_pth,
-                     url = url)
-  
-  # dm.hhsc_ccl(ccl_data_in_pth,
-  #             ccl_data_in_name,
-  #                    ccl_data_out_pth,
-  #                    ccl_data_out_name,
-  #                    county_name = NULL)
-  
+  hhsc_ccl$pth <- raw_pth
+  hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
+  hhsc_ccl$pth <- processed_pth
+  do.call(dm.hhsc_ccl, hhsc_ccl)
+
 }
