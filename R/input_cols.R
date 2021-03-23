@@ -20,7 +20,7 @@ test_type <- function(v) UseMethod("test_type")
 test_type.character <- function(v) {
 
   assertthat::assert_that(typeof(v) == "character" & class(v) == "character",
-                          msg = "Not a character vector")
+                          msg = "Not a character (string) vector")
 }
 
 #' @title Test for numeric column
@@ -34,7 +34,14 @@ test_type.numeric <- function(v) {
 test_type.date <- function(v) {
   
   assertthat::assert_that(typeof(v) == "double" & class(v) == "Date",
-                          msg = "Not a daye vector")
+                          msg = "Not a date vector")
+}
+
+#' @title Test for date column
+test_type.boolean <- function(v) {
+  
+  assertthat::assert_that(typeof(v) == "logical" & class(v) == "logical",
+                          msg = "Not a boolean (logical) vector")
 }
 
 
