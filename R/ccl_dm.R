@@ -23,31 +23,34 @@ dwnld.hhsc_ccl <- function(name,
 #' @return data.frame
 dm.county_col <- function(df, county) {
 
-  df <- df %>%
-    dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
-    dplyr::inner_join(tigris::fips_codes %>% 
-                        dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
-                                      county = gsub("county", "", county),
-                                      county_code = paste0(state_code, county_code)) %>% 
-                        dplyr::select(county, county_code)) %>%
-    dplyr::select(-county)
-
-  if (!is.null(county)) {
+  if ("county" %in% names(df) {
   
-    assertthat::assert_that(!is.na(as.numeric(county)),
-                            msg = "Expecting 5-digit county FIPS code.")
     df <- df %>%
-      dplyr::filter(county_code == as.character(county))
+      dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
+      dplyr::inner_join(tigris::fips_codes %>% 
+                          dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
+                                        county = gsub("county", "", county),
+                                        county_code = paste0(state_code, county_code)) %>% 
+                          dplyr::select(county, county_code)) %>%
+      dplyr::select(-county)
+  
+    if (!is.null(county)) {
+    
+      assertthat::assert_that(!is.na(as.numeric(county)),
+                              msg = "Expecting 5-digit county FIPS code.")
+      df <- df %>%
+        dplyr::filter(county_code == as.character(county))
 
   } else {
     df <- df
   }
 
-  msg <- "Number of rows is 0, nothing to return. Is the county FIPS code 
-  correct?"
+    msg <- "Number of rows is 0, nothing to return. Is the county FIPS code 
+    correct?"
+  
+    assertthat::assert_that(nrow(df) > 0, msg = msg)
 
-  assertthat::assert_that(nrow(df) > 0, msg = msg)
-
+  }
   return(df)
 }
 
@@ -122,7 +125,7 @@ dm.hhsc_ccl <- function(df,
   
   assertthat::assert_that(all(c(df$after_school, df$head_start, df$subsidy) %in% c(1,0)),
                           msg = "Operation characteristics not binary")
-  
+
   readr::write_csv(df, file.path(pth, name))
 
   return(df)
