@@ -23,11 +23,6 @@ dwnld.hhsc_ccl <- function(name,
 #' @return data.frame
 dm.county_col <- function(df, county) {
 
-  msg <- "Expecting 5-digit county FIPS code."
-
-  assertthat::assert_that(!is.na(as.numeric(county)),
-                          msg = msg)
-
   df <- df %>%
     dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
     dplyr::inner_join(tigris::fips_codes %>% 
@@ -38,7 +33,9 @@ dm.county_col <- function(df, county) {
     dplyr::select(-county)
 
   if (!is.null(county)) {
-
+  
+    assertthat::assert_that(!is.na(as.numeric(county)),
+                            msg = "Expecting 5-digit county FIPS code.")
     df <- df %>%
       dplyr::filter(county_code == as.character(county))
 
@@ -46,8 +43,10 @@ dm.county_col <- function(df, county) {
     df <- df
   }
 
-  assertthat::assert_that(all(df$county_code == county))
-  assertthat::assert_that(sum(is.na(df$county_code)) == 0)
+  msg <- "Number of rows is 0, nothing to return. Is the county FIPS code 
+  correct?"
+
+  assertthat::assert_that(nrow(df) > 0, msg = msg)
 
   return(df)
 }
