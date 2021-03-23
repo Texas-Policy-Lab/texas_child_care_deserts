@@ -14,7 +14,7 @@ test_input <- function(df, input_columns) {
 
 #' @title Tests the vector or column type
 #' @param v. Vector. A vector to test.
-test_type <- function(v) UseMethod("test_col_type")
+test_type <- function(v) UseMethod("test_type")
 
 #' @title Test for character column
 test_type.character <- function(v) {
