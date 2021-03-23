@@ -30,3 +30,10 @@ testthat::test_that('Test that ACS tables download correctly', {
   testthat::expect_true(all(unlist(dwnld.acs(tbls,
                                              pth = NULL))))
 })
+
+testthat::test_that('Test API key check function', {
+
+  testthat::expect_error(check_census_key('blah'))
+  testthat::expect_true(check_census_key('CENSUS_API_KEY'))
+
+})
