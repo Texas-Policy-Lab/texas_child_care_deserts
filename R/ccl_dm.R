@@ -32,15 +32,17 @@ dm.ccl <- function(ccl_data_in_pth,
 
   df <- read.csv(file.path(ccl_data_in_pth, ccl_data_in_name), stringsAsFactors = F)
 
+  assertthat::assert_that(all(c("location_address_geo",
+                                "operation_number", "licensed_to_serve_ages", 
+                                "operation_type", "programs_provided", 
+                                "operation_name", "accepts_child_care_subsidies") %in% names(df)),
+                          msg = "CCL data frame missing needed variables")
+  
   df <- df %>% 
     dplyr::rename_all(tolower) %>% 
     tidyr::separate(location_address_geo, 
                     into = c("address", "lat", "long"),
                     sep = "([(,)])")
-
-  assertthat::assert_that(all(c("operation_number", "licensed_to_serve_ages", "operation_type", 
-                                "programs_provided", "operation_name", "accepts_child_care_subsidies") %in% names(df)),
-                          msg = "CCL data frame missing needed variables")
 
   df <- df %>%
     dplyr::mutate(operation_number = gsub("-.*", "", operation_number),
