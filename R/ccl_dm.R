@@ -18,17 +18,45 @@ dwnld.hhsc_ccl <- function(name,
   return(df)
 }
 
+#' @title Data management steps for the county column
+#' @inherit dm.hhsc_ccl
+#' @return data.frame
+dm.county_col <- function(df, county) {
+
+  msg <- "Expecting 5-digit county FIPS code."
+
+  assertthat::assert_that(!is.na(as.numeric(county)),
+                          msg = msg)
+
+  if (!is.null(county)) {
+
+    df <- df %>%
+      dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
+      dplyr::inner_join(tigris::fips_codes %>% 
+                          dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
+                                        county = gsub("county", "", county),
+                                        county_code = paste0(state_code, county_code)) %>% 
+                          dplyr::select(county, county_code)) %>%
+      dplyr::select(-county) %>%
+      dplyr::filter(county_code == as.character(county))
+
+    assertthat::assert_that(all(df$county_code == county))
+  }
+
+  return(df)
+}
+
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and select
 #' @param df data.frame. The dataframe
 #' @param input_columns. List. List of the columns to keep.
-#' @param county string. The name of the county to subset to. Default is NULL.
+#' @param county. Integer. The FIPS code for the county.
 #' @param pth. string. Path to store the processed data.
 #' @param name. string. Name of the data.
 #' @return data.frame
 dm.hhsc_ccl <- function(df,
                         input_columns,
-                        county,
+                        county = NULL,
                         pth,
                         name,
                         ...) {
@@ -72,15 +100,8 @@ dm.hhsc_ccl <- function(df,
                   subsidy,
                   phone_number,
                   email_address,
-                  download_date)
-
-  if(!is.null(county_name)) {
-
-    df <- df %>% 
-      dplyr::filter(county == county_name)
-
-    assertthat::assert_that(all(df$county == county_name))
-  }
+                  download_date) %>% 
+    dm.county_col(county = county)
 
   test.ccl_dm(df)
 
