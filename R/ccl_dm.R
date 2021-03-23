@@ -103,33 +103,24 @@ dm.hhsc_ccl <- function(df,
                   download_date) %>% 
     dm.county_col(county = county)
 
-  test.ccl_dm(df)
-
-  readr::write_csv(df, file.path(pth, name))
-
-  return(df)
-}
-
-#' @title Test ccl data management function
-#' @description Tests that data management function works correctly
-#' @param df data.frame. A data frame downloaded from get.hhsc_ccl_data
-test.hhsc_ccl <- function(df) {
-
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
 
   assertthat::assert_that(is.numeric(df$licensed_capacity),
                           msg = "Capacity not numeric")
-
+  
   assertthat::assert_that(all(c(df$infant, df$toddler, df$prek, df$school) %in% c(1,0)),
                           msg = "Licensed to serve age not binary")
-
+  
   assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(1,0)),
                           msg = "Operation type not binary")
-
+  
   assertthat::assert_that(all(c(df$after_school, df$head_start, df$subsidy) %in% c(1,0)),
                           msg = "Operation characteristics not binary")
+  
+  readr::write_csv(df, file.path(pth, name))
 
+  return(df)
 }
 
 #' @title Process the CCL data
