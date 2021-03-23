@@ -167,8 +167,8 @@ get.acf_data <- function(data_in_name,
 #' @param data_in_name string. The name to of the data to read in.
 #' @param data_in_pth string. The path to read the data in from.
 #' @export
-get.kinder_neighborhood_tract_xwalk <- function(data_in_name,
-                                                data_in_pth,
+get.kinder_neighborhood_tract_xwalk <- function(data_in_name = NULL,
+                                                data_in_pth = NULL,
                                                 pth = "https://www.datahouston.org/cta_crosswalk.txt") {
 
   df <- read.csv(url(pth)) %>%
@@ -176,7 +176,7 @@ get.kinder_neighborhood_tract_xwalk <- function(data_in_name,
     dplyr::rename_all(tolower) %>%
     dplyr::select(-id)
 
-  write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  # write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
 }
 
 #' @title Get tract by latitude and longitude
@@ -219,14 +219,3 @@ get.state_fips_state_name_xwalk <- function(data_in_name,
   write.csv(cnty, file.path(data_in_pth, data_in_name), row.names = FALSE)
 }
 
-#' @title Get ZIP shape
-#' @param data_in_name string. The name to of the data to read in.
-#' @param data_in_pth string. The path to read the data in from.
-#' @export
-get.zip_shape <- function(data_in_name,
-                          data_in_pth,
-                          state = 48) {
-
-  geo <- tigris::zctas(state = state, cb = TRUE)
-
-}
