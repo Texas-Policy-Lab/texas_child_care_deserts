@@ -26,13 +26,13 @@ get.hhsc_ccl_data <- function(name,
 #' @param ccl_data_in_name string. The name of the raw data to read in. Note ccl file name starts with download date in "yyyy-mm-dd" format.
 #' @param ccl_data_out_pth string. The path to write the cleaned ccl data to.
 #' @param ccl_data_out_name string. The name of the data to write out. 
-#' @param county_name string. The name of the county to subset to. 
+#' @param county_name string. The name of the county to subset to. Default is NULL.
 #' @return data.frame
 dm.ccl <- function(ccl_data_in_pth,
                    ccl_data_in_name,
                    ccl_data_out_pth,
                    ccl_data_out_name,
-                   county_name) {
+                   county_name = NULL) {
 
   df <- read.csv(file.path(ccl_data_in_pth, ccl_data_in_name), stringsAsFactors = F)
 
@@ -121,7 +121,7 @@ process.ccl <- function(name,
                         url,
                         raw_pth,
                         processed_pth) {
-  
+
   df <- get.hhsc_ccl_data(name = config,
                           pth = raw_pth,
                           url = url)
