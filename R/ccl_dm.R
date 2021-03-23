@@ -24,6 +24,7 @@ get.hhsc_ccl_data <- function(data_in_name,
 #' @param ccl_data_out_pth string. The path to write the cleaned ccl data to.
 #' @param ccl_data_out_name string. The name of the data to write out. 
 #' @param county_name string. The name of the county to subset to. 
+#' @return data.frame
 dm.ccl <- function(ccl_data_in_pth,
                    ccl_data_in_name,
                    ccl_data_out_pth,
@@ -77,7 +78,7 @@ dm.ccl <- function(ccl_data_in_pth,
                   download_date) 
 
   if(!is.null(county_name)) {
-  
+
     df <- df %>% 
       dplyr::filter(county == county_name)
 
@@ -92,21 +93,20 @@ dm.ccl <- function(ccl_data_in_pth,
 #' @title Test ccl data management function
 #' @description Tests that data management function works correctly
 #' @param df data.frame. A data frame downloaded from get.hhsc_ccl_data
-
 test.ccl_dm <- function(df){
-  
+
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
-  
+
   assertthat::assert_that(is.numeric(df$licensed_capacity),
                           msg = "Capacity not numeric")
-  
+
   assertthat::assert_that(all(c(df$infant, df$toddler, df$prek, df$school) %in% c(1,0)),
                           msg = "Licensed to serve age not binary")
-  
+
   assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(1,0)),
                           msg = "Operation type not binary")
-  
+
   assertthat::assert_that(all(c(df$after_school, df$head_start, df$subsidy) %in% c(1,0)),
                           msg = "Operation characteristics not binary")
 
