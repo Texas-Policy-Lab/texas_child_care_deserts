@@ -4,10 +4,10 @@
 #' @param name string. The name to write the raw data to.
 #' @param pth string. The path to write the raw to.
 #' @export
-get.hhsc_ccl_data <- function(name,
-                              pth,
-                              url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
-                              download_date = Sys.Date()) {
+dwnld.hhsc_ccl <- function(name,
+                           pth,
+                           url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
+                           download_date = Sys.Date()) {
 
   fl_name <- glue::glue(as.character(download_date), name, .sep = "_")
 
@@ -28,11 +28,11 @@ get.hhsc_ccl_data <- function(name,
 #' @param ccl_data_out_name string. The name of the data to write out. 
 #' @param county_name string. The name of the county to subset to. Default is NULL.
 #' @return data.frame
-dm.ccl <- function(ccl_data_in_pth,
-                   ccl_data_in_name,
-                   ccl_data_out_pth,
-                   ccl_data_out_name,
-                   county_name = NULL) {
+dm.hhsc_ccl <- function(ccl_data_in_pth,
+                        ccl_data_in_name,
+                        ccl_data_out_pth,
+                        ccl_data_out_name,
+                        county_name = NULL) {
 
   df <- read.csv(file.path(ccl_data_in_pth, ccl_data_in_name), stringsAsFactors = F)
 
@@ -41,7 +41,7 @@ dm.ccl <- function(ccl_data_in_pth,
                                 "operation_type", "programs_provided", 
                                 "operation_name", "accepts_child_care_subsidies") %in% names(df)),
                           msg = "CCL data frame missing needed variables")
-  
+
   df <- df %>%
     dplyr::rename_all(tolower) %>%
     tidyr::separate(location_address_geo,
@@ -98,7 +98,7 @@ dm.ccl <- function(ccl_data_in_pth,
 #' @title Test ccl data management function
 #' @description Tests that data management function works correctly
 #' @param df data.frame. A data frame downloaded from get.hhsc_ccl_data
-test.ccl_dm <- function(df) {
+test.hhsc_ccl <- function(df) {
 
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
@@ -117,13 +117,20 @@ test.ccl_dm <- function(df) {
 
 }
 
-process.ccl <- function(name,
+#' @title Process the CCL data
+process.hhsc_ccl <- function(name,
                         url,
                         raw_pth,
                         processed_pth) {
 
-  df <- get.hhsc_ccl_data(name = config,
-                          pth = raw_pth,
-                          url = url)
+  df <- get.hhsc_ccl(name = config,
+                     pth = raw_pth,
+                     url = url)
+  
+  # dm.hhsc_ccl(ccl_data_in_pth,
+  #             ccl_data_in_name,
+  #                    ccl_data_out_pth,
+  #                    ccl_data_out_name,
+  #                    county_name = NULL)
   
 }
