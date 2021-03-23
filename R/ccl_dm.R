@@ -28,20 +28,26 @@ dm.county_col <- function(df, county) {
   assertthat::assert_that(!is.na(as.numeric(county)),
                           msg = msg)
 
+  df <- df %>%
+    dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
+    dplyr::inner_join(tigris::fips_codes %>% 
+                        dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
+                                      county = gsub("county", "", county),
+                                      county_code = paste0(state_code, county_code)) %>% 
+                        dplyr::select(county, county_code)) %>%
+    dplyr::select(-county)
+
   if (!is.null(county)) {
 
     df <- df %>%
-      dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
-      dplyr::inner_join(tigris::fips_codes %>% 
-                          dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
-                                        county = gsub("county", "", county),
-                                        county_code = paste0(state_code, county_code)) %>% 
-                          dplyr::select(county, county_code)) %>%
-      dplyr::select(-county) %>%
       dplyr::filter(county_code == as.character(county))
 
-    assertthat::assert_that(all(df$county_code == county))
+  } else {
+    df <- df
   }
+
+  assertthat::assert_that(all(df$county_code == county))
+  assertthat::assert_that(sum(is.na(df$county_code)) == 0)
 
   return(df)
 }
