@@ -20,10 +20,17 @@ dwnld.hhsc_ccl <- function(name,
 
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and select
-#' @param county_name string. The name of the county to subset to. Default is NULL.
+#' @param df data.frame. The dataframe
+#' @param input_columns. List. List of the columns to keep.
+#' @param county string. The name of the county to subset to. Default is NULL.
+#' @param pth. string. Path to store the processed data.
+#' @param name. string. Name of the data.
 #' @return data.frame
 dm.hhsc_ccl <- function(df,
                         input_columns,
+                        county,
+                        pth,
+                        name,
                         ...) {
 
   df <- df %>%
@@ -77,7 +84,7 @@ dm.hhsc_ccl <- function(df,
 
   test.ccl_dm(df)
 
-  write.csv(df, file.path(ccl_data_out_pth, ccl_data_out_name), row.names = FALSE)
+  readr::write_csv(df, file.path(pth, name))
 
   return(df)
 }
