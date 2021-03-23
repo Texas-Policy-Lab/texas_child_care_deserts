@@ -4,12 +4,15 @@
 \alias{childcare_db}
 \title{Create child care data base}
 \usage{
-childcare_db(census_tbls, root)
+childcare_db(census_tbls_config, hhsc_ccl_config, root)
 }
 \arguments{
-\item{root}{string. Path to the root directory to create the DB}
+\item{root}{string. Path to the root directory to create the DB.}
 
-\item{census_tbls.}{List of census tables to pull}
+\item{census_tbls_config.}{Configuration for the list of census tables to 
+pull.}
+
+\item{hhsc_ccl_config.}{Configuration for the CCL_HHS to pull.}
 }
 \description{
 Create child care data base
@@ -17,7 +20,7 @@ Create child care data base
 \examples{
 \dontrun{
 census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                    geography = "tract", county = "48438"))
+                    geography = "tract", county = 439))
 root <- "C:/"
 childcare_db(census_tbls = census_tbls, root = root)
 }

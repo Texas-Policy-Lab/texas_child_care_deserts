@@ -22,7 +22,7 @@ tidycensus::get_acs
 \examples{
 \dontrun{
 census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                                  geography = "tract", county = "48438"))
+                                  geography = "tract", county = 439))
 pth <- "C:/"
 dwnld.acs(tbls = census_tbls, pth = pth)
 }
