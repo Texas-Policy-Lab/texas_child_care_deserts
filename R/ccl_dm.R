@@ -23,7 +23,10 @@ dwnld.hhsc_ccl <- function(name,
 #' @title Data management steps for the operation number column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.operation_number <- function(df, operation_number) {
+col.operation_number <- function(df) {
+
+  assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
+                          msg = "Data frame is not unique on operation number")
 
   df <- df %>%
     dplyr::mutate(operation_number = gsub("-.*", "", operation_number))
