@@ -1,7 +1,6 @@
 #' @title Create child care data base
-#' @param census_tbls_config. Configuration for the list of census tables to 
+#' @param census_tbls Configuration for the list of census tables to 
 #' pull.
-#' @param hhsc_ccl_config. Configuration for the CCL_HHS to pull.
 #' @param root string. Path to the root directory to create the DB.
 #' @examples
 #' \dontrun{
@@ -10,8 +9,7 @@
 #' root <- "C:/"
 #' childcare_db(census_tbls = census_tbls, root = root)
 #' }
-childcare_db <- function(census_tbls_config,
-                         hhsc_ccl_config,
+childcare_db <- function(census_tbls,
                          root) {
 
   data_pth <- file.path(root, "data")
@@ -22,12 +20,14 @@ childcare_db <- function(census_tbls_config,
 
   create_folder_str(pths = pths)
 
-  dwnld.acs(tbls = census_tbls_config,
+  dwnld.acs(tbls = census_tbls,
             pth = raw_pth)
 
-  hhsc_ccl_config$raw_pth <- raw_pth
-  hhsc_ccl_config$processed_pth <- processed_pth
+  hhsc_ccl <- list()
+  hhsc_ccl$raw_pth <- raw_pth
+  hhsc_ccl$processed_pth <- processed_pth
+  hhsc_ccl$name <- "HHSC_CCL"
 
-  process.hhsc_ccl(hhsc_ccl = hhsc_ccl_config)
+  process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
 
 }

@@ -4,13 +4,15 @@
 #' Data. Link to data: https://data.texas.gov/resource/bc5r-88dy.csv
 #' @param name string. The name to write the raw data to.
 #' @param raw_pth string. The path to write the raw to.
+#' @param url string. The url to the data.
 #' @export
 dwnld.hhsc_ccl <- function(name,
                            raw_pth,
-                           url,
+                           url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
+                           ext = "csv",
                            ...) {
 
-  dwnld_pth <- file.path(raw_pth, name)
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
 
   download.file(url, destfile = dwnld_pth, mode = "wb")
 
@@ -233,7 +235,7 @@ dm.hhsc_ccl <- function(df,
     col.total_capacity() %>%
     dplyr::mutate(download_date = Sys.Date())
 
-  readr::write_csv(df, file.path(processed_pth, name))
+  readr::write_csv(df, file.path(processed_pth, paste(name, "csv", sep = ".")))
 
   return(df)
 }
