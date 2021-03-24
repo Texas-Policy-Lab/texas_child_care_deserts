@@ -50,16 +50,18 @@ col.county <- function(df, county_fips) {
                         dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
                                       county = gsub("county", "", county),
                                       county_code = paste0(state_code, county_code)) %>% 
-                        dplyr::select(county, county_code))
+                        dplyr::select(county, county_code)) %>% 
+    dplyr::select(-county)
 
   if (!is.null(county_fips)) {
 
     assertthat::assert_that(!is.na(as.numeric(county_fips)),
                             msg = "Expecting 5-digit county FIPS code.")
     df <- df %>%
-      dplyr::filter(county_code == as.character(county_fips))
+      dplyr::filter(county_code == as.character(county_fips)) %>% 
+      dplyr::select(-county)
 
-    if (nrow(df) > 0) {
+    if (nrow(df) == 0) {
       cat("Number of rows is 0, nothing to return. Is the county FIPS code correct?")
     }
 
@@ -89,7 +91,7 @@ col.licensed_to_serve_ages <- function(df) {
                                         tolower(licensed_to_serve_ages)),
                                   TRUE, FALSE),
     ) %>%
-    dplyr::select(operation_number, infant, toddler, prek, school)
+    dplyr::select(-licensed_to_serve_ages)
 
   assertthat::assert_that(all(c(df$infant, df$toddler, df$prek, df$school) 
                               %in% c(TRUE, FALSE)),
@@ -120,7 +122,8 @@ col.operation_type <- function(df) {
                                             tolower(operation_type)), TRUE, FALSE),
                   center_prvdr = ifelse(grepl("center", 
                                               tolower(operation_type)), TRUE, FALSE)
-    )
+    ) %>% 
+    dplyr::select(-operation_type)
 
   assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(TRUE, FALSE)),
                           msg = "Operation type not binary")
@@ -149,10 +152,11 @@ col.programs_provided <- function(df) {
 
   df <- df %>%
     dplyr::mutate(after_school = ifelse(grepl("after school care", 
-                                              tolower(programs_provided)), TRUE, FALSE))
+                                              tolower(programs_provided)), TRUE, FALSE)) %>%
+    dplyr::select(-programs_provided)
 
   assertthat::assert_that(all(c(df$after_school) %in% c(TRUE, FALSE)),
-                          msg = "Operation characteristics not binary")
+                          msg = "Operation characteristics not binary") 
   return(df)
 }
 
@@ -168,7 +172,8 @@ col.accepts_child_care_subsidies <- function(df) {
   df <- df %>%
     dplyr::mutate(subsidy = dplyr::case_when(accepts_child_care_subsidies == "Y" ~ TRUE,
                                              accepts_child_care_subsidies == "N" ~ FALSE,
-                                             TRUE ~ NA))
+                                             TRUE ~ NA)) %>% 
+    dplyr::select(-accepts_child_care_subsidies)
 
   assertthat::assert_that(all(c(df$subsidy) %in% c(TRUE, FALSE, NA)),
                           msg = "Operation characteristics not binary")
@@ -185,7 +190,7 @@ col.total_capacity <- function(df) {
 
   assertthat::assert_that(is.numeric(df$licensed_capacity),
                           msg = "Capacity not numeric")
-  return(df) 
+  return(df)
 }
 
 #' @title HHSC CCL data management
@@ -226,26 +231,7 @@ dm.hhsc_ccl <- function(df,
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.total_capacity() %>%
-    dplyr::mutate(download_date = Sys.Date()) %>% 
-    dplyr::select(operation_number,
-                  operation_name,
-                  total_capacity,
-                  county,
-                  address,
-                  lat,
-                  long,
-                  infant,
-                  toddler,
-                  prek,
-                  school,
-                  home_prvdr,
-                  center_prvdr,
-                  after_school,
-                  head_start,
-                  subsidy,
-                  phone_number,
-                  email_address,
-                  download_date)
+    dplyr::mutate(download_date = Sys.Date())
 
   readr::write_csv(df, file.path(processed_pth, name))
 
