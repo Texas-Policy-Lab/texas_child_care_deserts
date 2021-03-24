@@ -244,5 +244,5 @@ dm.hhsc_ccl <- function(df,
 process.hhsc_ccl <- function(hhsc_ccl) {
 
   hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
-  df <- do.call(dm.hhsc_ccl, hhsc_ccl)
+  df <- do.call(dm.hhsc_ccl, hhsc_ccl)  
 }

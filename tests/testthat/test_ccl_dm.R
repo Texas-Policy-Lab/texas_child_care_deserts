@@ -79,4 +79,4 @@ testthat::test_that('Test data management col.total_capacity', {
   df <- data.frame(total_capacity = c(1,2,3,4, NA))
   testthat::expect_true(all(is.numeric(col.total_capacity(df)$licensed_capacity)))
 
-})
+}
