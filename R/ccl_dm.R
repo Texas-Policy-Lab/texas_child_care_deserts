@@ -26,7 +26,7 @@ col.operation_number <- function(df) {
 
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
-  assertthat::assert_that(sum(is.na(operation_number)) == 0,
+  assertthat::assert_that(sum(is.na(df$operation_number)) == 0,
                           msg = "NAs in the operation_number")
 
   df <- df %>%
