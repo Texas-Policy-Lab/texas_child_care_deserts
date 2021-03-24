@@ -13,6 +13,10 @@ testthat::test_that('Test operation number column data management', {
   testthat::expect_true(
     all(nchar(col.operation_number(df = df)$operation_number)) == 1
   )
+  
+  df <- data.frame(operation_number = c("1-1", "2","3", NA))
+  testthat::expect_error(col.operation_number(df = df))
+
 })
 
 testthat::test_that('Test county column conversion function', {

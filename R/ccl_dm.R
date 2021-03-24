@@ -19,7 +19,6 @@ dwnld.hhsc_ccl <- function(name,
   return(df)
 }
 
-
 #' @title Data management steps for the operation number column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
@@ -27,6 +26,8 @@ col.operation_number <- function(df) {
 
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
+  assertthat::assert_that(sum(is.na(operation_number)) == 0,
+                          msg = "NAs in the operation_number")
 
   df <- df %>%
     dplyr::mutate(operation_number = gsub("-.*", "", operation_number))
@@ -34,6 +35,7 @@ col.operation_number <- function(df) {
   assertthat::assert_that(all(!grepl("-", df$operation_number)))
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
+
   return(df)
 }
 
