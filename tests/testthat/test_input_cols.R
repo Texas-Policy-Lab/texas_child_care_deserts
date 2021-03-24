@@ -1,4 +1,4 @@
-testthat::test_that('Tests character column function'{
+testthat::test_that('Tests character column function', {
 
   # Test character values
   testthat::expect_true(test_type.character(v = "dsfsdlkj"))
@@ -23,7 +23,7 @@ testthat::test_that('Tests character column function'{
 
 })
 
-testthat::test_that('Tests numeric column function'{
+testthat::test_that('Tests numeric column function', {
 
   # Test character values
   testthat::expect_error(test_type.numeric(v = "dsfsdlkj"))
@@ -48,7 +48,7 @@ testthat::test_that('Tests numeric column function'{
 
 })
 
-testthat::test_that('Tests date column function'{
+testthat::test_that('Tests date column function', {
   
   # Test character values
   testthat::expect_error(test_type.date(v = "dsfsdlkj"))
@@ -73,7 +73,7 @@ testthat::test_that('Tests date column function'{
   
 })
 
-testthat::test_that('Tests date column function'{
+testthat::test_that('Tests date column function', {
   
   # Test character values
   testthat::expect_error(test_type.boolean(v = "dsfsdlkj"))
@@ -97,5 +97,3 @@ testthat::test_that('Tests date column function'{
                                              as.Date("2021-03-23"))))
   
 })
-  
-
