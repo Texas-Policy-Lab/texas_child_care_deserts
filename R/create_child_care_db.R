@@ -20,8 +20,10 @@ childcare_db <- function(census_tbls,
 
   create_folder_str(pths = pths)
 
-  dwnld.acs(tbls = census_tbls,
-            pth = raw_pth)
+  if (!is.null(census_tbls)) {
+    dwnld.acs(tbls = census_tbls,
+              pth = raw_pth)
+  }
 
   hhsc_ccl <- list()
   hhsc_ccl$raw_pth <- raw_pth
