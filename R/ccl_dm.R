@@ -170,6 +170,19 @@ col.accepts_child_care_subsidies <- function(df) {
   return(df)
 }
 
+#' @title Data management steps to clean the total capacity column
+#' @inheritParams dm.hhsc_ccl
+#' @return data.frame
+col.total_capacity <- function(df) {
+
+  df <- df %>%
+    dplyr::rename(licensed_capacity = total_capacity)
+
+  assertthat::assert_that(is.numeric(df$licensed_capacity),
+                          msg = "Capacity not numeric")
+  return(df) 
+}
+
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and 
 #' select variables
@@ -180,7 +193,17 @@ col.accepts_child_care_subsidies <- function(df) {
 #' @param name. string. Name of the data.
 #' @return data.frame
 dm.hhsc_ccl <- function(df,
-                        input_columns,
+                        input_columns = list(OPERATION_NUMBER = "character",
+                                             OPERATION_NAME = "character",
+                                             OPERATION_TYPE = "character",
+                                             Location_address_geo = "character",
+                                             COUNTY= "character",
+                                             TOTAL_CAPACITY = "numeric",
+                                             LICENSED_TO_SERVE_AGES= "character",
+                                             PROGRAMS_PROVIDED= "character",
+                                             ACCEPTS_CHILD_CARE_SUBSIDIES= "character",
+                                             email_address = "character",
+                                             PHONE_NUMBER = "character"),
                         county_fips = NULL,
                         processed_pth,
                         name,
@@ -196,40 +219,32 @@ dm.hhsc_ccl <- function(df,
     col.operation_type() %>%
     col.operation_name() %>%
     col.programs_provided() %>%
-    col.accepts_child_care_subsidies()
-    
-    #               after_school = ifelse(grepl("after school care", tolower(programs_provided)), 1, 0),
-    #               subsidy = ifelse(accepts_child_care_subsidies == "Y", 1, 0),
-    #               download_date = Sys.Date()) %>% 
-    # dplyr::select(operation_number,
-    #               operation_name,
-    #               licensed_capacity = total_capacity,
-    #               county,
-    #               address,
-    #               lat,
-    #               long,
-    #               infant,
-    #               toddler,
-    #               prek,
-    #               school,
-    #               home_prvdr,
-    #               center_prvdr,
-    #               after_school,
-    #               head_start,
-    #               subsidy,
-    #               phone_number,
-    #               email_address,
-    #               download_date)
+    col.accepts_child_care_subsidies() %>%
+    col.total_capacity() %>%
+    dplyr::mutate(download_date = Sys.Date()) %>% 
+    dplyr::select(operation_number,
+                  operation_name,
+                  total_capacity,
+                  county,
+                  address,
+                  lat,
+                  long,
+                  infant,
+                  toddler,
+                  prek,
+                  school,
+                  home_prvdr,
+                  center_prvdr,
+                  after_school,
+                  head_start,
+                  subsidy,
+                  phone_number,
+                  email_address,
+                  download_date)
 
-#   assertthat::assert_that(is.numeric(df$licensed_capacity),
-#                           msg = "Capacity not numeric")
-# # 
-#   assertthat::assert_that(all(c(df$after_school, df$head_start, df$subsidy) %in% c(1,0)),
-#                           msg = "Operation characteristics not binary")
-# 
-#   readr::write_csv(df, file.path(processed_pth, name))
-# 
-#   return(df)
+  readr::write_csv(df, file.path(processed_pth, name))
+
+  return(df)
 }
 
 #' @title Process the CCL data
@@ -237,5 +252,4 @@ process.hhsc_ccl <- function(hhsc_ccl) {
 
   hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
   do.call(dm.hhsc_ccl, hhsc_ccl)
-
 }
