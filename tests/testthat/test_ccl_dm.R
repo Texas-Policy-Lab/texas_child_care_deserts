@@ -1,3 +1,20 @@
+testthat::test_that('Test operation number column data management', {
+  
+  df <- data.frame(operation_number = c("1","1","2","3"))
+  testthat::expect_error(col.operation_number(df = df))
+  
+  df <- data.frame(operation_number = c("1-1","1-2","2","3"))
+  testthat::expect_error(col.operation_number(df = df))
+  
+  df <- data.frame(operation_number = c("1-1","2","3"))
+  testthat::expect_equal(nrow(col.operation_number(df = df)), 3)
+  
+  df <- data.frame(operation_number = c("1-1","2","3"))
+  testthat::expect_true(
+    assertthat::assert_that(all(nchar(col.operation_number(df = df)$operation_number)) == 1)
+  )
+})
+
 testthat::test_that('Test county column conversion function', {
 
   df <- data.frame(county = c("TARRANT", "HARRIS", "EL PASO", "TOM GREEN"))
