@@ -11,7 +11,7 @@ testthat::test_that('Test operation number column data management', {
   
   df <- data.frame(operation_number = c("1-1","2","3"))
   testthat::expect_true(
-    assertthat::assert_that(all(nchar(col.operation_number(df = df)$operation_number)) == 1)
+    all(nchar(col.operation_number(df = df)$operation_number)) == 1
   )
 })
 
@@ -50,5 +50,29 @@ testthat::test_that('Test county column conversion function', {
   # Test that passing county as a name will fail
   testthat::expect_error(col.county(df, county = "tarrant"))
   testthat::expect_error(col.county(df, county = "Tarrant"))
+
+})
+
+testthat::test_that('Test data management col.accepts_child_care_subsidies', {
+
+  df <- data.frame(accepts_child_care_subsidies = c("Y", "N", "Y"))
+  testthat::expect_true(all(col.accepts_child_care_subsidies(df)$subsidy %in% 
+                              c(TRUE, FALSE)))
+
+  df <- data.frame(accepts_child_care_subsidies = c("Y", "N", NA))
+  testthat::expect_true(all(col.accepts_child_care_subsidies(df)$subsidy %in% 
+                              c(TRUE, FALSE, NA)))
+})
+
+testthat::test_that('Test data management col.total_capacity', {
   
+  df <- data.frame(total_capacity = c(1,2,3,4))
+  testthat::expect_true(all(is.numeric(col.total_capacity(df)$licensed_capacity)))
+  
+  df <- data.frame(total_capacity = c("1", "2", "3", "4"))
+  testthat::expect_error(col.total_capacity(df)$licensed_capacity)
+  
+  df <- data.frame(total_capacity = c(1,2,3,4, NA))
+  testthat::expect_true(all(is.numeric(col.total_capacity(df)$licensed_capacity)))
+
 })
