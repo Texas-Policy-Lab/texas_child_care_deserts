@@ -54,10 +54,9 @@ col.county <- function(df, county_fips) {
     df <- df %>%
       dplyr::filter(county_code == as.character(county_fips))
 
-    msg <- "Number of rows is 0, nothing to return. Is the county FIPS code 
-            correct?"
-
-    assertthat::assert_that(nrow(df) > 0, msg = msg)
+    if (nrow(df) > 0) {
+      cat("Number of rows is 0, nothing to return. Is the county FIPS code correct?")
+    }
 
   } else {
     df <- df
@@ -158,7 +157,7 @@ col.programs_provided <- function(df) {
 col.accepts_child_care_subsidies <- function(df) {
 
   if (all(unique(df$accepts_child_care_subsidies) %in% c("Y", "N")) == F) {
-    print("Additional values besides 'Y' and 'N' in 'Accepts child care subsidies' column")
+    cat("Additional values besides 'Y' and 'N' in 'Accepts child care subsidies' column")
   }
 
   df <- df %>%
