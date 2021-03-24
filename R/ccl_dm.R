@@ -166,7 +166,7 @@ col.accepts_child_care_subsidies <- function(df) {
   df <- df %>%
     dplyr::mutate(subsidy = dplyr::case_when(accepts_child_care_subsidies == "Y" ~ TRUE,
                                              accepts_child_care_subsidies == "N" ~ FALSE,
-                                             TRUE ~ NA_real_))
+                                             TRUE ~ NA))
 
   assertthat::assert_that(all(c(df$subsidy) %in% c(TRUE, FALSE, NA)),
                           msg = "Operation characteristics not binary")
@@ -254,5 +254,5 @@ dm.hhsc_ccl <- function(df,
 process.hhsc_ccl <- function(hhsc_ccl) {
 
   hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
-  do.call(dm.hhsc_ccl, hhsc_ccl)
+  df <- do.call(dm.hhsc_ccl, hhsc_ccl)
 }
