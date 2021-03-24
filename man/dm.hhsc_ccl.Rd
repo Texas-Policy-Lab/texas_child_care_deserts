@@ -4,14 +4,34 @@
 \alias{dm.hhsc_ccl}
 \title{HHSC CCL data management}
 \usage{
-dm.hhsc_ccl(df, input_columns, download_date = Sys.Date(), ...)
+dm.hhsc_ccl(
+  df,
+  input_columns = list(OPERATION_NUMBER = "character", OPERATION_NAME = "character",
+    OPERATION_TYPE = "character", Location_address_geo = "character", COUNTY =
+    "character", TOTAL_CAPACITY = "numeric", LICENSED_TO_SERVE_AGES = "character",
+    PROGRAMS_PROVIDED = "character", ACCEPTS_CHILD_CARE_SUBSIDIES = "character",
+    email_address = "character", PHONE_NUMBER = "character"),
+  county_fips = NULL,
+  processed_pth,
+  name,
+  ...
+)
 }
 \arguments{
-\item{county_name}{string. The name of the county to subset to. Default is NULL.}
+\item{df}{data.frame. The dataframe}
+
+\item{input_columns.}{List. List of the columns to keep.}
+
+\item{county_fips.}{Integer. The FIPS code for the county.}
+
+\item{pth.}{string. Path to store the processed data.}
+
+\item{name.}{string. Name of the data.}
 }
 \value{
 data.frame
 }
 \description{
-Clean CCL download data, convert key variables to binary and select
+Clean CCL download data, convert key variables to binary and 
+select variables
 }

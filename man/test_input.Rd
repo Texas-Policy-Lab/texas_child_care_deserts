@@ -9,7 +9,8 @@ test_input(df, input_columns)
 \arguments{
 \item{df}{data.frame}
 
-\item{input_columns.}{Vector. Vector of variable names to select}
+\item{input_columns.}{List. List of variable names to select with expected
+variable types.}
 }
 \value{
 data.frame

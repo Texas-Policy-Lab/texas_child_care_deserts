@@ -4,14 +4,23 @@
 \alias{dwnld.hhsc_ccl}
 \title{Get HHSC CCL data}
 \usage{
-dwnld.hhsc_ccl(name, pth, url, ...)
+dwnld.hhsc_ccl(
+  name,
+  raw_pth,
+  url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
+  ext = "csv",
+  ...
+)
 }
 \arguments{
 \item{name}{string. The name to write the raw data to.}
 
-\item{pth}{string. The path to write the raw to.}
+\item{raw_pth}{string. The path to write the raw to.}
+
+\item{url}{string. The url to the data.}
 }
 \description{
-Returns the most recent HHSC CCL Daycare and Residential Operations 
+Returns the most recent HHSC CCL Daycare and Residential 
+Operations 
 Data. Link to data: https://data.texas.gov/resource/bc5r-88dy.csv
 }
