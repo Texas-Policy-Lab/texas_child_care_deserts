@@ -22,8 +22,8 @@ childcare_db <- function(census_tbls_config,
 
   create_folder_str(pths = pths)
 
-  # dwnld.acs(tbls = census_tbls_config,
-  #           pth = raw_pth)
+  dwnld.acs(tbls = census_tbls_config,
+            pth = raw_pth)
 
   hhsc_ccl_config$raw_pth <- raw_pth
   hhsc_ccl_config$processed_pth <- processed_pth
