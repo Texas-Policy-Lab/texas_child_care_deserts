@@ -44,7 +44,7 @@ col.operation_number <- function(df) {
 #' @title Data management steps for the county column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.county <- function(df, county_fips) {
+col.county <- function(df) {
 
   df <- df %>%
     dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
@@ -54,22 +54,6 @@ col.county <- function(df, county_fips) {
                                       county_code = paste0(state_code, county_code)) %>% 
                         dplyr::select(county, county_code)) %>% 
     dplyr::select(-county)
-
-  if (!is.null(county_fips)) {
-
-    assertthat::assert_that(!is.na(as.numeric(county_fips)),
-                            msg = "Expecting 5-digit county FIPS code.")
-    df <- df %>%
-      dplyr::filter(county_code == as.character(county_fips)) %>% 
-      dplyr::select(-county)
-
-    if (nrow(df) == 0) {
-      cat("Number of rows is 0, nothing to return. Is the county FIPS code correct?")
-    }
-
-  } else {
-    df <- df
-  }
 
   return(df)
 }
@@ -225,7 +209,7 @@ dm.hhsc_ccl <- function(df,
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
-    col.county(county_fips = county_fips) %>%
+    col.county() %>%
     col.location_address_geo() %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
