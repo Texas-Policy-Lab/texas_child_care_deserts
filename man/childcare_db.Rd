@@ -30,9 +30,7 @@ Create child care data base
 }
 \examples{
 \dontrun{
-census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                    geography = "tract", county = 439))
 root <- "C:/"
-childcare_db(acs_tbls = acs_tbls, root = root)
+childcare_db(root = root)
 }
 }
