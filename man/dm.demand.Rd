@@ -4,11 +4,19 @@
 \alias{dm.demand}
 \title{Data management steps to create the demand table}
 \usage{
-\method{dm}{demand}(B23008, B17024, processed_pth, name = "demand", pov_rate = 0.85)
+\method{dm}{demand}(B17024, B23008, processed_pth, name = "demand", pov_rate = 0.85, ...)
 }
 \arguments{
+\item{B17024}{data.frame. Census table B17024}
+
+\item{B23008}{data.frame. Census table B23008}
+
+\item{processed_pth}{pth. Path to the data}
+
 \item{pov_rate}{children w/ working parents are (1-pov_rate) more likely 
 to be under 200% of the poverty line. Default is .85.}
+
+\item{name.}{The name to write the data out as.}
 }
 \description{
 Children in poverty with working parents
