@@ -50,16 +50,16 @@ test_attr <- function(attr) {
 dwnld.acs <- function(tbls,
                       pth) {
   check_census_key()
-  
+
   lapply(names(tbls),
          function(name, tbls, pth) {
            attr <- tbls[[name]]
            attr$table <- name
-           
+
            test_attr(attr)
-           
+
            df <- do.call(tidycensus::get_acs, attr)
-           
+
            if (!is.null(pth)) {
              readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
            }
@@ -74,13 +74,13 @@ dwnld.acs <- function(tbls,
 #' @param acs_type is the acs type of data collection (e.g. 1,5)
 df_b23008 <- function(tbl=childcare_db(census_tbls = config$census$B23008,
                                        root = root)){
-  
+
   pov_data <- tbl %>%
     dplyr::mutate(tracts = gsub("Census Tract ", "", Geography),
                   tracts = gsub(", Harris County, Texas", "", tracts))
-  
+
   pov_data[,4:ncol(pov_data)] <- sapply(pov_data[,4:ncol(pov_data)], as.numeric)
-  
+
   df <- pov_data %>%
     dplyr::select(-c(Id, Id2, Geography)) %>%
     dplyr::rename(n_kids_lt6 = Estimate..Total....Under.6.years.) %>%
@@ -92,12 +92,12 @@ df_b23008 <- function(tbl=childcare_db(census_tbls = config$census$B23008,
                     Estimate..Total....Under.6.years....Living.with.one.parent....Living.with.mother....In.labor.force,
                   n_kids_working_parents_lt5 = (5/6)*(n_kids_working_parents_lt6)) %>%
     dplyr::select(tracts, n_kids_lt6, n_kids_lt5, n_kids_working_parents_lt6, n_kids_working_parents_lt5)
-  
+
   assertthat::assert_that(length(unique(df$tracts)) == nrow(df))
   assertthat::assert_that(all(df$n_kids_lt5<=df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt5<= df$n_kids_working_parents_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt6<=df$n_kids_lt6))
-  
+
   df
 }
 
@@ -109,10 +109,10 @@ df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
   pov_data <- tbl %>%
     dplyr::mutate(tracts = gsub("Census Tract ", "", Geography),
                   tracts = gsub(", Harris County, Texas", "", tracts))
-  
+
   vars <- names(pov_data)[grep("Estimate..Under.6.years.", names(pov_data))][1:9]
   vars_under_200 <- vars[2:9]
-  
+
   df <- pov_data %>%
     dplyr::select(tracts, dplyr::one_of(vars)) %>% 
     dplyr::rename(n_kids_lt6 = Estimate..Under.6.years.) %>% 
@@ -122,12 +122,12 @@ df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
                   pct_kids_lt6_under200_pct = (n_kids_lt6_under200pct/n_kids_lt6)*100,
                   pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100) %>% 
     dplyr::select(-dplyr::one_of(vars_under_200))
-  
+
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
-  
+
   df
 }
 
@@ -139,20 +139,20 @@ df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
 df_demand <- function(b17024 = childcare_db(census_tbls = config$census$B17024, root = root), 
                       b23008 = childcare_db(census_tbls = config$census$B23008, root = root), 
                       pov_rate) {
-  
+
   df_poverty_ratios <- df_b17024(b17024)
   df_working_parents <- df_b23008(b23008)
-  
+
   df <- merge(df_poverty_ratios, df_working_parents)
-  
+
   df2 <- df %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
     dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5)
-  
+
   assertthat::assert_that(working_pov_rate <= 100)
   assertthat::assert_that(all(n_kids_lt5_working_under200_pct <= n_kids_lt6_working_under200_pct))
-  
+
   df2
 }
 
