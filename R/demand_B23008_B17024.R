@@ -1,9 +1,6 @@
-root <- "F:/Early_Childhood/04_Tarrant_County"
-config <- yaml::read_yaml("./config.yaml")
-
-#@title Demand using table B23008
-#@param acs_year is the last two numbers of the desired year for the data (2015=15) 
-#@param acs_type is the acs type of data collection (e.g. 1,5)
+#' @title Demand using table B23008
+#' @param acs_year is the last two numbers of the desired year for the data (2015=15) 
+#' @param acs_type is the acs type of data collection (e.g. 1,5)
 df_b23008 <- function(tbl=childcare_db(census_tbls = config$census$B23008,
                                        root = root)){
   
@@ -33,9 +30,9 @@ df_b23008 <- function(tbl=childcare_db(census_tbls = config$census$B23008,
   df
 }
 
-#@title Demand using table B17024
-#@param acs_year. Last two numbers of the desired year for the data (2015=15) 
-#@param acs_type. ACS type of data collection (e.g. 1,3,5)
+#' @title Demand using table B17024
+#' @param acs_year. Last two numbers of the desired year for the data (2015=15) 
+#' @param acs_type. ACS type of data collection (e.g. 1,3,5)
 df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
                                          root = root)){
   pov_data <- tbl %>%
@@ -63,10 +60,10 @@ df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
   df
 }
 
-#@title Children in poverty with Working Parents
-#@param b17024 B17024 table from census
-#@param b23008 B23008 table from census
-#@param pov_rate children w/ working parents are (1-pov_rate) more likely to be under 200% of the poverty line. current estimate 85%
+#' @title Children in poverty with Working Parents
+#' @param b17024 B17024 table from census
+#' @param b23008 B23008 table from census
+#' @param pov_rate children w/ working parents are (1-pov_rate) more likely to be under 200% of the poverty line. current estimate 85%
 
 df_demand <- function(b17024 = childcare_db(census_tbls = config$census$B17024, root = root), 
                       b23008 = childcare_db(census_tbls = config$census$B23008, root = root), 
