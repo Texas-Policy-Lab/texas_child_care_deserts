@@ -32,10 +32,8 @@ acs_tables <- function(acs_year,
 #' (Tarrant County).
 #' @examples
 #' \dontrun{
-#' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                     geography = "tract", county = 439))
 #' root <- "C:/"
-#' childcare_db(acs_tbls = acs_tbls, root = root)
+#' childcare_db(root = root)
 #' }
 childcare_db <- function(root,
                          acs_year = 2019,
