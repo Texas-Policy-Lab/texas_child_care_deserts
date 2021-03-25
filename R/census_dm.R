@@ -107,8 +107,7 @@ dm.B23008 <- function(x) {
   assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt6 <= df$n_kids_lt6))
 
-  x$df <- df
-  return(x)
+  return(df)
 }
 
 #' @title Demand using table B17024
@@ -118,7 +117,7 @@ dm.B17024 <- function(x) {
   lt6 <- paste(x$table, "002", sep = "_")
   lt6_under200_pct <- paste(x$table, c("003", "004", "005", "006",
                                        "007", "008", "009", "010"), sep = "_")
-  
+
   df <- x$df %>%
     dplyr::rename(tract = GEOID) %>%
     dplyr::select(tract, variable, estimate) %>%
@@ -140,22 +139,26 @@ dm.B17024 <- function(x) {
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
 
-  x$df <- df
-  return(x)
+  return(df)
 }
 
 #' @title Data management steps to create the demand table
 #' @description Children in poverty with working parents
+#' @param B17024 data.frame. Census table B17024
+#' @param B23008 data.frame. Census table B23008
+#' @param processed_pth pth. Path to the data
+#' @param name. The name to write the data out as.
 #' @param pov_rate children w/ working parents are (1-pov_rate) more likely 
 #' to be under 200% of the poverty line. Default is .85.
-dm.demand <- function(tbls,
+dm.demand <- function(B17024,
+                      B23008,
                       processed_pth,
                       name = "demand",
                       pov_rate = .85,
                       ...) {
 
-  df <- tbls$B17024$df %>%
-    dplyr::inner_join(tbls$B23008$df) %>%
+  df <- B17024 %>%
+    dplyr::inner_join(B23008) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
     dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5)
@@ -172,7 +175,7 @@ dm.demand <- function(tbls,
 #' @description Process acs data and create demand dataframe
 process.acs <- function(acs_tbls) {
 
-  acs_tbls$tbls <- do.call(dwnld.acs, acs_tbls)
-  acs_tbls$tbls <- lapply(acs_tbls$tbls, dm)
+  tbls <- do.call(dwnld.acs, acs_tbls)
+  acs_tbls <- c(acs_tbls, lapply(tbls, dm))
   do.call(dm.demand, acs_tbls)
 }
