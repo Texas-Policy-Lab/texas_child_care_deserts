@@ -11,16 +11,17 @@
 childcare_db <- function(acs_tbls,
                          root) {
 
-  pth_data <- file.path(root, "data")
-  pth_raw <- file.path(pth_data, "raw")
-  pth_processed <- file.path(pth_data, "processed")
+  data_pth <- file.path(root, "data")
+  raw_pth <- file.path(data_pth, "raw")
+  processed_pth <- file.path(data_pth, "processed")
 
-  pths <- c(pth_data, pth_raw, pth_processed)
+  pths <- c(data_pth, raw_pth, processed_pth)
 
   create_folder_str(pths = pths)
 
   acs_tbls <- list(tbls = acs_tbls,
-                    pth_raw = pth_raw)
+                   raw_pth = raw_pth,
+                   processed_pth = processed_pth)
 
   process.acs(acs_tbls = acs_tbls)
 
