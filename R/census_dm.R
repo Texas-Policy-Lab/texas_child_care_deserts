@@ -51,22 +51,25 @@ dwnld.acs <- function(tbls, raw_pth, ...) {
 
   check_census_key()
 
+  f <- function(name, tbls, pth) {
+
+    attr <- tbls[[name]]
+    attr$table <- name
+    
+    test_attr(attr)
+    
+    df <- do.call(tidycensus::get_acs, attr)
+    
+    if (!is.null(pth)) {
+      readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
+    }
+    
+    attr$df <- df
+    return(structure(attr, class = name))
+  }
+  
   sapply(names(tbls),
-         function(name, tbls, pth) {
-           attr <- tbls[[name]]
-           attr$table <- name
-
-           test_attr(attr)
-
-           df <- do.call(tidycensus::get_acs, attr)
-
-           if (!is.null(pth)) {
-             readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
-           }
-
-           attr$df <- df
-           return(structure(attr, class = name))
-         },
+         f,
          tbls = tbls,
          pth = raw_pth,
          USE.NAMES = TRUE,
@@ -173,7 +176,19 @@ dm.demand <- function(B17024,
 
 #' @title Process acs data
 #' @description Process acs data and create demand dataframe
-process.acs <- function(acs_tbls) {
+process.acs <- function(acs_year,
+                        acs_state_code,
+                        acs_geography,
+                        acs_county,
+                        raw_pth,
+                        processed_pth) {
+
+  acs_tbls <- acs_tables(acs_year = acs_year,
+                         acs_state_code = acs_state_code,
+                         acs_geography = acs_geography,
+                         acs_county = acs_county,
+                         raw_pth = raw_pth,
+                         processed_pth = processed_pth)
 
   tbls <- do.call(dwnld.acs, acs_tbls)
   acs_tbls <- c(acs_tbls, lapply(tbls, dm))
