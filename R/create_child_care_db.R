@@ -1,4 +1,5 @@
 #' @title Add default parameters for ACS tables
+#' @inheritParams childcare_db
 acs_tables <- function(acs_year,
                        acs_state_code,
                        acs_geography,
@@ -23,6 +24,12 @@ acs_tables <- function(acs_year,
 
 #' @title Create child care data base
 #' @param root string. Path to the root directory to create the DB
+#' @param acs_year. Integer. ACS year to pull the tables from. Default is 2019.
+#' @param acs_state_code. Integer. ACS state_code to pull the data for. Default 
+#' is 48 (Texas).
+#' @param acs_geography. String. ACS geography. Default is "tract".
+#' @param acs_county. Integer. County FIPS code (3-digits). Default is 439 
+#' (Tarrant County).
 #' @examples
 #' \dontrun{
 #' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
