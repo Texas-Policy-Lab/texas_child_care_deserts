@@ -37,21 +37,21 @@ test_attr <- function(attr) {
 #' @description Passes in a list of parameters to download the ACS census
 #' data using functions from the tidycensus package
 #' @param tbls list. List of census tables with attributes to download
-#' @param pth string. The path to download the data to.
+#' @param pth_raw. Path to save the raw data.
 #' @details To find a list of parameters to pass see documentation for 
 #' tidycensus::get_acs
 #' @examples 
 #' \dontrun{
-#' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                                   geography = "tract", county = 439))
-#' pth <- "C:/"
-#' dwnld.acs(tbls = census_tbls, pth = pth)
+#' tbls <- list(B23008 = list(year = 2019, state = 48, 
+#'                                geography = "tract", county = 439))
+#' pth_raw <- "C:/"
+#' dwnld.acs(tbls = tbls)
 #' }
-dwnld.acs <- function(tbls,
-                      pth) {
+dwnld.acs <- function(tbls, pth_raw) {
+
   check_census_key()
 
-  lapply(names(tbls),
+  sapply(names(tbls),
          function(name, tbls, pth) {
            attr <- tbls[[name]]
            attr$table <- name
@@ -63,96 +63,112 @@ dwnld.acs <- function(tbls,
            if (!is.null(pth)) {
              readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
            }
-           return(TRUE)
+
+           attr$df <- df
+           return(structure(attr, class = name))
          },
          tbls = tbls,
-         pth = pth)
+         pth = pth_raw,
+         USE.NAMES = FALSE,
+         simplify = FALSE)
 }
 
+#' @title Data management
+#' @description Data management steps for a specific data table
+#' @param x object. The data object
+dm <- function(x) UseMethod("dm")
+
 #' @title Demand using table B23008
-#' @param acs_year is the last two numbers of the desired year for the data (2015=15) 
-#' @param acs_type is the acs type of data collection (e.g. 1,5)
-df_b23008 <- function(tbl=childcare_db(census_tbls = config$census$B23008,
-                                       root = root)){
+#' @description Creates variables: Estimated number of children under 5,
+#' estimated number of children less than 6 with working parents, and
+#' estimated number of children less than 5 with working parents
+#' @inheritParams dm
+dm.B23008 <- function(x) {
 
-  pov_data <- tbl %>%
-    dplyr::mutate(tracts = gsub("Census Tract ", "", Geography),
-                  tracts = gsub(", Harris County, Texas", "", tracts))
+  lt6 <- paste(x$table, "002", sep = "_")
+  lt6_working_parents <- paste(x$table, c("004", "005", "006", "010", "013"), sep = "_")
 
-  pov_data[,4:ncol(pov_data)] <- sapply(pov_data[,4:ncol(pov_data)], as.numeric)
+  df <- x$df %>%
+    dplyr::rename(tract = GEOID) %>%
+    dplyr::select(tract, variable, estimate) %>%
+    dplyr::mutate(n_kids_lt6 = ifelse(variable %in% lt6, TRUE, FALSE),
+                  n_kids_working_parents_lt6 = ifelse(variable %in% lt6_working_parents, TRUE, FALSE)
+    ) %>%
+    tidyr::gather(variable2, value2, -c(tract, variable, estimate)) %>%
+    dplyr::filter(value2) %>%
+    dplyr::group_by(tract, variable2) %>%
+    dplyr::summarise(estimate = sum(estimate)) %>% 
+    tidyr::spread(variable2, estimate) %>%
+    dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
+                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6)
 
-  df <- pov_data %>%
-    dplyr::select(-c(Id, Id2, Geography)) %>%
-    dplyr::rename(n_kids_lt6 = Estimate..Total....Under.6.years.) %>%
-    dplyr::mutate(n_kids_lt5 = (5/6)*(n_kids_lt6),
-                  n_kids_working_parents_lt6 = Estimate..Total....Under.6.years....Living.with.two.parents....Both.parents.in.labor.force + 
-                    Estimate..Total....Under.6.years....Living.with.two.parents....Father.only.in.labor.force + 
-                    Estimate..Total....Under.6.years....Living.with.two.parents....Mother.only.in.labor.force + 
-                    Estimate..Total....Under.6.years....Living.with.one.parent....Living.with.father....In.labor.force + 
-                    Estimate..Total....Under.6.years....Living.with.one.parent....Living.with.mother....In.labor.force,
-                  n_kids_working_parents_lt5 = (5/6)*(n_kids_working_parents_lt6)) %>%
-    dplyr::select(tracts, n_kids_lt6, n_kids_lt5, n_kids_working_parents_lt6, n_kids_working_parents_lt5)
+  assertthat::assert_that(length(unique(df$tract)) == nrow(df))
+  assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
+  assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
+  assertthat::assert_that(all(df$n_kids_working_parents_lt6 <= df$n_kids_lt6))
 
-  assertthat::assert_that(length(unique(df$tracts)) == nrow(df))
-  assertthat::assert_that(all(df$n_kids_lt5<=df$n_kids_lt6))
-  assertthat::assert_that(all(df$n_kids_working_parents_lt5<= df$n_kids_working_parents_lt6))
-  assertthat::assert_that(all(df$n_kids_working_parents_lt6<=df$n_kids_lt6))
-
-  df
+  x$df <- df
+  return(x)
 }
 
 #' @title Demand using table B17024
-#' @param acs_year. Last two numbers of the desired year for the data (2015=15) 
-#' @param acs_type. ACS type of data collection (e.g. 1,3,5)
-df_b17024 <- function(tbl = childcare_db(census_tbls = config$census$B17024,
-                                         root = root)){
-  pov_data <- tbl %>%
-    dplyr::mutate(tracts = gsub("Census Tract ", "", Geography),
-                  tracts = gsub(", Harris County, Texas", "", tracts))
+#' @inheritParams dm
+dm.B17024 <- function(x) {
 
-  vars <- names(pov_data)[grep("Estimate..Under.6.years.", names(pov_data))][1:9]
-  vars_under_200 <- vars[2:9]
-
-  df <- pov_data %>%
-    dplyr::select(tracts, dplyr::one_of(vars)) %>% 
-    dplyr::rename(n_kids_lt6 = Estimate..Under.6.years.) %>% 
-    dplyr::mutate(n_kids_lt6_under200pct = rowSums(.[vars_under_200]),
-                  n_kids_lt5 = (5/6)*n_kids_lt6,
-                  n_kids_lt5_under200pct = (5/6)*n_kids_lt6_under200pct,
+  lt6 <- paste(x$table, "002", sep = "_")
+  lt6_under200_pct <- paste(x$table, c("003", "004", "005", "006",
+                                       "007", "008", "009", "010"), sep = "_")
+  
+  df <- x$df %>%
+    dplyr::rename(tract = GEOID) %>%
+    dplyr::select(tract, variable, estimate) %>%
+    dplyr::mutate(n_kids_lt6 = ifelse(variable %in% lt6, TRUE, FALSE),
+                  n_kids_lt6_under200pct = ifelse(variable %in% lt6_under200_pct, TRUE, FALSE)
+    ) %>%
+    tidyr::gather(variable2, value2, -c(tract, variable, estimate)) %>%
+    dplyr::filter(value2) %>%
+    dplyr::group_by(tract, variable2) %>%
+    dplyr::summarise(estimate = sum(estimate)) %>% 
+    tidyr::spread(variable2, estimate) %>%
+    dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
+                  n_kids_lt5_under200pct = 5/6*n_kids_lt6_under200pct,
                   pct_kids_lt6_under200_pct = (n_kids_lt6_under200pct/n_kids_lt6)*100,
-                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100) %>% 
-    dplyr::select(-dplyr::one_of(vars_under_200))
-
+                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100)
+  
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
 
-  df
+  x$df <- df
+  return(x)
 }
 
 #' @title Children in poverty with Working Parents
-#' @param b17024 B17024 table from census
-#' @param b23008 B23008 table from census
-#' @param pov_rate children w/ working parents are (1-pov_rate) more likely to be under 200% of the poverty line. current estimate 85%
+#' @param B17024 B17024 table from census
+#' @param B23008 B23008 table from census
+#' @param pov_rate children w/ working parents are (1-pov_rate) more likely to be under 200% of the poverty line. Default is .85.
+df_demand <- function(B17024, 
+                      B23008, 
+                      pov_rate = .85) {
 
-df_demand <- function(b17024 = childcare_db(census_tbls = config$census$B17024, root = root), 
-                      b23008 = childcare_db(census_tbls = config$census$B23008, root = root), 
-                      pov_rate) {
-
-  df_poverty_ratios <- df_b17024(b17024)
-  df_working_parents <- df_b23008(b23008)
-
-  df <- merge(df_poverty_ratios, df_working_parents)
-
-  df2 <- df %>%
+  df <- B17024 %>%
+    dplyr::inner_join(B23008) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
     dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5)
 
-  assertthat::assert_that(working_pov_rate <= 100)
-  assertthat::assert_that(all(n_kids_lt5_working_under200_pct <= n_kids_lt6_working_under200_pct))
+  assertthat::assert_that(df$working_pov_rate <= 100)
+  assertthat::assert_that(all(df$n_kids_lt5_working_under200_pct <= df$n_kids_lt6_working_under200_pct))
 
-  df2
+  return(df)
+}
+
+process.acs <- function(acs_tbls) {
+
+  acs_tbls <- do.call(dwnld.acs, acs_tbls)
+
+  dfs <- lapply(acs_tbls, dm)
+
 }
 
