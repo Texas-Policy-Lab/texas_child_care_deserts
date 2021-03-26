@@ -50,7 +50,7 @@ test_attr <- function(attr) {
 dwnld.acs <- function(tbls,
                       pth) {
   check_census_key()
-  
+
   lapply(names(tbls),
          function(name, tbls, pth) {
            attr <- tbls[[name]]

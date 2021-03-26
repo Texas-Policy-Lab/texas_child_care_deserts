@@ -4,7 +4,7 @@
 \alias{create_folder_str}
 \title{Create data folder structure}
 \usage{
-create_folder_str(root, pths)
+create_folder_str(pths)
 }
 \arguments{
 \item{root}{string. The root directory}
