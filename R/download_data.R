@@ -145,22 +145,23 @@ get.nber_tract_data <- function(data_in_name,
 #' @param data_in_name string. The name to of the data to read in.
 #' @param data_in_pth string. The path to read the data in from.
 #' @export
-get.acf_data <- function(data_in_name,
-                         data_in_pth,
+dwnld.acf_data <- function(name = "acf-801-q{qtr}-{year}-twc.xlsx",
+                         raw_pth,
                          url = "https://www.twc.texas.gov/files/partners/{fl}",
-                         qtr = 1:4) {
-
+                         qtr = 1:4,
+                         year) {
+  
   lapply(qtr, function(q) {
-
-    fl_name <- glue::glue(data_in_name, qtr = q)
-
-    dwnld_pth <- file.path(data_in_pth, fl_name)
-
+    
+    fl_name <- glue::glue(name, qtr = q, year = year)
+    
+    dwnld_pth <- file.path(raw_pth, fl_name)
+    
     download.file(glue::glue(url, fl = fl_name), destfile = dwnld_pth, mode = "wb")
-
+    
   })
-
 }
+  
 
 #' @title Get the neighborhood to census tract data
 #' @description Download the neighbordhood to census tract cross walk create by the Kinder Institute. https://www.arcgis.com/apps/MapSeries/index.html?appid=95320b06677c438d91027cb5feb241bf
