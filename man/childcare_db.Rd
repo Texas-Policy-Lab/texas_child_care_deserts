@@ -7,9 +7,10 @@
 childcare_db(census_tbls, root)
 }
 \arguments{
-\item{root}{string. Path to the root directory to create the DB}
+\item{census_tbls}{Configuration for the list of census tables to 
+pull.}
 
-\item{census_tbls.}{List of census tables to pull}
+\item{root}{string. Path to the root directory to create the DB.}
 }
 \description{
 Create child care data base
@@ -17,7 +18,7 @@ Create child care data base
 \examples{
 \dontrun{
 census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                    geography = "tract", county = "48438"))
+                    geography = "tract", county = 439))
 root <- "C:/"
 childcare_db(census_tbls = census_tbls, root = root)
 }

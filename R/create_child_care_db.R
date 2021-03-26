@@ -1,6 +1,7 @@
 #' @title Create child care data base
-#' @param root string. Path to the root directory to create the DB
-#' @param census_tbls. List of census tables to pull
+#' @param census_tbls Configuration for the list of census tables to 
+#' pull.
+#' @param root string. Path to the root directory to create the DB.
 #' @examples
 #' \dontrun{
 #' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
@@ -11,15 +12,24 @@
 childcare_db <- function(census_tbls,
                          root) {
 
-  pth_data <- file.path(root, "data")
-  pth_raw <- file.path(pth_data, "raw")
-  pth_processed <- file.path(pth_data, "processed")
+  data_pth <- file.path(root, "data")
+  raw_pth <- file.path(data_pth, "raw")
+  processed_pth <- file.path(data_pth, "processed")
 
-  pths <- c(pth_data, pth_raw, pth_processed)
+  pths <- c(data_pth, raw_pth, processed_pth)
 
   create_folder_str(pths = pths)
 
-  dwnld.acs(tbls = census_tbls,
-            pth = pth_raw)
+  if (!is.null(census_tbls)) {
+    dwnld.acs(tbls = census_tbls,
+              pth = raw_pth)
+  }
+
+  hhsc_ccl <- list()
+  hhsc_ccl$raw_pth <- raw_pth
+  hhsc_ccl$processed_pth <- processed_pth
+  hhsc_ccl$name <- "HHSC_CCL"
+
+  process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
 
 }
