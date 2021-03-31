@@ -1,3 +1,18 @@
+#' @title Overwrite fl
+#' @param temp_dir string. Path to the temporary location of the file
+#' @param final_dir. string. Path to the final location of the file
+#' @param fl_name. string. Name of the file.
+overwrite_fl <- function(temp_dir, final_dir, fl_name) {
+  
+  fl <- file.path(final_dir, fl_name)
+  if (fl_name %in% list.files(final_dir)) {
+    file.remove(fl)
+    assertthat::assert_that(fl_name %in% list.files(final_dir) == FALSE)
+  }
+  
+  file.copy(from = temp_dir, to = fl)
+}
+
 #' @title Download ACS
 #' @description Passes in a list of parameters to download the ACS census
 #' data using functions from the tidycensus package
@@ -55,4 +70,26 @@ dwnld.hhsc_ccl <- function(name,
   df <- readr::read_csv(dwnld_pth)
   
   return(df)
+}
+
+#' @title Download ACF data
+#' @description Data are located: 
+#' https://www.twc.texas.gov/programs/childcare#dataAndReports
+dwnld.acf <- function(raw_pth,
+                      endpoint = "https://www.twc.texas.gov{path}",
+                      ...) {
+
+  apis <- xml2::read_html(glue::glue(endpoint,
+                                     path = "/programs/childcare#dataAndReports")) %>%
+    rvest::html_nodes("#node-561 > div:nth-child(5) > div > ul:nth-child(16) > li > a") %>%
+    rvest::html_attr("href")
+
+  lapply(apis, function(api) {
+
+    url <- glue::glue(endpoint, path = api)
+    httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
+    overwrite_fl(temp_dir = temp_dir,
+                 final_dir = raw_pth,
+                 fl_name = basename(api))
+  })
 }
