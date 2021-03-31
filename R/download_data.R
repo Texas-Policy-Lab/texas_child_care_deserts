@@ -142,8 +142,9 @@ get.nber_tract_data <- function(data_in_name,
 
 #' @title Get ACF data
 #' @description Link to data: https://www.twc.texas.gov/programs/childcare#dataAndReports
-#' @param data_in_name string. The name to of the data to read in.
-#' @param data_in_pth string. The path to read the data in from.
+#' @param name string. The name to of the data to read in.
+#' @param raw_pth string. The path to read the data in from.
+#' @param year string. The year to select to read data from.
 #' @export
 dwnld.acf_data <- function(name = "acf-801-q{qtr}-{year}-twc.xlsx",
                          raw_pth,
