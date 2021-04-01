@@ -226,8 +226,8 @@ get.state_fips_state_name_xwalk <- function(data_in_name,
 #' @param data_in_name string. The name to of the data to read in.
 #' @param data_in_pth string. The path to read the data in from.
 #' @export
-get.zip_latlong_xwalk <- function(data_in_name = NULL,
-                                  data_in_pth = NULL,
+get.zip_latlong_xwalk <- function(data_in_pth = NULL,
+                                  data_in_name = NULL,
                                   state_fips = 48){
   
   df <- tigris::zctas(state = state_fips) %>% 
@@ -239,7 +239,7 @@ get.zip_latlong_xwalk <- function(data_in_name = NULL,
                   lat,
                   lon)
   
-  write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
   
   return(df)
   
@@ -263,7 +263,7 @@ get.zip_county_xwalk <- function(data_in_name = NULL,
     dplyr::select(zip = zcta5,
                   county = county)
   
-  write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
   
   return(df)
   
