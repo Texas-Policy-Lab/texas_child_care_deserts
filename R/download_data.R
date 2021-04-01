@@ -241,6 +241,8 @@ get.zip_latlong_xwalk <- function(data_in_name = NULL,
   
   write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
   
+  return(df)
+  
 }
 
 #' @title Get county and ZCTA (zip code) Crosswalk
@@ -262,5 +264,7 @@ get.zip_county_xwalk <- function(data_in_name = NULL,
                   county = county)
   
   write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  
+  return(df)
   
 }
