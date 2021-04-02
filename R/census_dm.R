@@ -163,7 +163,9 @@ dm.demand <- function(B17024,
                       name = "demand",
                       pov_rate = .85,
                       ...) {
-
+ 
+   assertthat::assert_that(pov_rate <= 1)
+  
   df <- B17024 %>%
     dplyr::inner_join(B23008) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
