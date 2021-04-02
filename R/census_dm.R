@@ -90,6 +90,8 @@ dm.B23008 <- function(x) {
 
   lt6 <- paste(x$table, "002", sep = "_")
   lt6_working_parents <- paste(x$table, c("004", "005", "006", "010", "013"), sep = "_")
+  
+  assertthat::assert_that(all(lt6_working_parents %in% x$df$variable), msg = "Missing expected variables to create those with working parents")
 
   df <- x$df %>%
     dplyr::rename(tract = GEOID) %>%
@@ -116,10 +118,12 @@ dm.B23008 <- function(x) {
 #' @title Demand using table B17024
 #' @inheritParams dm
 dm.B17024 <- function(x) {
-
+  
   lt6 <- paste(x$table, "002", sep = "_")
   lt6_under200_pct <- paste(x$table, c("003", "004", "005", "006",
                                        "007", "008", "009", "010"), sep = "_")
+  
+  assertthat::assert_that(all(lt6_under200_pct %in% x$df$variable), msg = "Missing expected variables to create less than 200 pct")
 
   df <- x$df %>%
     dplyr::rename(tract = GEOID) %>%
