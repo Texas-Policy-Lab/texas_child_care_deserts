@@ -8,42 +8,20 @@
 #' @return data.frame
 
 dm.acf_family <- function(df,
-                          zip_latlong_xwalk,
-                          zip_county_xwalk,
-                          input_columns = list(ChildrenID = "numeric",
-                                               Parents.FamilyZip = "numeric",
-                                               CCSettings.ProviderStateID = "numeric",
-                                               Parents.ReportingDate = "POSIXct",
-                                               Age = "numeric"),
                           max_child_age = 4){
   
   df <- df %>% 
-    test_input(input_columns) %>% 
     dplyr::filter(Age <= max_child_age) %>% 
-    dplyr::left_join(zip_latlong_xwalk, by = c("Parents.FamilyZip" = "zip")) %>% 
-    dplyr::left_join(zip_county_xwalk, by = c("Parents.FamilyZip" = "zip")) %>% 
     dplyr::select(child_id = ChildrenID,
                   family_zip = Parents.FamilyZip,
                   provider_id = CCSettings.ProviderStateID,
-                  date = Parents.ReportingDate,
-                  lat,
-                  lon,
-                  county)
+                  date = Parents.ReportingDate)
   
   assertthat::assert_that(is.numeric(df$family_zip),
                           msg = "Zip not numeric")
   
   assertthat::assert_that(is.numeric(df$provider_id),
                           msg = "Provider ID not numeric")
-  
-  assertthat::assert_that(is.numeric(df$lat),
-                          msg = "Latitude not numeric")
-  
-  assertthat::assert_that(is.numeric(df$lon),
-                          msg = "Longitude not numeric")
-  
-  assertthat::assert_that(is.numeric(df$county),
-                          msg = "County not numeric")
   
   return(df)
   
@@ -57,24 +35,13 @@ dm.acf_family <- function(df,
 #' @param input_columns. List. List of the columns to keep.
 #' @return data.frame
 
-dm.acf_provider <- function(df,
-                            zip_latlong_xwalk,
-                            zip_county_xwalk,
-                            input_columns = list(Data.StateID = "numeric",
-                                                 Data.ZipCode = "character",
-                                                 Data.ReportingDate = "POSIXct")){
+dm.acf_provider <- function(df){
   
   df <- df %>% 
-    test_input(input_columns) %>% 
     dplyr::mutate(provider_zip = as.numeric(Data.ZipCode)) %>% 
-    dplyr::left_join(zip_latlong_xwalk, by = c("provider_zip" = "zip")) %>% 
-    dplyr::left_join(zip_county_xwalk, by = c("provider_zip" = "zip")) %>% 
     dplyr::select(provider_id = Data.StateID,
                   provider_zip,
-                  date = Data.ReportingDate,
-                  lat,
-                  lon,
-                  county)
+                  date = Data.ReportingDate)
   
   assertthat::assert_that(is.numeric(df$provider_id),
                           msg = "Provider ID not numeric")
@@ -82,14 +49,33 @@ dm.acf_provider <- function(df,
   assertthat::assert_that(is.numeric(df$provider_zip),
                           msg = "Zip not numeric")
   
-  assertthat::assert_that(is.numeric(df$lat),
-                          msg = "Latitude not numeric")
+  return(df)
   
-  assertthat::assert_that(is.numeric(df$lon),
-                          msg = "Longitude not numeric")
+}
+
+#' @title Calculate distance between two zip codes in miles
+#' @description Find lat/lon coordinates for each zip code, calculate straight line distance.
+#' @param df. The data frame containing matched zip code columns.
+#' @param zip1. One of the zip code columns.
+#' @param zip2. The other zip code column.
+#' @return data.frame with distance column.
+
+distance_between_zips <- function(df, zip1, zip2) {
   
-  assertthat::assert_that(is.numeric(df$county),
-                          msg = "County not numeric")
+  zip_latlong_xwalk <- get.zip_latlong_xwalk()
+  
+  byvar1 <- enquo(zip1)
+  byvar2 <- enquo(zip2)
+  
+  by1 <- setNames("zip", quo_name(byvar1))
+  by2 <- setNames("zip", quo_name(byvar2))
+  
+  df <- df %>% 
+    dplyr::left_join(zip_latlong_xwalk, by = by1) %>% 
+    dplyr::left_join(zip_latlong_xwalk, by = by2)
+  
+  df <- df %>% 
+    dplyr::mutate(distance = geosphere::distHaversine(cbind(lon.x, lat.x), cbind(lon.y, lat.y)) / 1609)
   
   return(df)
   
@@ -102,30 +88,38 @@ dm.acf_provider <- function(df,
 #' @return data.frame
 
 dm.acf_dist <- function(df_family,
-                        df_provider){
-  browser()
-  zip_latlong_xwalk <- get.zip_latlong_xwalk()
-  zip_county_xwalk <- get.zip_county_xwalk()
+                        df_provider,
+                        input_family = list(ChildrenID = "numeric",
+                                            Parents.FamilyZip = "numeric",
+                                            CCSettings.ProviderStateID = "numeric",
+                                            Parents.ReportingDate = "POSIXct",
+                                            Age = "numeric"),
+                        input_provider = list(Data.StateID = "numeric",
+                                              Data.ZipCode = "character",
+                                              Data.ReportingDate = "POSIXct")){
   
-  assertthat::assert_that(all(c("zip", "lat", "lon") %in% colnames(zip_latlong_xwalk)),
-                          msg = "Zip lat/long xwalk missing column")
-  assertthat::assert_that(all(c("zip", "county") %in% colnames(zip_county_xwalk)),
-                          msg = "Zip county xwalk missing column")
-
-  df_family <- dm.acf_family(df_family, zip_latlong_xwalk, zip_county_xwalk)
-  df_provider <- dm.acf_provider(df_provider, zip_latlong_xwalk, zip_county_xwalk)
+  browser()
+  
+  df_family <- df_family %>% 
+    test_input(input_family) %>% 
+    dm.acf_family()
+  
+  df_provider <- df_provider %>% 
+    test_input(input_provider) %>% 
+    dm.acf_provider()
   
   df <- df_family %>% 
     dplyr::left_join(df_provider, by = c("provider_id", "date"), suffix = c("_family", "_provider")) %>% 
-    dplyr::mutate(distance = geosphere::distHaversine(cbind(lon_family, lat_family), cbind(lon_provider, lat_provider)) / 1609)
+    distance_between_zips(zip1 = family_zip, zip2 = provider_zip)
   
   assertthat::assert_that(is.numeric(df$distance))
+  assertthat::assert_that(all(df$distance[df$provider_zip == df$family_zip] %in% c(0, NA)))
   
   return(df)
 }
 
 #' @title ACF data management to get zip codes for providers
-#' @description Clean ACF provider data.
+#' @description Clean ACF provider data, find coordinates for each zip code, calculate straight line distance.
 #' @param df data.frame. The merged family/home ACF data from dm.acf_dist function.
 #' @param county_list. A list of TX county codes of counties of interest to compare. 
 #' Eg county_list = c(439) for Tarrant County; county_list = c(201, 439) to compare Harris to Tarrant County
@@ -133,6 +127,14 @@ dm.acf_dist <- function(df_family,
 
 summary.acf_dist <- function(df,
                              county_list = NULL){
+  
+  browser()
+  
+  zip_county_xwalk <- get.zip_county_xwalk()
+  
+  df <- df %>% 
+    dplyr::left_join(zip_county_xwalk, by = c("family_zip" = "zip")) %>% 
+    dplyr::left_join(zip_county_xwalk, by = c("provider_zip" ="zip"), suffix = c("_family", "_provider"))
   
   subset <- df %>% 
     dplyr::filter(county_family %in% county_list & county_provider %in% county_list & county_family == county_provider) %>% 

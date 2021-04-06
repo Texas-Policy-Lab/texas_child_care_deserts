@@ -239,6 +239,9 @@ get.zip_latlong_xwalk <- function(data_in_pth = NULL,
                   lat,
                   lon)
   
+  assertthat::assert_that(all(c("zip", "lat", "lon") %in% colnames(df)),
+                          msg = "Zip lat/long xwalk missing column")
+  
   #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
   
   return(df)
@@ -262,6 +265,9 @@ get.zip_county_xwalk <- function(data_in_name = NULL,
     dplyr::filter(state == state_fips) %>% 
     dplyr::select(zip = zcta5,
                   county = county)
+  
+  assertthat::assert_that(all(c("zip", "county") %in% colnames(df)),
+                          msg = "Zip county xwalk missing column")
   
   #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
   
