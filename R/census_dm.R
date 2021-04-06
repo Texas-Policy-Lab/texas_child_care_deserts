@@ -164,7 +164,7 @@ dm.demand <- function(B17024,
                       pov_rate = .85,
                       ...) {
  
-   assertthat::assert_that(pov_rate <= 1)
+   assertthat::assert_that(pov_rate <= 1, msg = "Poverty rate for working parents greater than 1")
   
   df <- B17024 %>%
     dplyr::inner_join(B23008) %>%
