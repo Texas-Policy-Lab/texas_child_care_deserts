@@ -4,12 +4,9 @@
 \alias{childcare_db}
 \title{Create child care data base}
 \usage{
-childcare_db(census_tbls, root)
+childcare_db(root)
 }
 \arguments{
-\item{census_tbls}{Configuration for the list of census tables to 
-pull.}
-
 \item{root}{string. Path to the root directory to create the DB.}
 }
 \description{
