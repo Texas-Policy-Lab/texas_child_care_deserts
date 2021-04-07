@@ -88,7 +88,5 @@ dm.mkt_subsidy <- function(pth1,
     dplyr::mutate(c=3*mu_hat_1 - a - b)
   
   return(tri_params$b)
-  
-}
-  
+
 }
