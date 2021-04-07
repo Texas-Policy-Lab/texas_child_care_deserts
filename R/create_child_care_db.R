@@ -17,18 +17,6 @@ childcare_db <- function(root) {
 
   create_folder_str(pths = pths)
 
-  # if (!is.null(census_tbls)) {
-  #   dwnld.acs(tbls = census_tbls,
-  #             pth = raw_pth)
-  # }
-  # 
-  # hhsc_ccl <- list()
-  # hhsc_ccl$raw_pth <- raw_pth
-  # hhsc_ccl$processed_pth <- processed_pth
-  # hhsc_ccl$name <- "HHSC_CCL"
-
-  # process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
-
   acf <- list()
   acf$raw_pth <- raw_pth
   acf$processed_pth <- processed_pth
