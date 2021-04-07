@@ -24,7 +24,6 @@ dm.acf_family <- function(df,
                           msg = "Provider ID not numeric")
   
   return(df)
-  
 }
 
 #' @title ACF data management to get zip codes for providers
@@ -50,7 +49,6 @@ dm.acf_provider <- function(df){
                           msg = "Zip not numeric")
   
   return(df)
-  
 }
 
 #' @title Calculate distance between two zip codes in miles
@@ -78,7 +76,6 @@ distance_between_zips <- function(df, zip1, zip2) {
     dplyr::mutate(distance = geosphere::distHaversine(cbind(lon.x, lat.x), cbind(lon.y, lat.y)) / 1609)
   
   return(df)
-  
 }
 
 #' @title ACF data management to get zip codes for providers
@@ -96,9 +93,8 @@ dm.acf_dist <- function(df_family,
                                             Age = "numeric"),
                         input_provider = list(Data.StateID = "numeric",
                                               Data.ZipCode = "character",
-                                              Data.ReportingDate = "POSIXct")){
-  
-  browser()
+                                              Data.ReportingDate = "POSIXct")) {
+
   
   df_family <- df_family %>% 
     test_input(input_family) %>% 
@@ -127,8 +123,6 @@ dm.acf_dist <- function(df_family,
 
 summary.acf_dist <- function(df,
                              county_list = NULL){
-  
-  browser()
   
   zip_county_xwalk <- get.zip_county_xwalk()
   
@@ -159,5 +153,4 @@ summary.acf_dist <- function(df,
     tidyr::unnest_wider(col = decile)
   
   return(list(density_plot, decile_table))
-  
 }
