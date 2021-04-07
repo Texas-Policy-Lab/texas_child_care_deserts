@@ -1,8 +1,8 @@
 #' @title Select quarter year
 #' @description Parses the quarter-year parameter and returns the file names
 #' which are associated with that quarter year combination
-#' @inheritParams childcare_db
-#' @param pth String. Path to the data
+#' @inheritParams read_qtr_year
+#' @return A vector of file paths associated with the given quarter year
 select_qtr_year <- function(pth,
                             acf_qtr_years) {
 
@@ -29,7 +29,7 @@ select_qtr_year <- function(pth,
   fl_opts <- paste0("\n", paste(fl_opts, collapse = "\n"))
 
   test <- sapply(qtr_years, is.null, simplify = T)
-  assertthat::assert_that(all(test),
+  assertthat::assert_that(!all(test),
                           msg = paste("\nNo matching files found for the following quarter-years: ", paste(acf_qtr_years[test], collapse = ", "), 
                                       "\nYour quarter-year choices are: ", 
                                       toupper(fl_opts)))
@@ -37,9 +37,65 @@ select_qtr_year <- function(pth,
   return(file.path(pth, qtr_years))
 }
 
-#' @title Reads in the data from the user selected quarter-year
-read_qtr_year <- function() {
+
+#' @title Read older ACS dataframes from 2018
+#' @description This function reads in the sheet 'ChildrenParentsSettings'
+read_acf.cps <- function(pth,
+                         sheet = "ChildrenParentsSettings") {
+ 
+  readxl::read_excel(pth, sheet = sheet)
+   
+}
+
+#' @title Read newer ACS dataframes from 2019 and 2020
+#' @description This function reads in the sheet 'CCSettings'
+read_acf.ccs <- function(pth,
+                         sheet = "CCSettings") {
+
+  readxl::read_excel(pth, sheet = sheet)
   
+}
+
+#' @title Assigns a class to ACF data
+#' @description Assigns a class to all the incoming files which will perform different
+#' data management steps according to which file type it is
+assign_acf_class <- function(fls) {
+
+  lapply(fls, function(fl) {
+    sheets <- readxl::excel_sheets(fl)
+
+    cls <- c()
+
+    if("ChildrenParentsSettings" %in% sheets) {
+      cls <- c(cls, "cps")
+    } else if ("CCSettings" %in% sheets) {
+      cls <- c(cls, "ccp")
+    } else {
+      cls <- NULL
+    }
+
+    assertthat::assert_that(length(cls) == 1,
+                            msg = "ACF data format has changed")
+
+    structure(list(fl = fl), class = cls)
+  })
+}
+
+#' @title Reads in the data from the user selected quarter-year
+#' @inheritParams childcare_db
+#' @param pth String. Path to the data
+read_qtr_year <- function(pth,
+                          acf_qtr_years) {
+
+  fls <- select_qtr_year(pth = pth,
+                         acf_qtr_years = acf_qtr_years)
+
+  assertthat::assert_that(all(tools::file_ext(fls) %in% c("xlsx", "xls")),
+                          msg = "ACF files are not in the expected format of .xlsx or .xls")
+
+  fls <- assign_acf_class(fls)
+  
+   
 }
 
 
@@ -55,7 +111,7 @@ dm.acf <- function(raw_pth) {
 
 #' @title Process ACF data
 process.acf <- function(acf) {
-  
+
   acf <- do.call(dwnld.acf, acf)
   do.call(dm.acf, acf)
 
