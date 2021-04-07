@@ -6,7 +6,7 @@
 #' variable types.
 #' @return data.frame
 test_input <- function(df, input_columns) {
-
+  
   assertthat::assert_that(all(c(names(input_columns) %in% colnames(df))))
 
   assertthat::assert_that(all(
@@ -48,6 +48,14 @@ check_type.date <- function(v) {
 
   assertthat::assert_that(class(v) == "Date",
                           msg = "Not a date vector")
+}
+
+#' @title Test for POSIXct date column or vector
+#' @inheritParams check_type
+check_type.POSIXct <- function(v) {
+  
+  assertthat::assert_that(all(class(v) == c("POSIXct", "POSIXt")),
+                          msg = "Not a POSIXct vector")
 }
 
 #' @title Test for boolean (logical) column or vector
