@@ -1,9 +1,12 @@
-#' @title Parse quarter year
+#' @title Select quarter year
+#' @description Parses the quarter-year parameter and returns the file names
+#' which are associated with that quarter year combination
 #' @inheritParams childcare_db
-parse_qtr_year <- function(raw_pth,
-                           acf_qtr_years) {
+#' @param pth String. Path to the data
+select_qtr_year <- function(pth,
+                            acf_qtr_years) {
 
-  pth <- file.path(raw_pth, "acf")
+  pth <- file.path(pth, "acf")
   fls <- list.files(pth)
 
   assertthat::assert_that(length(fls) >=1, 
@@ -31,8 +34,14 @@ parse_qtr_year <- function(raw_pth,
                                       "\nYour quarter-year choices are: ", 
                                       toupper(fl_opts)))
 
-  return(qtr_years)
+  return(file.path(pth, qtr_years))
 }
+
+#' @title Reads in the data from the user selected quarter-year
+read_qtr_year <- function() {
+  
+}
+
 
 #' @title Data management ACF
 #' @description Data are located: 

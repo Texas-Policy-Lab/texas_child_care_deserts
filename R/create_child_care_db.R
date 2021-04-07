@@ -1,13 +1,13 @@
 #' @title Create child care data base
 #' @param root string. Path to the root directory to create the DB.
+#' @param acf_qtr_years vector. Default is 'Q2-2019'.
 #' @examples
 #' \dontrun{
-#' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                     geography = "tract", county = 439))
 #' root <- "C:/"
-#' childcare_db(census_tbls = census_tbls, root = root)
+#' childcare_db(root = root)
 #' }
-childcare_db <- function(root) {
+childcare_db <- function(root,
+                         acf_qtr_years = "Q2-2019") {
 
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
