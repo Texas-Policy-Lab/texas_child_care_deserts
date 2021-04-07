@@ -142,25 +142,27 @@ get.nber_tract_data <- function(data_in_name,
 
 #' @title Get ACF data
 #' @description Link to data: https://www.twc.texas.gov/programs/childcare#dataAndReports
-#' @param data_in_name string. The name to of the data to read in.
-#' @param data_in_pth string. The path to read the data in from.
+#' @param name string. The name to of the data to read in.
+#' @param raw_pth string. The path to read the data in from.
+#' @param year string. The year to select to read data from.
 #' @export
-get.acf_data <- function(data_in_name,
-                         data_in_pth,
+dwnld.acf_data <- function(name = "acf-801-q{qtr}-{year}-twc.xlsx",
+                         raw_pth,
                          url = "https://www.twc.texas.gov/files/partners/{fl}",
-                         qtr = 1:4) {
-
+                         qtr = 1:4,
+                         year) {
+  
   lapply(qtr, function(q) {
-
-    fl_name <- glue::glue(data_in_name, qtr = q)
-
-    dwnld_pth <- file.path(data_in_pth, fl_name)
-
+    
+    fl_name <- glue::glue(name, qtr = q, year = year)
+    
+    dwnld_pth <- file.path(raw_pth, fl_name)
+    
     download.file(glue::glue(url, fl = fl_name), destfile = dwnld_pth, mode = "wb")
-
+    
   })
-
 }
+  
 
 #' @title Get the neighborhood to census tract data
 #' @description Download the neighbordhood to census tract cross walk create by the Kinder Institute. https://www.arcgis.com/apps/MapSeries/index.html?appid=95320b06677c438d91027cb5feb241bf
@@ -219,3 +221,56 @@ get.state_fips_state_name_xwalk <- function(data_in_name,
   write.csv(cnty, file.path(data_in_pth, data_in_name), row.names = FALSE)
 }
 
+#' @title Get ZCTA (Zip Code) and Latitude/Longitude Coordinate Crosswalk
+#' @description Downloads the crosswalk between zip codes and latitude longitude coordinates of the center for Texas
+#' @param data_in_name string. The name to of the data to read in.
+#' @param data_in_pth string. The path to read the data in from.
+#' @export
+get.zip_latlong_xwalk <- function(data_in_pth = NULL,
+                                  data_in_name = NULL,
+                                  state_fips = 48){
+  
+  df <- tigris::zctas(state = state_fips) %>% 
+    dplyr::mutate(zip = as.numeric(ZCTA5CE10),
+                  lat = as.numeric(INTPTLAT10),
+                  lon = as.numeric(INTPTLON10)) %>% 
+    as.data.frame() %>% 
+    dplyr::select(zip,
+                  lat,
+                  lon)
+  
+  assertthat::assert_that(all(c("zip", "lat", "lon") %in% colnames(df)),
+                          msg = "Zip lat/long xwalk missing column")
+  
+  #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  
+  return(df)
+  
+}
+
+#' @title Get county and ZCTA (zip code) Crosswalk
+#' @description Downloads the crosswalk between county fips codes and county names for Texas.
+#' @param pth Link to data: https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt
+#' @param data_in_name string. The name to of the data to read in.
+#' @param data_in_pth string. The path to read the data in from.
+#' @export
+ 
+get.zip_county_xwalk <- function(data_in_name = NULL,
+                                 data_in_pth = NULL,
+                                 pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt",
+                                 state_fips = 48) {
+  
+  df <- read.csv(url(pth)) %>%
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(state == state_fips) %>% 
+    dplyr::select(zip = zcta5,
+                  county = county)
+  
+  assertthat::assert_that(all(c("zip", "county") %in% colnames(df)),
+                          msg = "Zip county xwalk missing column")
+  
+  #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
+  
+  return(df)
+  
+}
