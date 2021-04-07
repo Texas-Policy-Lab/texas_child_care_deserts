@@ -13,19 +13,18 @@ process.acf <- function(acf) {
   
   acf <- do.call(dwnld.acf, acf)
   do.call(dm.acf, acf)
-  
+
 }
 
-dm.mkt_subsidy <- function(pth1,
-                           pth2,
-                           pth3,
-                           tracts,
-                           tract_provider_xwalk){
-  q1<- readxl::read_excel(pth1, sheet = "ChildcareParentSettings")
-  q1<- readxl::read_excel(pth2, sheet = "ChildcareParentSettings")
-  q1<- readxl::read_excel(pth3, sheet = "ChildcareParentSettings")
-  
-  provider_kids <-dplyr::bind_rows("q1"= q1, "q2"= q2, "q3"= q4, .id="quarter") %>% 
+#' @title 
+dm.mkt_subsidy <- function(tracts,
+                           tract_provider_xwalk) {
+
+  q1 <- readxl::read_excel(pth1, sheet = "ChildcareParentSettings")
+  q1 <- readxl::read_excel(pth2, sheet = "ChildcareParentSettings")
+  q1 <- readxl::read_excel(pth3, sheet = "ChildcareParentSettings")
+
+  provider_kids <- dplyr::bind_rows("q1"= q1, "q2"= q2, "q3"= q4, .id="quarter") %>% 
     dplyr::mutate("operation_number" = as.character(CCSettings.ProviderStateID)) %>% 
     dplyr::select(ChildrenID, quarter, operation_number) %>% 
     dplyr::group_by(quarter, operation_number) %>% 
@@ -53,7 +52,7 @@ dm.mkt_subsidy <- function(pth1,
     tidyr::drop_na()
   
   mom_params <- mkt_enrollment_ratios %>% 
-    tidyr::pivot_longr(-anchor_tract) %>% 
+    tidyr::pivot_longer(-anchor_tract) %>% 
     dplyr::group_by(anchor_tract) %>% 
     #raw moments
     dplyr::summarise(mu_1=mean(value)) %>% 
