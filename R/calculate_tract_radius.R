@@ -6,7 +6,6 @@
 #' @param input_columns. List. List of the columns to keep.
 #' @param max_child_age. Integer. Age to filter the child age to be less than or equal.
 #' @return data.frame
-
 dm.acf_family <- function(df,
                           max_child_age = 4){
   
@@ -33,7 +32,6 @@ dm.acf_family <- function(df,
 #' @param zip_county_xwalk data.frame. The crosswalk of zip code to county.
 #' @param input_columns. List. List of the columns to keep.
 #' @return data.frame
-
 dm.acf_provider <- function(df){
   
   df <- df %>% 
@@ -57,7 +55,6 @@ dm.acf_provider <- function(df){
 #' @param zip1. One of the zip code columns.
 #' @param zip2. The other zip code column.
 #' @return data.frame with distance column.
-
 distance_between_zips <- function(df, zip1, zip2) {
   
   zip_latlong_xwalk <- get.zip_latlong_xwalk()
@@ -83,7 +80,6 @@ distance_between_zips <- function(df, zip1, zip2) {
 #' @param df_family data.frame. The dataframe of acf family data.
 #' @param df_family data.frame. The dataframe of acf family data.
 #' @return data.frame
-
 dm.acf_dist <- function(df_family,
                         df_provider,
                         input_family = list(ChildrenID = "numeric",
@@ -120,7 +116,6 @@ dm.acf_dist <- function(df_family,
 #' @param county_list. A list of TX county codes of counties of interest to compare. 
 #' Eg county_list = c(439) for Tarrant County; county_list = c(201, 439) to compare Harris to Tarrant County
 #' @return a table and a plot. Decile values for distance between home and provider zip code and density plot of distances.
-
 summary.acf_dist <- function(df,
                              county_list = NULL){
   
