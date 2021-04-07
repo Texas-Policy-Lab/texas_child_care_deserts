@@ -1,3 +1,35 @@
+#' @title Parse quarter year
+#' @inheritParams childcare_db
+parse_qtr_year <- function(raw_pth,
+                           acf_qtr_years) {
+
+  fls <- list.files(file.path(raw_pth, "acf"))
+
+  qtr_years <- sapply(acf_qtr_years, function(qtr_year) {
+
+    qy <- fls[grepl(qtr_year, toupper(fls))]
+
+    if (length(qy) == 0) {
+      return(NULL)
+    } else {
+      return(qy)
+    }
+
+  }, USE.NAMES = F, simplify = TRUE)
+
+  fl_opts <- gsub("acf-801-", "", fls)
+  fl_opts <- gsub("-twc.xlsx|-twc%20.xlsx", "", fl_opts)
+  fl_opts <- paste0("\n", paste(fl_opts, collapse = "\n"))
+
+  test <- sapply(qtr_years, is.null, simplify = T)
+  assertthat::assert_that(all(test),
+                          msg = paste("\nNo matching files found for the following quarter-years: ", paste(acf_qtr_years[test], collapse = ", "), 
+                                      "\nYour quarter-year choices are: ", 
+                                      toupper(fl_opts)))
+
+  return(qtr_years)
+}
+
 #' @title Data management ACF
 #' @description Data are located: 
 #' https://www.twc.texas.gov/programs/childcare#dataAndReports
