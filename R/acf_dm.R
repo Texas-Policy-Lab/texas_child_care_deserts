@@ -3,7 +3,11 @@
 parse_qtr_year <- function(raw_pth,
                            acf_qtr_years) {
 
-  fls <- list.files(file.path(raw_pth, "acf"))
+  pth <- file.path(raw_pth, "acf")
+  fls <- list.files(pth)
+
+  assertthat::assert_that(length(fls) >=1, 
+                          msg = paste("The path to the data", pth, "is empty. Did you run the necessary download steps to create the child care data base file structure?"))
 
   qtr_years <- sapply(acf_qtr_years, function(qtr_year) {
 
