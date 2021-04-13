@@ -4,21 +4,33 @@
 \alias{childcare_db}
 \title{Create child care data base}
 \usage{
-childcare_db(census_tbls, root)
+childcare_db(
+  root,
+  acs_year = 2019,
+  acs_state_code = 48,
+  acs_geography = "tract",
+  acs_county = 439
+)
 }
 \arguments{
 \item{root}{string. Path to the root directory to create the DB}
 
-\item{census_tbls.}{List of census tables to pull}
+\item{acs_year.}{Integer. ACS year to pull the tables from. Default is 2019.}
+
+\item{acs_state_code.}{Integer. ACS state_code to pull the data for. Default 
+is 48 (Texas).}
+
+\item{acs_geography.}{String. ACS geography. Default is "tract".}
+
+\item{acs_county.}{Integer. County FIPS code (3-digits). Default is 439 
+(Tarrant County).}
 }
 \description{
 Create child care data base
 }
 \examples{
 \dontrun{
-census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                    geography = "tract", county = "48438"))
 root <- "C:/"
-childcare_db(census_tbls = census_tbls, root = root)
+childcare_db(root = root)
 }
 }
