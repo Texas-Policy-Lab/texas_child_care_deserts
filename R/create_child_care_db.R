@@ -35,6 +35,7 @@ acs_tables <- function(acs_year,
 #' root <- "C:/"
 #' childcare_db(root = root)
 #' }
+
 childcare_db <- function(root,
                          acs_year = 2019,
                          acs_state_code = 48,
@@ -55,4 +56,11 @@ childcare_db <- function(root,
               acs_county = acs_county,
               raw_pth = raw_pth,
               processed_pth = processed_pth)
+
+  acf <- list()
+  acf$raw_pth <- raw_pth
+  acf$processed_pth <- processed_pth
+
+  process.acf(acf = acf)
+
 }

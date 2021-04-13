@@ -24,13 +24,6 @@ is 48 (Texas).}
 
 \item{acs_county.}{Integer. County FIPS code (3-digits). Default is 439 
 (Tarrant County).}
-}
-\description{
-Create child care data base
-}
-\examples{
-\dontrun{
 root <- "C:/"
 childcare_db(root = root)
-}
 }
