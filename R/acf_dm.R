@@ -108,7 +108,11 @@ dm.acf <- function(pth,
   fls <- assign_acf_class(pth = pth,
                           acf_qtr_years = acf_qtr_years)
 
-  dfs <- lapply(fls, dm_acf)
+  dfs <- lapply(fls, dm_acf)%>% 
+    dplyr::bind_rows(acf_qtr_years)
+  
+  assertthat::assert_that(is.data.frame(dfs),
+                          msg = "dfs is not a dataframe")
 
 }
 
@@ -141,6 +145,7 @@ dm.mkt_subsidy <- function(tracts,
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
+  
 
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
@@ -166,6 +171,8 @@ dm.mkt_subsidy <- function(tracts,
                      b=mean(max_ratio)) %>% 
     dplyr::bind_cols(mom_params) %>% 
     dplyr::mutate(c=3*mu_hat_1 - a - b)
+  
+
 
   return(tri_params$b)
 }
