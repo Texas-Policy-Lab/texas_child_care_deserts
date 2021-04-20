@@ -4,7 +4,7 @@
 \alias{col.county}
 \title{Data management steps for the county column}
 \usage{
-col.county(df, county_fips)
+col.county(df)
 }
 \arguments{
 \item{df}{data.frame. The dataframe}
