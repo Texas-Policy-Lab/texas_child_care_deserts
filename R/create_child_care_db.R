@@ -31,5 +31,12 @@ childcare_db <- function(census_tbls,
   hhsc_ccl$name <- "HHSC_CCL"
 
   process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
+  
+  tracts_xwalk <- list()
+  tracts_xwalk$raw_pth <- raw_pth
+  tracts_xwalk$processed_pth <- processed_pth
+  tracts_xwalk$name <- "tracts_xwalk"
+  
+  process.tracts_xwalk(tracts_xwalk = tracts_xwalk)
 
 }
