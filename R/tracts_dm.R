@@ -4,16 +4,23 @@
 #' @param pth string. The raw path to write the data to.
 #' @param url string. The URL to download the data from.
 #' @export
-dwnld.xwalk_tracts <- function(pth,
+dwnld.xwalk_tracts <- function(raw_pth,
                                url = "http://data.nber.org/distance/2010/sf1/tract/sf12010tractdistance25miles.csv") {
 
   fl <- basename(url)
 
-  if (!(fl %in% list.files(pth))) {
+  if (!(fl %in% list.files(raw_pth))) {
 
     httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
-    file.copy(from = temp_dir, to = pth)
+    file.copy(from = temp_dir, to = raw_pth)
+    most_recent <- file.info(list.files(raw_pth, full.names = T))
+    new_file <- rownames(most_recent)[which.max(most_recent$mtime)]
+    df <- readxl::read_excel(new_file)
   }
+  
+  df <- read.csv(paste(raw_pth, "\\sf12010tractdistance25miles.csv",sep=""))
+  
+  return(df)
 }
 
 #' @title Data management steps for the tracts crosswalk
@@ -24,7 +31,8 @@ dwnld.xwalk_tracts <- function(pth,
 #' @export
 dm.tracts_xwalk <- function(df,
                             pth,
-                            name = "XWALK_TRACTS") {
+                            name = "XWALK_TRACTS",
+                            radius = 3) {
 
   df <- df %>%
     dplyr::mutate(anchor_tract = paste0(county1, tract1),
@@ -35,7 +43,7 @@ dm.tracts_xwalk <- function(df,
     dplyr::mutate(surround_tract = anchor_tract)
 
   df <- df %>% 
-    dplyr::filter(mi_to_tract <= 3) %>% 
+    dplyr::filter(mi_to_tract <= radius) %>% 
     dplyr::bind_rows(tracts) %>% 
     dplyr::select(anchor_tract, surround_tract)
 
