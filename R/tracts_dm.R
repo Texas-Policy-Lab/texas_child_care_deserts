@@ -11,12 +11,12 @@ dwnld.xwalk_tracts <- function(raw_pth,
 
   if (!(fl %in% list.files(raw_pth))) {
 
-    httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
-    file.copy(from = temp_dir, to = raw_pth)
+    httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".csv")))
+    file.copy(from = temp_dir, to = file.path(raw_pth, fl))
   }
-  
+
   df <- read.csv(file.path(raw_pth, fl))
-  
+
   return(df)
 }
 
@@ -44,15 +44,14 @@ dm.tracts_xwalk <- function(df,
     dplyr::bind_rows(tracts) %>% 
     dplyr::select(anchor_tract, surround_tract)
 
-  write.csv(df, file.path(processed_pth, name))
-  
+  readr::write_csv(df, file.path(processed_pth, name))
+
   return(df)
 }
 
 #' @title Process ACF data
 process.tracts_xwalk <- function(tracts_xwalk) {
-  
-  tracts_xwalk$df <- tracts_xwalk$raw_pth
+
+  tracts_xwalk$df <- readr::read_csv(tracts_xwalk$raw_pth, tracts_xwalk$name)
   tracts_xwalk <- do.call(dm.tracts_xwalk, tracts_xwalk)
-  
 }
