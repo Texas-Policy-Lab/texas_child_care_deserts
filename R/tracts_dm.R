@@ -13,12 +13,9 @@ dwnld.xwalk_tracts <- function(raw_pth,
 
     httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
     file.copy(from = temp_dir, to = raw_pth)
-    most_recent <- file.info(list.files(raw_pth, full.names = T))
-    new_file <- rownames(most_recent)[which.max(most_recent$mtime)]
-    df <- readxl::read_excel(new_file)
   }
   
-  df <- read.csv(paste(raw_pth, "\\sf12010tractdistance25miles.csv",sep=""))
+  df <- read.csv(file.path(raw_pth, fl))
   
   return(df)
 }
@@ -30,9 +27,9 @@ dwnld.xwalk_tracts <- function(raw_pth,
 #' @param name string. The name of the data to write out.
 #' @export
 dm.tracts_xwalk <- function(df,
-                            pth,
-                            name = "XWALK_TRACTS",
-                            radius = 3) {
+                            processed_pth,
+                            name,
+                            radius) {
 
   df <- df %>%
     dplyr::mutate(anchor_tract = paste0(county1, tract1),
@@ -47,13 +44,15 @@ dm.tracts_xwalk <- function(df,
     dplyr::bind_rows(tracts) %>% 
     dplyr::select(anchor_tract, surround_tract)
 
+  write.csv(df, file.path(processed_pth, name))
+  
   return(df)
 }
 
 #' @title Process ACF data
 process.tracts_xwalk <- function(tracts_xwalk) {
   
-  tracts_xwalk <- do.call(xwalk_tracts, tracts_xwalk)
-  do.call(dm.tracts_xwalk, tracts_xwalk)
+  tracts_xwalk$df <- tracts_xwalk$raw_pth
+  tracts_xwalk <- do.call(dm.tracts_xwalk, tracts_xwalk)
   
 }
