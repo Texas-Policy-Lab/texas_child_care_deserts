@@ -47,7 +47,8 @@ assign_acf_class <- function(pth,
   fls <- select_qtr_year(pth = pth,
                          acf_qtr_years = acf_qtr_years)
 
-  lapply(fls, function(fl) {
+  lapply(1:length(fls), function(i) {
+    fl <- fls[i]
     sheets <- readxl::excel_sheets(fl)
 
     if("ChildrenParentsSettings" %in% sheets) {
@@ -60,8 +61,9 @@ assign_acf_class <- function(pth,
       cls <- NULL
     }
 
-    cls$qtr <- substr(acf_qtr_years, 2, 2)
-    cls$year <- substr(acf_qtr_years, 4, 7)
+    cls$qtr <- substr(acf_qtr_years[i], 2, 2)
+    cls$year <- substr(acf_qtr_years[i], 4, 7)
+    cls$qtr_year <- acf_qtr_years[i]
 
     assertthat::assert_that(!is.null(cls),
                             msg = "ACF data format has changed")
@@ -90,7 +92,9 @@ dm_acf <- function(x) {
   df <- df %>%
     dplyr::mutate(operation_number = as.character(operation_number)) %>%
     dplyr::select(operation_number, child_id = ChildrenID, family_zip) %>% 
-    dplyr::mutate(quarter = x$qtr)
+    dplyr::mutate(quarter = x$qtr,
+                  year = x$year,
+                  quarter_year = x$qtr_year)
 
   check_type.numeric(df$family_zip,
                      msg = "Zip not numeric")
@@ -132,14 +136,16 @@ process.acf <- function(acf) {
   do.call(dm.acf, acf)
 }
 
-#' @title 
-dm.provider_kids <- function(df) {
+#' @title Aggregate number of kids per provider
+#' @param acf data.frame. The cleaned acf dataframe.
+#' @return Summarized data with the max, median, and minimum number of kids per
+#' provider
+dm.agg_kids_prvdr <- function(acf) {
 
-  df %>% 
-    dplyr::select(child_id, quarter, operation_number) %>%
-    dplyr::group_by(quarter, operation_number) %>%
+  acf %>%
+    dplyr::group_by(quarter_year, operation_number) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
-    tidyr::pivot_wider(names_from = quarter, values_from = n_kids, values_fill = 0) %>%
+    tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
     tidyr::pivot_longer(-operation_number) %>%
     dplyr::group_by(operation_number) %>%
     dplyr::summarise(max_n_kids = max(value),
@@ -148,11 +154,13 @@ dm.provider_kids <- function(df) {
 }
 
 #' @title Create market subsidy
-dm.mkt_subsidy <- function(df, tracts_xwalk, cpp) {
+dm.mkt_subsidy <- function(acf, 
+                           tracts_xwalk, 
+                           cpp) {
     
-  dm.provider_kids(tracts,tract_provider_xwalk)
+  n_kids <- dm.agg_kids_prvdr(acf)
 
-  provider_kids <- provider_kids %>% 
+  provider_kids <- n_kids %>% 
     dplyr::left_join(ccp %>% 
       dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
       by = "operation_number") %>% 
