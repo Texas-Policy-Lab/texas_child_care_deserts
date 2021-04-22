@@ -34,4 +34,4 @@ childcare_db(root = root)
 
 
 ### Ask for review
-1. Once you've completed analysis of the questions in JIRA, ask a team member to review your work by sending a pull request
+1. Ask a team member to review your work by sending a pull request
