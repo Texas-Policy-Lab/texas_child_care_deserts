@@ -10,7 +10,8 @@
 #' childcare_db(census_tbls = census_tbls, root = root)
 #' }
 childcare_db <- function(census_tbls,
-                         root) {
+                         root,
+                         radius = 3) {
 
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
@@ -32,10 +33,10 @@ childcare_db <- function(census_tbls,
 
   process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
   
-  tracts_xwalk <- list()
-  tracts_xwalk$raw_pth <- raw_pth
-  tracts_xwalk$processed_pth <- processed_pth
-  tracts_xwalk$name <- "tracts_xwalk"
+  tracts_xwalk <- list(raw_pth = raw_pth,
+                       processed_pth = processed_pth,
+                       name = "tracts_xwalk",
+                       radius=radius)
   
   process.tracts_xwalk(tracts_xwalk = tracts_xwalk)
 
