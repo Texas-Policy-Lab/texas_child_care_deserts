@@ -179,8 +179,6 @@ dm.mkt_subsidy <- function(tracts,
                      b=mean(max_ratio)) %>% 
     dplyr::bind_cols(mom_params) %>% 
     dplyr::mutate(c=3*mu_hat_1 - a - b)
-  
-
 
   return(tri_params$b)
 }
