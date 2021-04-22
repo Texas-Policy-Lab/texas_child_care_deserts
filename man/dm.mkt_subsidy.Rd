@@ -4,7 +4,7 @@
 \alias{dm.mkt_subsidy}
 \title{Create market subsidy}
 \usage{
-dm.mkt_subsidy(df, tracts_xwalk, cpp)
+dm.mkt_subsidy(acf, tracts_xwalk, cpp)
 }
 \description{
 Create market subsidy
