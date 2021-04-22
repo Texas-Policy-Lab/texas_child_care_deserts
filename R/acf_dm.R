@@ -90,9 +90,12 @@ dm_acf <- function(x) {
   names(df)[match("ReportingDate", names(df))] <- "date"
 
   df <- df %>%
-    dplyr::mutate(operation_number = as.character(operation_number)) %>%
     dplyr::select(operation_number, child_id = ChildrenID, family_zip) %>% 
-    dplyr::mutate(quarter = x$qtr,
+    dplyr::mutate(operation_number = as.character(operation_number),
+                  operation_number = substr(operation_number, 
+                                            nchar(operation_number) - 6, 
+                                            nchar(operation_number)),
+                  quarter = x$qtr,
                   year = x$year,
                   quarter_year = x$qtr_year)
 
