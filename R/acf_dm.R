@@ -60,7 +60,8 @@ assign_acf_class <- function(pth,
       cls <- NULL
     }
 
-    cls$qtr_year <- substr(acf_qtr_years, 2, 2)
+    cls$qtr <- substr(acf_qtr_years, 2, 2)
+    cls$year <- substr(acf_qtr_years, 4, 7)
 
     assertthat::assert_that(!is.null(cls),
                             msg = "ACF data format has changed")
@@ -88,8 +89,8 @@ dm_acf <- function(x) {
 
   df <- df %>%
     dplyr::mutate(operation_number = as.character(operation_number)) %>%
-    dplyr::select(operation_number, child_id = ChildrenID, family_zip, date) %>% 
-    dplyr::mutate(quarter = x$qtr_year)
+    dplyr::select(operation_number, child_id = ChildrenID, family_zip) %>% 
+    dplyr::mutate(quarter = x$qtr)
 
   check_type.numeric(df$family_zip,
                      msg = "Zip not numeric")
@@ -121,7 +122,6 @@ dm.acf <- function(raw_pth,
 
   assertthat::assert_that(is.data.frame(df),
                           msg = "dfs is not a dataframe")
-  browser()
   return(df)
 }
 
@@ -129,7 +129,7 @@ dm.acf <- function(raw_pth,
 process.acf <- function(acf) {
 
   do.call(dwnld.acf, acf)
-  df <- do.call(dm.acf, acf)
+  do.call(dm.acf, acf)
 }
 
 #' @title 
