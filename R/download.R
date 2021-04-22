@@ -79,23 +79,24 @@ dwnld.acf <- function(raw_pth,
   lapply(apis, function(api) {
 
     fl <- basename(api)
-    pth <- file.path(pth, fl)
 
+    dir <- file.path(pth, fl)
+    
     if (fl %in% list.files(pth) == F) {
 
       url <- glue::glue(endpoint, path = api)
 
       httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
-      file.copy(from = temp_dir, to = pth)
+      file.copy(from = temp_dir, to = dir)
     }
 
     msg <- glue::glue("{sheet} sheet name is missing for {fl}",
                       sheet = sheet,
                       fl = fl)
 
-    assertthat::assert_that(sheet %in% readxl::excel_sheets(pth),
+    assertthat::assert_that(sheet %in% readxl::excel_sheets(dir),
                             msg = msg)
 
-    df <- readxl::read_excel(pth, sheet = sheet)
+    df <- readxl::read_excel(dir, sheet = sheet)
   })
 }
