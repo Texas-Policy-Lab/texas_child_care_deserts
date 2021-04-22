@@ -60,6 +60,8 @@ assign_acf_class <- function(pth,
       cls <- NULL
     }
 
+    cls$qtr_year <- substr(acf_qtr_years, 2, 2)
+
     assertthat::assert_that(!is.null(cls),
                             msg = "ACF data format has changed")
 
@@ -87,7 +89,7 @@ dm_acf <- function(x) {
   df <- df %>%
     dplyr::mutate(operation_number = as.character(operation_number)) %>%
     dplyr::select(operation_number, child_id = ChildrenID, family_zip, date) %>% 
-    dplyr::mutate(quarter = substr(qtr_years, 2, 2))
+    dplyr::mutate(quarter = x$qtr_year)
 
   check_type.numeric(df$family_zip,
                      msg = "Zip not numeric")
@@ -107,37 +109,37 @@ dm_acf <- function(x) {
 #' @inheritParams childcare_db
 #' @param pth String. Path to the data
 #' @return data.frame
-dm.acf <- function(pth,
-                   acf_qtr_years) {
+dm.acf <- function(raw_pth,
+                   acf_qtr_years,
+                   ...) {
 
-  fls <- assign_acf_class(pth = pth,
+  fls <- assign_acf_class(pth = raw_pth,
                           acf_qtr_years = acf_qtr_years)
 
-  dfs <- lapply(fls, dm_acf) %>% 
+  df <- lapply(fls, dm_acf) %>% 
     dplyr::bind_rows()
 
-  assertthat::assert_that(is.data.frame(dfs),
+  assertthat::assert_that(is.data.frame(df),
                           msg = "dfs is not a dataframe")
-
-  return(dfs)
+  browser()
+  return(df)
 }
 
 #' @title Process ACF data
 process.acf <- function(acf) {
 
-  acf <- do.call(dwnld.acf, acf)
-  do.call(dm.acf, acf)
-
+  do.call(dwnld.acf, acf)
+  df <- do.call(dm.acf, acf)
 }
 
 #' @title 
 dm.provider_kids <- function(df) {
 
   df %>% 
-    dplyr::select(child_id, quarter, operation_number) %>% 
-    dplyr::group_by(quarter, operation_number) %>% 
-    dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>% 
-    tidyr::pivot_wider(names_from = quarter, values_from = n_kids, values_fill = 0) %>% 
+    dplyr::select(child_id, quarter, operation_number) %>%
+    dplyr::group_by(quarter, operation_number) %>%
+    dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
+    tidyr::pivot_wider(names_from = quarter, values_from = n_kids, values_fill = 0) %>%
     tidyr::pivot_longer(-operation_number) %>%
     dplyr::group_by(operation_number) %>%
     dplyr::summarise(max_n_kids = max(value),
@@ -152,9 +154,9 @@ dm.mkt_subsidy <- function(df, tracts_xwalk, cpp) {
 
   provider_kids <- provider_kids %>% 
     dplyr::left_join(ccp %>% 
-    dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
-    by = "operation_number") %>% 
-    dplyr::filter(ccl_accepts_subsidy == T) %>%
+      dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
+      by = "operation_number") %>% 
+    dplyr::filter(subsidy) %>%
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
