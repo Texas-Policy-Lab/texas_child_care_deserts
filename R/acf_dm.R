@@ -109,7 +109,7 @@ dm.acf <- function(pth,
                           acf_qtr_years = acf_qtr_years)
 
   dfs <- lapply(fls, dm_acf)%>% 
-    dplyr::bind_rows(acf_qtr_years)
+    dplyr::bind_rows()
   
   assertthat::assert_that(is.data.frame(dfs),
                           msg = "dfs is not a dataframe")
@@ -125,7 +125,7 @@ process.acf <- function(acf) {
 }
 
 #' @title 
-dm.mkt_subsidy <- function(tracts,
+dm.provider_kids <- function(tracts,
                            tract_provider_xwalk) {
 
   provider_kids <- dplyr::bind_rows("q1"= q1, "q2"= q2, "q3"= q4, .id="quarter") %>% 
@@ -145,7 +145,13 @@ dm.mkt_subsidy <- function(tracts,
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
+  return(provider_kids)
+}
   
+dm.mkt_subsidy <- function(tracts,
+                             tract_provider_xwalk) {
+    
+  dm.provider_kids(tracts,tract_provider_xwalk)
 
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
