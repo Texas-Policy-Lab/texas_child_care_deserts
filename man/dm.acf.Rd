@@ -4,7 +4,7 @@
 \alias{dm.acf}
 \title{Data management ACF}
 \usage{
-dm.acf(raw_pth)
+\method{dm}{acf}(raw_pth)
 }
 \value{
 data.frame
