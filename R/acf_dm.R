@@ -162,7 +162,7 @@ dm.mkt_subsidy <- function(acf,
 
   provider_kids <- n_kids %>% 
     dplyr::left_join(ccp %>% 
-      dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
+      dplyr::select(operation_number, total_capacity, subsidy),
       by = "operation_number") %>% 
     dplyr::filter(subsidy) %>%
     dplyr::inner_join(tract_provider_xwalk %>%
