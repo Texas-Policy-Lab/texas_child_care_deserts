@@ -109,12 +109,13 @@ dm.acf <- function(pth,
   fls <- assign_acf_class(pth = pth,
                           acf_qtr_years = acf_qtr_years)
 
-  dfs <- lapply(fls, dm_acf)%>% 
+  dfs <- lapply(fls, dm_acf) %>% 
     dplyr::bind_rows()
-  
+
   assertthat::assert_that(is.data.frame(dfs),
                           msg = "dfs is not a dataframe")
 
+  return(dfs)
 }
 
 #' @title Process ACF data
