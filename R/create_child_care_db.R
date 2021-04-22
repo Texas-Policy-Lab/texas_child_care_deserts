@@ -32,6 +32,7 @@ childcare_db <- function(root,
   acf <- list()
   acf$raw_pth <- raw_pth
   acf$processed_pth <- processed_pth
+  acf$acf_qtr_years <- acf_qtr_years
 
   process.acf(acf = acf)
 }
