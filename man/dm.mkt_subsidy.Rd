@@ -4,7 +4,7 @@
 \alias{dm.mkt_subsidy}
 \title{}
 \usage{
-dm.mkt_subsidy(tracts, tract_provider_xwalk)
+\method{dm}{mkt_subsidy}(tracts, tract_provider_xwalk)
 }
 \description{
 
