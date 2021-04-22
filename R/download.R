@@ -89,14 +89,6 @@ dwnld.acf <- function(raw_pth,
       httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
       file.copy(from = temp_dir, to = dir)
     }
-
-    msg <- glue::glue("{sheet} sheet name is missing for {fl}",
-                      sheet = sheet,
-                      fl = fl)
-
-    assertthat::assert_that(sheet %in% readxl::excel_sheets(dir),
-                            msg = msg)
-
-    df <- readxl::read_excel(dir, sheet = sheet)
   })
+  return(TRUE)
 }
