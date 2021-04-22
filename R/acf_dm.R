@@ -72,6 +72,7 @@ assign_acf_class <- function(pth,
   })
 }
 
+
 #' @title Data management steps for the ACF data
 dm_acf <- function(x) {
 
@@ -134,7 +135,6 @@ dm.acf <- function(raw_pth,
 
 #' @title Process ACF data
 process.acf <- function(acf) {
-
   do.call(dwnld.acf, acf)
   do.call(dm.acf, acf)
 }
@@ -172,6 +172,7 @@ dm.mkt_subsidy <- function(acf,
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
   
+
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
     dplyr::summarise(max_ratio = max_n_kids/total_capacity,
@@ -199,3 +200,4 @@ dm.mkt_subsidy <- function(acf,
 
   return(tri_params$b)
 }
+                 
