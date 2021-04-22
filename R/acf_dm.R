@@ -67,6 +67,7 @@ assign_acf_class <- function(pth,
   })
 }
 
+#' @title Data management steps for the ACF data
 dm_acf <- function(x) {
 
   assertthat::assert_that(all(tools::file_ext(x$pth) %in% c("xlsx", "xls")),
@@ -88,11 +89,14 @@ dm_acf <- function(x) {
     dplyr::select(operation_number, child_id = ChildrenID, family_zip, date) %>% 
     dplyr::mutate(quarter = substr(qtr_years, 2, 2))
 
-  assertthat::assert_that(is.numeric(df$family_zip),
-                          msg = "Zip not numeric")
+  check_type.numeric(df$family_zip,
+                     msg = "Zip not numeric")
 
-  assertthat::assert_that(is.character(df$operation_number),
-                          msg = "Provider ID not numeric")
+  check_type.character(df$quarter,
+                       msg = "Quarter")
+
+  check_type.character(df$operation_number,
+                       msg = "Provider ID not numeric")
 
   return(df)
 }
@@ -127,34 +131,34 @@ process.acf <- function(acf) {
 }
 
 #' @title 
-dm.provider_kids <- function(tracts,
-                           tract_provider_xwalk) {
+dm.provider_kids <- function(df) {
 
-  provider_kids <- dplyr::bind_rows("q1"= q1, "q2"= q2, "q3"= q4, .id="quarter") %>% 
+  df %>% 
     dplyr::select(child_id, quarter, operation_number) %>% 
     dplyr::group_by(quarter, operation_number) %>% 
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>% 
     tidyr::pivot_wider(names_from = quarter, values_from = n_kids, values_fill = 0) %>% 
     tidyr::pivot_longer(-operation_number) %>%
     dplyr::group_by(operation_number) %>%
-    dplyr::summarise(max_n_kids=max(value),
+    dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
-                     min_n_kids=min(value)) %>%
-    dplyr::left_join(ccp %>% 
-                       dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
-                     by = "operation_number") %>% 
-    dplyr::filter(ccl_accepts_subsity == T) %>%
-    dplyr::inner_join(tract_provider_xwalk %>%
-                        dplyr::mutate(operation_number= as.character(operation_number)),
-                      by= "operation_number")
-  return(provider_kids)
+                     min_n_kids = min(value))
 }
-  
-dm.mkt_subsidy <- function(tracts,
-                             tract_provider_xwalk) {
+
+#' @title Create market subsidy
+dm.mkt_subsidy <- function(df, tracts_xwalk, cpp) {
     
   dm.provider_kids(tracts,tract_provider_xwalk)
 
+  provider_kids <- provider_kids %>% 
+    dplyr::left_join(ccp %>% 
+    dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
+    by = "operation_number") %>% 
+    dplyr::filter(ccl_accepts_subsidy == T) %>%
+    dplyr::inner_join(tract_provider_xwalk %>%
+                        dplyr::mutate(operation_number= as.character(operation_number)),
+                      by= "operation_number")
+  
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
     dplyr::summarise(max_ratio = max_n_kids/total_capacity,
@@ -179,8 +183,6 @@ dm.mkt_subsidy <- function(tracts,
                      b=mean(max_ratio)) %>% 
     dplyr::bind_cols(mom_params) %>% 
     dplyr::mutate(c=3*mu_hat_1 - a - b)
-  
-
 
   return(tri_params$b)
 }
