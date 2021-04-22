@@ -8,8 +8,13 @@ childcare_db(root, acf_qtr_years = "Q2-2019")
 }
 \arguments{
 \item{root}{string. Path to the root directory to create the DB.}
-
 \item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
+\item{acs_year.}{Integer. ACS year to pull the tables from. Default is 2019.}
+\item{acs_state_code.}{Integer. ACS state_code to pull the data for. Default 
+is 48 (Texas).}
+\item{acs_geography.}{String. ACS geography. Default is "tract".}
+\item{acs_county.}{Integer. County FIPS code (3-digits). Default is 439 
+(Tarrant County).}
 }
 \description{
 Create child care data base

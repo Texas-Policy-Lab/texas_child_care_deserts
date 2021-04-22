@@ -4,7 +4,7 @@
 \alias{dm.hhsc_ccl}
 \title{HHSC CCL data management}
 \usage{
-dm.hhsc_ccl(
+\method{dm}{hhsc_ccl}(
   df,
   input_columns = list(OPERATION_NUMBER = "character", OPERATION_NAME = "character",
     OPERATION_TYPE = "character", Location_address_geo = "character", COUNTY =
