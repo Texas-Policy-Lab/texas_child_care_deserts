@@ -86,7 +86,7 @@ dm_acf <- function(x) {
   df <- df %>%
     dplyr::mutate(operation_number = as.character(operation_number)) %>%
     dplyr::select(operation_number, child_id = ChildrenID, family_zip, date) %>% 
-    dplyr::mutate(quarter=  substr(qtr_years,2,2)) # will give just the number of the quarter not Q"number" 
+    dplyr::mutate(quarter = substr(qtr_years, 2, 2))
 
   assertthat::assert_that(is.numeric(df$family_zip),
                           msg = "Zip not numeric")
