@@ -46,16 +46,16 @@ childcare_db <- function(root,
 
   create_folder_str(pths = pths)
 
-  env$DEMAND <- process.acs(acs_year = acs_year,
-                            acs_state_code = acs_state_code,
-                            acs_geography = acs_geography,
-                            acs_county = acs_county,
-                            raw_pth = raw_pth)
+  env$DF_DEMAND <- process.acs(acs_year = acs_year,
+                               acs_state_code = acs_state_code,
+                               acs_geography = acs_geography,
+                               acs_county = acs_county,
+                               raw_pth = raw_pth)
 
-  env$HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                              name = "HHSC_CCL"))
+  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
+                                                 name = "HHSC_CCL"))
 
-  env$TRACTS_XWALK <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
+  env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   save(env, file = file.path(processed_pth, db_name))
 }
