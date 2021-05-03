@@ -26,7 +26,7 @@ dwnld.xwalk_tracts <- function(raw_pth,
 #' @param pth string. The name of the data to read in.
 #' @param name string. The name of the data to write out.
 #' @export
-dm.tracts_xwalk <- function(x, tract_side = "right", county_side = "left", 
+dm.xwalk_tracts <- function(x, tract_side = "right", county_side = "left", 
                             tract_width = 11, county_width = 5, pad = "0") {
 
   df <- x$df %>%
@@ -73,5 +73,5 @@ dm.tracts_xwalk <- function(x, tract_side = "right", county_side = "left",
 process.tracts_xwalk <- function(cls) {
 
   cls$df <- dwnld.xwalk_tracts(raw_pth = cls$raw_pth)
-  tracts_xwalk <- dm.tracts_xwalk(cls)
+  tracts_xwalk <- dm.xwalk_tracts(cls)
 }
