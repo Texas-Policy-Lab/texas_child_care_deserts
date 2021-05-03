@@ -26,36 +26,52 @@ dwnld.xwalk_tracts <- function(raw_pth,
 #' @param pth string. The name of the data to read in.
 #' @param name string. The name of the data to write out.
 #' @export
-dm.tracts_xwalk <- function(x) {
+dm.tracts_xwalk <- function(x, tract_side = "right", county_side = "left", 
+                            tract_width = 11, county_width = 5, pad = "0") {
 
   df <- x$df %>%
     dplyr::mutate(texas = ifelse(substr(county1, 1, 2) == "48", TRUE, FALSE)) %>%
     dplyr::filter(texas) %>%
     dplyr::select(-texas) %>%
     dplyr::mutate(anchor_tract = stringr::str_pad(paste0(county1, tract1), 
-                                                  side = "right",
-                                                  width = 11, 
-                                                  pad = "0"),
-                  surround_tract = stringr::str_pad(paste0(tract2, tract2), 
-                                                    side = "right", 
-                                                    width = 11, 
-                                                    pad = "0"))
+                                                  side = tract_side, 
+                                                  width = tract_width,
+                                                  pad = pad),
+                  surround_tract = stringr::str_pad(paste0(county2, tract2), 
+                                                    side = tract_side, 
+                                                    width = tract_width,
+                                                    pad = pad),
+                  anchor_county = stringr::str_pad(county1, 
+                                                   side = county_side, 
+                                                   width = county_width, 
+                                                   pad = pad),
+                  surround_county = stringr::str_pad(county2, 
+                                                     side = county_side,
+                                                     width = county_width, 
+                                                     pad = pad))
 
   tracts <- df %>%
-    dplyr::distinct(anchor_tract) %>% 
+    dplyr::distinct(anchor_tract, anchor_county) %>%
     dplyr::mutate(surround_tract = anchor_tract,
+                  surround_county = anchor_county,
                   mi_to_tract = 0)
 
   df <- df %>%
-    dplyr::bind_rows(tracts) %>%
-    dplyr::select(anchor_tract, surround_tract, mi_to_tract)
+    dplyr::bind_rows(tracts) %>% 
+    dplyr::select(anchor_county, anchor_tract, 
+                  surround_county, surround_tract, mi_to_tract)
 
+  assertthat::assert_that(all(nchar(df$anchor_tract) == tract_width))
+  assertthat::assert_that(all(nchar(df$surround_tract) == tract_width))
+  assertthat::assert_that(all(nchar(df$anchor_county) == 5))
+  assertthat::assert_that(all(nchar(df$surround_county) == 5))
+  
   return(df)
 }
 
 #' @title Process ACF data
-process.tracts_xwalk <- function(tracts_xwalk) {
+process.tracts_xwalk <- function(cls) {
 
-  tracts_xwalk$df <- dwnld.xwalk_tracts(raw_pth = tracts_xwalk$raw_pth)
-  tracts_xwalk <- dm.tracts_xwalk(tracts_xwalk)
+  cls$df <- dwnld.xwalk_tracts(raw_pth = cls$raw_pth)
+  tracts_xwalk <- dm.tracts_xwalk(cls)
 }
