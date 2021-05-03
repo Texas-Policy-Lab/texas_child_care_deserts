@@ -33,49 +33,6 @@ test_attr <- function(attr) {
   return(TRUE)
 }
 
-#' @title Download ACS
-#' @description Passes in a list of parameters to download the ACS census
-#' data using functions from the tidycensus package
-#' @param tbls list. List of census tables with attributes to download
-#' @param raw_pth. Path to save the raw data.
-#' @details To find a list of parameters to pass see documentation for 
-#' tidycensus::get_acs
-#' @examples 
-#' \dontrun{
-#' tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                                geography = "tract", county = 439))
-#' raw_pth <- "C:/"
-#' dwnld.acs(tbls = tbls, raw_pth = raw_pth)
-#' }
-dwnld.acs <- function(tbls, raw_pth, ...) {
-
-  check_census_key()
-
-  f <- function(name, tbls, pth) {
-
-    attr <- tbls[[name]]
-    attr$table <- name
-    
-    test_attr(attr)
-    
-    df <- do.call(tidycensus::get_acs, attr)
-    
-    if (!is.null(pth)) {
-      readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
-    }
-    
-    attr$df <- df
-    return(structure(attr, class = name))
-  }
-  
-  sapply(names(tbls),
-         f,
-         tbls = tbls,
-         pth = raw_pth,
-         USE.NAMES = TRUE,
-         simplify = FALSE)
-}
-
 #' @title Data management
 #' @description Data management steps for a specific data table
 #' @param x object. The data object
@@ -176,8 +133,6 @@ dm.demand <- function(B17024,
   assertthat::assert_that(all(df$working_pov_rate <= 100, na.rm = TRUE))
   assertthat::assert_that(all(df$n_kids_lt5_working_under200_pct <= df$n_kids_lt6_working_under200_pct, na.rm = TRUE))
 
-  readr::write_csv(df, file.path(processed_pth, paste(name, "csv", sep = ".")))
-
   return(df)
 }
 
@@ -187,15 +142,13 @@ process.acs <- function(acs_year,
                         acs_state_code,
                         acs_geography,
                         acs_county,
-                        raw_pth,
-                        processed_pth) {
+                        raw_pth) {
 
   acs_tbls <- acs_tables(acs_year = acs_year,
                          acs_state_code = acs_state_code,
                          acs_geography = acs_geography,
                          acs_county = acs_county,
-                         raw_pth = raw_pth,
-                         processed_pth = processed_pth)
+                         raw_pth = raw_pth)
 
   tbls <- do.call(dwnld.acs, acs_tbls)
   acs_tbls <- c(acs_tbls, lapply(tbls, dm))
