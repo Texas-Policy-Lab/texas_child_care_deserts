@@ -196,14 +196,12 @@ dm.hhsc_ccl <- function(df,
     col.total_capacity() %>%
     dplyr::mutate(download_date = Sys.Date())
 
-  readr::write_csv(df, file.path(processed_pth, paste(name, "csv", sep = ".")))
-
   return(df)
 }
 
 #' @title Process the CCL data
-process.hhsc_ccl <- function(hhsc_ccl) {
+process.hhsc_ccl <- function(cls) {
 
-  hhsc_ccl$df <- do.call(dwnld.hhsc_ccl, hhsc_ccl)
-  df <- do.call(dm.hhsc_ccl, hhsc_ccl)  
+  cls$df <- do.call(dwnld.hhsc_ccl, cls)
+  df <- do.call(dm.hhsc_ccl, cls)  
 }
