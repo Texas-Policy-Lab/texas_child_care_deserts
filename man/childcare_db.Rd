@@ -4,7 +4,15 @@
 \alias{childcare_db}
 \title{Create child care data base}
 \usage{
-childcare_db(root, acf_qtr_years = "Q2-2019")
+childcare_db(root,
+  root,
+  acs_year = 2019,
+  acs_state_code = 48,
+  acs_geography = "tract",
+  acs_county = NULL,
+  acf_qtr_years = "Q2-2019"
+  db_name = "child_care_env.Rdata"
+)
 }
 \arguments{
 \item{root}{string. Path to the root directory to create the DB.}

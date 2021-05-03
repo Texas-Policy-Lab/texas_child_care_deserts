@@ -4,14 +4,7 @@
 \alias{acs_tables}
 \title{Add default parameters for ACS tables}
 \usage{
-acs_tables(
-  acs_year,
-  acs_state_code,
-  acs_geography,
-  acs_county,
-  raw_pth,
-  processed_pth
-)
+acs_tables(acs_year, acs_state_code, acs_geography, acs_county, raw_pth)
 }
 \description{
 Add default parameters for ACS tables
