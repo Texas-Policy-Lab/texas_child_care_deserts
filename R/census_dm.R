@@ -62,8 +62,10 @@ dm.B23008 <- function(x) {
     dplyr::summarise(estimate = sum(estimate)) %>%
     tidyr::spread(variable2, estimate) %>%
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
-                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6)
+                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
+                  county_code = substr(tract, 1, 5))
 
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
   assertthat::assert_that(length(unique(df$tract)) == nrow(df))
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
@@ -96,8 +98,10 @@ dm.B17024 <- function(x) {
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
                   n_kids_lt5_under200pct = 5/6*n_kids_lt6_under200pct,
                   pct_kids_lt6_under200_pct = (n_kids_lt6_under200pct/n_kids_lt6)*100,
-                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100)
+                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100,
+                  county_code = substr(tract, 1, 5))
 
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
