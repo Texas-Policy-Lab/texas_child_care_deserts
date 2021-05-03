@@ -9,7 +9,8 @@ childcare_db(
   acs_year = 2019,
   acs_state_code = 48,
   acs_geography = "tract",
-  acs_county = 439
+  acs_county = NULL,
+  db_name = "child_care_env.Rdata"
 )
 }
 \arguments{

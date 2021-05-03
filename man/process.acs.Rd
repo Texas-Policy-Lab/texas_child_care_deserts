@@ -4,14 +4,7 @@
 \alias{process.acs}
 \title{Process acs data}
 \usage{
-process.acs(
-  acs_year,
-  acs_state_code,
-  acs_geography,
-  acs_county,
-  raw_pth,
-  processed_pth
-)
+process.acs(acs_year, acs_state_code, acs_geography, acs_county, raw_pth)
 }
 \description{
 Process acs data and create demand dataframe
