@@ -9,10 +9,10 @@ dm.acf <- function(raw_pth) {
 }
 
 #' @title Process ACF data
-process.acf <- function(acf) {
-  
-  acf <- do.call(dwnld.acf, acf)
-  do.call(dm.acf, acf)
+process.acf <- function(cls) {
+
+  cls <- do.call(dwnld.acf, cls)
+  do.call(dm.acf, cls)
 
 }
 
