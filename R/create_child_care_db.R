@@ -36,12 +36,12 @@ acs_tables <- function(acs_year,
 #' childcare_db(root = root)
 #' }
 childcare_db <- function(root,
-                         radius = 3,
                          acs_year = 2019,
                          acs_state_code = 48,
                          acs_geography = "tract",
-                         acs_county = 439) {
-
+                         acs_county = 439,
+                         db_name = "child_care_env.Rdata") {
+  env <- new.env()
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
@@ -50,27 +50,26 @@ childcare_db <- function(root,
 
   create_folder_str(pths = pths)
 
-  process.acs(acs_year = acs_year,
-              acs_state_code = acs_state_code,
-              acs_geography = acs_geography,
-              acs_county = acs_county,
-              raw_pth = raw_pth,
-              processed_pth = processed_pth)
+  # process.acs(acs_year = acs_year,
+  #             acs_state_code = acs_state_code,
+  #             acs_geography = acs_geography,
+  #             acs_county = acs_county,
+  #             raw_pth = raw_pth,
+  #             processed_pth = processed_pth)
+  # 
+  # acf <- list(raw_pth = raw_pth,
+  #             processed_pth = processed_pth)
+  # 
+  # process.acf(acf = acf)
+  # 
+  # hhsc_ccl <- list(raw_pth = raw_pth,
+  #             processed_pth = processed_pth)
+  # 
+  # process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
 
-  acf <- list(raw_pth = raw_pth,
-              processed_pth = processed_pth)
- 
-  process.acf(acf = acf)
-  
-  hhsc_ccl <- list(raw_pth = raw_pth,
-              processed_pth = processed_pth)
-  
-  process.hhsc_ccl(hhsc_ccl = hhsc_ccl)
-  
-  tracts_xwalk <- list(raw_pth = raw_pth,
-                       processed_pth = processed_pth,
-                       name = "tracts_xwalk",
-                       radius=radius)
-  
-  process.tracts_xwalk(tracts_xwalk = tracts_xwalk)
+  tracts_xwalk <- list(raw_pth = raw_pth)
+
+  env$tracts_xwalk <- process.tracts_xwalk(tracts_xwalk = tracts_xwalk)
+
+  save(env, file = file.path(processed_pth, db_name))
 }

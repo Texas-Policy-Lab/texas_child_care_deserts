@@ -26,25 +26,29 @@ dwnld.xwalk_tracts <- function(raw_pth,
 #' @param pth string. The name of the data to read in.
 #' @param name string. The name of the data to write out.
 #' @export
-dm.tracts_xwalk <- function(df,
-                            processed_pth,
-                            name,
-                            radius) {
+dm.tracts_xwalk <- function(x) {
 
-  df <- df %>%
-    dplyr::mutate(anchor_tract = paste0(county1, tract1),
-                  surround_tract = paste0(county2, tract2))
+  df <- x$df %>%
+    dplyr::mutate(texas = ifelse(substr(county1, 1, 2) == "48", TRUE, FALSE)) %>%
+    dplyr::filter(texas) %>%
+    dplyr::select(-texas) %>%
+    dplyr::mutate(anchor_tract = stringr::str_pad(paste0(county1, tract1), 
+                                                  side = "right",
+                                                  width = 11, 
+                                                  pad = "0"),
+                  surround_tract = stringr::str_pad(paste0(tract2, tract2), 
+                                                    side = "right", 
+                                                    width = 11, 
+                                                    pad = "0"))
 
   tracts <- df %>%
     dplyr::distinct(anchor_tract) %>% 
-    dplyr::mutate(surround_tract = anchor_tract)
+    dplyr::mutate(surround_tract = anchor_tract,
+                  mi_to_tract = 0)
 
-  df <- df %>% 
-    dplyr::filter(mi_to_tract <= radius) %>% 
-    dplyr::bind_rows(tracts) %>% 
-    dplyr::select(anchor_tract, surround_tract)
-
-  readr::write_csv(df, file.path(processed_pth, name))
+  df <- df %>%
+    dplyr::bind_rows(tracts) %>%
+    dplyr::select(anchor_tract, surround_tract, mi_to_tract)
 
   return(df)
 }
@@ -52,6 +56,6 @@ dm.tracts_xwalk <- function(df,
 #' @title Process ACF data
 process.tracts_xwalk <- function(tracts_xwalk) {
 
-  tracts_xwalk$df <- readr::read_csv(tracts_xwalk$raw_pth, tracts_xwalk$name)
-  tracts_xwalk <- do.call(dm.tracts_xwalk, tracts_xwalk)
+  tracts_xwalk$df <- dwnld.xwalk_tracts(raw_pth = tracts_xwalk$raw_pth)
+  tracts_xwalk <- dm.tracts_xwalk(tracts_xwalk)
 }
