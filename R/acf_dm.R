@@ -11,10 +11,16 @@ select_qtr_year <- function(pth,
 
   assertthat::assert_that(length(fls) >= 1, 
                           msg = paste("The path to the data", pth, "is empty. Did you run the necessary download steps to create the child care data base file structure?"))
+  fl_opts <- gsub("acf-801-", "", fls)
+  fl_opts <- gsub("-twc.xlsx|-twc%20.xlsx", "", fl_opts)
+
+  if (is.null(acf_qtr_years)) {
+    acf_qtr_years <- fl_opts
+  }
 
   qtr_years <- sapply(acf_qtr_years, function(qtr_year) {
 
-    qy <- fls[grepl(qtr_year, toupper(fls))]
+    qy <- fls[grepl(toupper(qtr_year), toupper(fls))]
 
     if (length(qy) == 0) {
       return(NULL)
@@ -24,9 +30,7 @@ select_qtr_year <- function(pth,
 
   }, USE.NAMES = F, simplify = TRUE)
 
-  fl_opts <- gsub("acf-801-", "", fls)
-  fl_opts <- gsub("-twc.xlsx|-twc%20.xlsx", "", fl_opts)
-  fl_opts <- paste0("\n", paste(fl_opts, collapse = "\n"))
+  fl_opts <- paste0("\n", paste(fls, collapse = "\n"))
 
   test <- sapply(qtr_years, is.null, simplify = T)
   assertthat::assert_that(!all(test),
@@ -34,7 +38,8 @@ select_qtr_year <- function(pth,
                                       "\nYour quarter-year choices are: ", 
                                       toupper(fl_opts)))
 
-  return(file.path(pth, qtr_years))
+  return(list(fls = file.path(pth, qtr_years),
+              acf_qtr_years = acf_qtr_years))
 }
 
 #' @title Assigns a class to ACF data
@@ -44,10 +49,14 @@ select_qtr_year <- function(pth,
 assign_acf_class <- function(pth,
                              acf_qtr_years) {
 
-  fls <- select_qtr_year(pth = pth,
-                         acf_qtr_years = acf_qtr_years)
-
-  lapply(fls, function(fl) {
+  x <- select_qtr_year(pth = pth,
+                       acf_qtr_years = acf_qtr_years)
+  fls <- x$fls
+  
+  acf_qtr_years <- x$acf_qtr_years
+  
+  lapply(1:length(fls), function(i) {
+    fl <- fls[i]
     sheets <- readxl::excel_sheets(fl)
 
     if("ChildrenParentsSettings" %in% sheets) {
@@ -60,6 +69,10 @@ assign_acf_class <- function(pth,
       cls <- NULL
     }
 
+    cls$qtr <- substr(acf_qtr_years[i], 2, 2)
+    cls$year <- substr(acf_qtr_years[i], 4, 7)
+    cls$qtr_year <- acf_qtr_years[i]
+
     assertthat::assert_that(!is.null(cls),
                             msg = "ACF data format has changed")
 
@@ -67,32 +80,59 @@ assign_acf_class <- function(pth,
   })
 }
 
+#' @title Data management steps for the ACF data
 dm_acf <- function(x) {
 
   assertthat::assert_that(all(tools::file_ext(x$pth) %in% c("xlsx", "xls")),
                           msg = "ACF files are not in the expected format of .xlsx or .xls")
 
   if(length(x$sheet) > 1) {
-    df <- lapply(x$sheet, function(s) readxl::read_excel(x$pth, sheet = s)) %>% 
+    df <- lapply(x$sheet, function(s) {
+      df <- readxl::read_excel(x$pth, sheet = s)
+      names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
+      names(df)[grep("FamilyZip", names(df))] <- "family_zip"
+      names(df)[grep("FIPS", names(df))] <- "family_fips_code"
+      names(df)[grep("ParentsID", names(df))] <- "family_id"
+      names(df)[grep("ChildrenID", names(df))] <- "child_id"
+      return(df)
+      }) %>% 
       purrr::reduce(dplyr::inner_join)
   } else {
     df <- readxl::read_excel(x$pth, sheet = x$sheet)
+    names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
+    names(df)[grep("FamilyZip", names(df))] <- "family_zip"
+    names(df)[grep("FIPS", names(df))] <- "family_fips_code"
+    names(df)[match("ParentsID", names(df))] <- "family_id"
+    names(df)[match("ChildrenID", names(df))] <- "child_id"
   }
 
-  names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
-  names(df)[grep("FamilyZip", names(df))] <- "family_zip"
-  names(df)[match("ReportingDate", names(df))] <- "date"
-
   df <- df %>%
-    dplyr::mutate(operation_number = as.character(operation_number)) %>%
-    dplyr::select(operation_number, child_id = ChildrenID, family_zip, date) %>% 
-    dplyr::mutate(quarter = substr(qtr_years, 2, 2))
+    dplyr::select(operation_number, child_id, family_id, family_zip, county_code) %>% 
+    dplyr::distinct() %>% 
+    dplyr::mutate(operation_number = as.character(ifelse(nchar(operation_number) < 9,
+                                        stringr::str_pad(operation_number, side = "left", pad = "0", width = 9),
+                                        substr(operation_number, 
+                                            nchar(operation_number) - 6, 
+                                            nchar(operation_number)))),
+                  child_id = as.character(child_id),
+                  family_id = as.character(family_id),
+                  family_zip = as.character(family_zip),
+                  family_fips_code = as.character(family_fips_code),
+                  quarter = x$qtr,
+                  year = x$year,
+                  quarter_year = x$qtr_year)
 
-  assertthat::assert_that(is.numeric(df$family_zip),
-                          msg = "Zip not numeric")
+  check_type.character(df$family_zip,
+                     msg = "Zip is not a string")
 
-  assertthat::assert_that(is.character(df$operation_number),
-                          msg = "Provider ID not numeric")
+  check_type.character(df$quarter,
+                       msg = "Quarter is not a string")
+
+  check_type.character(df$operation_number,
+                       msg = "Provider ID is not a string")
+  
+  check_type.character(df$county_code,
+                       msg = "County FIPS code is not a string")
 
   return(df)
 }
@@ -103,57 +143,62 @@ dm_acf <- function(x) {
 #' @inheritParams childcare_db
 #' @param pth String. Path to the data
 #' @return data.frame
-dm.acf <- function(pth,
-                   acf_qtr_years) {
+dm.acf <- function(raw_pth,
+                   acf_qtr_years,
+                   ...) {
 
-  fls <- assign_acf_class(pth = pth,
+  fls <- assign_acf_class(pth = raw_pth,
                           acf_qtr_years = acf_qtr_years)
 
-  dfs <- lapply(fls, dm_acf) %>% 
+  df <- lapply(fls, dm_acf) %>%
     dplyr::bind_rows()
 
-  assertthat::assert_that(is.data.frame(dfs),
+  assertthat::assert_that(is.data.frame(df),
                           msg = "dfs is not a dataframe")
-
-  return(dfs)
+  return(df)
 }
 
 #' @title Process ACF data
-process.acf <- function(acf) {
+process.acf <- function(cls) {
 
-  acf <- do.call(dwnld.acf, acf)
-  do.call(dm.acf, acf)
-
+  do.call(dwnld.acf, cls)
+  do.call(dm.acf, cls)
 }
 
-#' @title 
-dm.provider_kids <- function(tracts,
-                           tract_provider_xwalk) {
+#' @title Aggregate number of kids per provider
+#' @param acf data.frame. The cleaned acf dataframe.
+#' @return Summarized data with the max, median, and minimum number of kids per
+#' provider
+dm.agg_kids_prvdr <- function(acf) {
 
-  provider_kids <- dplyr::bind_rows("q1"= q1, "q2"= q2, "q3"= q4, .id="quarter") %>% 
-    dplyr::select(child_id, quarter, operation_number) %>% 
-    dplyr::group_by(quarter, operation_number) %>% 
-    dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>% 
-    tidyr::pivot_wider(names_from = quarter, values_from = n_kids, values_fill = 0) %>% 
+  acf %>%
+    dplyr::group_by(quarter_year, operation_number) %>%
+    dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
+    tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
     tidyr::pivot_longer(-operation_number) %>%
     dplyr::group_by(operation_number) %>%
-    dplyr::summarise(max_n_kids=max(value),
+    dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
-                     min_n_kids=min(value)) %>%
+                     min_n_kids = min(value))
+}
+
+#' @title Create market subsidy
+dm.mkt_subsidy <- function(acf, 
+                           tracts_xwalk, 
+                           cpp) {
+
+  #TODO: Update this function  
+  n_kids <- dm.agg_kids_prvdr(acf)
+
+  provider_kids <- n_kids %>% 
     dplyr::left_join(ccp %>% 
-                       dplyr::select(operation_number, total_capacity, ccl_accepts_subsidy),
-                     by = "operation_number") %>% 
-    dplyr::filter(ccl_accepts_subsity == T) %>%
+      dplyr::select(operation_number, total_capacity, subsidy),
+      by = "operation_number") %>% 
+    dplyr::filter(subsidy) %>%
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
-  return(provider_kids)
-}
   
-dm.mkt_subsidy <- function(tracts,
-                             tract_provider_xwalk) {
-    
-  dm.provider_kids(tracts,tract_provider_xwalk)
 
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
@@ -182,3 +227,4 @@ dm.mkt_subsidy <- function(tracts,
 
   return(tri_params$b)
 }
+                 

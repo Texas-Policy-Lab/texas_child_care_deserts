@@ -4,7 +4,7 @@
 \alias{process.acf}
 \title{Process ACF data}
 \usage{
-process.acf(acf)
+process.acf(cls)
 }
 \description{
 Process ACF data

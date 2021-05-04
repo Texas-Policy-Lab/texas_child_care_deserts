@@ -4,24 +4,23 @@
 \alias{childcare_db}
 \title{Create child care data base}
 \usage{
-childcare_db(
+childcare_db(root,
   root,
   acs_year = 2019,
   acs_state_code = 48,
   acs_geography = "tract",
-  acs_county = 439
+  acs_county = NULL,
+  acf_qtr_years = "Q2-2019"
+  db_name = "child_care_env.Rdata"
 )
 }
 \arguments{
-\item{root}{string. Path to the root directory to create the DB}
-
+\item{root}{string. Path to the root directory to create the DB.}
+\item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
 \item{acs_year.}{Integer. ACS year to pull the tables from. Default is 2019.}
-
 \item{acs_state_code.}{Integer. ACS state_code to pull the data for. Default 
 is 48 (Texas).}
-
 \item{acs_geography.}{String. ACS geography. Default is "tract".}
-
 \item{acs_county.}{Integer. County FIPS code (3-digits). Default is 439 
 (Tarrant County).}
 }
