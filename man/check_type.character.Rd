@@ -4,7 +4,7 @@
 \alias{check_type.character}
 \title{Test for character (string) column or vector}
 \usage{
-\method{check_type}{character}(v)
+\method{check_type}{character}(v, msg = "Not a character (string) vector")
 }
 \description{
 Test for character (string) column or vector

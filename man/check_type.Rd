@@ -4,10 +4,12 @@
 \alias{check_type}
 \title{Tests the vector or column type}
 \usage{
-check_type(v)
+check_type(v, msg = NULL)
 }
 \arguments{
 \item{v.}{Vector. A vector to test.}
+
+\item{msg.}{String. A message to return if the check fails.}
 }
 \description{
 Tests the vector or column type
