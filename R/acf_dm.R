@@ -91,6 +91,7 @@ dm_acf <- function(x) {
       df <- readxl::read_excel(x$pth, sheet = s)
       names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
       names(df)[grep("FamilyZip", names(df))] <- "family_zip"
+      names(df)[grep("FIPS", names(df))] <- "county_code"
       names(df)[grep("ParentsID", names(df))] <- "family_id"
       names(df)[grep("ChildrenID", names(df))] <- "child_id"
       return(df)
@@ -98,14 +99,15 @@ dm_acf <- function(x) {
       purrr::reduce(dplyr::inner_join)
   } else {
     df <- readxl::read_excel(x$pth, sheet = x$sheet)
-    names(df)[grepl("ProviderStateID", names(df))] <- "operation_number"
-    names(df)[grepl("FamilyZip", names(df))] <- "family_zip"
+    names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
+    names(df)[grep("FamilyZip", names(df))] <- "family_zip"
+    names(df)[grep("FIPS", names(df))] <- "county_code"
     names(df)[match("ParentsID", names(df))] <- "family_id"
     names(df)[match("ChildrenID", names(df))] <- "child_id"
   }
 
   df <- df %>%
-    dplyr::select(operation_number, child_id, family_id, family_zip) %>% 
+    dplyr::select(operation_number, child_id, family_id, family_zip, county_code) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(operation_number = as.character(ifelse(nchar(operation_number) < 9,
                                         stringr::str_pad(operation_number, side = "left", pad = "0", width = 9),
@@ -114,18 +116,23 @@ dm_acf <- function(x) {
                                             nchar(operation_number)))),
                   child_id = as.character(child_id),
                   family_id = as.character(family_id),
+                  family_zip = as.character(family_zip),
+                  county_code = as.character(county_code),
                   quarter = x$qtr,
                   year = x$year,
                   quarter_year = x$qtr_year)
 
-  check_type.numeric(df$family_zip,
-                     msg = "Zip not numeric")
+  check_type.character(df$family_zip,
+                     msg = "Zip is not a string")
 
   check_type.character(df$quarter,
-                       msg = "Quarter")
+                       msg = "Quarter is not a string")
 
   check_type.character(df$operation_number,
-                       msg = "Provider ID not numeric")
+                       msg = "Provider ID is not a string")
+  
+  check_type.character(df$county_code,
+                       msg = "County FIPS code is not a string")
 
   return(df)
 }
