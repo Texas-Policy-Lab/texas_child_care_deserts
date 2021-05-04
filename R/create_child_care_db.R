@@ -34,7 +34,7 @@ acs_tables <- function(acs_year,
 #' childcare_db(root = root)
 #' }
 childcare_db <- function(root,
-                         acf_qtr_years = "Q2-2019",
+                         acf_qtr_years = NULL,
                          acs_year = 2019,
                          acs_state_code = 48,
                          acs_geography = "tract",
@@ -54,7 +54,7 @@ childcare_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
-  env$DF_ACF <- process.acf(cls = 
+  env$DF_ACF <- process.acf(cls =
                               list(raw_pth = raw_pth,
                                    acf_qtr_years = acf_qtr_years)
   )
