@@ -91,7 +91,7 @@ dm_acf <- function(x) {
       df <- readxl::read_excel(x$pth, sheet = s)
       names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
       names(df)[grep("FamilyZip", names(df))] <- "family_zip"
-      names(df)[grep("FIPS", names(df))] <- "county_code"
+      names(df)[grep("FIPS", names(df))] <- "family_fips_code"
       names(df)[grep("ParentsID", names(df))] <- "family_id"
       names(df)[grep("ChildrenID", names(df))] <- "child_id"
       return(df)
@@ -101,7 +101,7 @@ dm_acf <- function(x) {
     df <- readxl::read_excel(x$pth, sheet = x$sheet)
     names(df)[grep("ProviderStateID", names(df))] <- "operation_number"
     names(df)[grep("FamilyZip", names(df))] <- "family_zip"
-    names(df)[grep("FIPS", names(df))] <- "county_code"
+    names(df)[grep("FIPS", names(df))] <- "family_fips_code"
     names(df)[match("ParentsID", names(df))] <- "family_id"
     names(df)[match("ChildrenID", names(df))] <- "child_id"
   }
@@ -117,7 +117,7 @@ dm_acf <- function(x) {
                   child_id = as.character(child_id),
                   family_id = as.character(family_id),
                   family_zip = as.character(family_zip),
-                  county_code = as.character(county_code),
+                  family_fips_code = as.character(family_fips_code),
                   quarter = x$qtr,
                   year = x$year,
                   quarter_year = x$qtr_year)
