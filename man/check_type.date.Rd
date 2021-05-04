@@ -4,7 +4,7 @@
 \alias{check_type.date}
 \title{Test for date column or vector}
 \usage{
-\method{check_type}{date}(v)
+\method{check_type}{date}(v, msg = "Not a date vector")
 }
 \description{
 Test for date column or vector

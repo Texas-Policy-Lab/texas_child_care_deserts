@@ -22,15 +22,6 @@ testthat::test_that('Test test_attr fails correctly', {
   testthat::expect_error(test_attr(attr))
 })
 
-testthat::test_that('Test that ACS tables download correctly', {
-
-  tbls <- list(B23008 = list(year = 2019, state = 48,
-                             geography = "tract", county = 439))
-
-  testthat::expect_true(all(unlist(dwnld.acs(tbls,
-                                             pth = NULL))))
-})
-
 testthat::test_that('Test API key check function', {
 
   testthat::expect_error(check_census_key('blah'))

@@ -4,7 +4,10 @@
 \alias{dm.acf}
 \title{Data management ACF}
 \usage{
-\method{dm}{acf}(raw_pth)
+\method{dm}{acf}(raw_pth, acf_qtr_years, ...)
+}
+\arguments{
+\item{pth}{String. Path to the data}
 }
 \value{
 data.frame

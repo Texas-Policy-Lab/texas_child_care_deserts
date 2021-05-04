@@ -2,10 +2,10 @@
 % Please edit documentation in R/acf_dm.R
 \name{dm.mkt_subsidy}
 \alias{dm.mkt_subsidy}
-\title{}
+\title{Create market subsidy}
 \usage{
-\method{dm}{mkt_subsidy}(tracts, tract_provider_xwalk)
+\method{dm}{mkt_subsidy}(acf, tracts_xwalk, cpp)
 }
 \description{
-
+Create market subsidy
 }
