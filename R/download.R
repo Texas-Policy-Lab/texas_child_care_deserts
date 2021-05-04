@@ -2,36 +2,43 @@
 #' @description Passes in a list of parameters to download the ACS census
 #' data using functions from the tidycensus package
 #' @param tbls list. List of census tables with attributes to download
-#' @param pth string. The path to download the data to.
+#' @param raw_pth. Path to save the raw data.
 #' @details To find a list of parameters to pass see documentation for 
 #' tidycensus::get_acs
 #' @examples 
 #' \dontrun{
-#' census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                                   geography = "tract", county = 439))
-#' pth <- "C:/"
-#' dwnld.acs(tbls = census_tbls, pth = pth)
+#' tbls <- list(B23008 = list(year = 2019, state = 48, 
+#'                                geography = "tract", county = 439))
+#' raw_pth <- "C:/"
+#' dwnld.acs(tbls = tbls, raw_pth = raw_pth)
 #' }
-dwnld.acs <- function(tbls,
-                      pth) {
+dwnld.acs <- function(tbls, raw_pth, ...) {
+  
   check_census_key()
   
-  lapply(names(tbls),
-         function(name, tbls, pth) {
-           attr <- tbls[[name]]
-           attr$table <- name
-           
-           test_attr(attr)
-           
-           df <- do.call(tidycensus::get_acs, attr)
-           
-           if (!is.null(pth)) {
-             readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
-           }
-           return(TRUE)
-         },
+  f <- function(name, tbls, pth) {
+    
+    attr <- tbls[[name]]
+    attr$table <- name
+    
+    test_attr(attr)
+    
+    df <- do.call(tidycensus::get_acs, attr)
+    
+    if (!is.null(pth)) {
+      readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
+    }
+    
+    attr$df <- df
+    return(structure(attr, class = name))
+  }
+  
+  sapply(names(tbls),
+         f,
          tbls = tbls,
-         pth = pth)
+         pth = raw_pth,
+         USE.NAMES = TRUE,
+         simplify = FALSE)
 }
 
 #' @title Get HHSC CCL data
@@ -79,23 +86,16 @@ dwnld.acf <- function(raw_pth,
   lapply(apis, function(api) {
 
     fl <- basename(api)
-    pth <- file.path(pth, fl)
 
+    dir <- file.path(pth, fl)
+    
     if (fl %in% list.files(pth) == F) {
 
       url <- glue::glue(endpoint, path = api)
 
       httr::GET(url, httr::write_disk(temp_dir <- tempfile(fileext = ".xlsx")))
-      file.copy(from = temp_dir, to = pth)
+      file.copy(from = temp_dir, to = dir)
     }
-
-    msg <- glue::glue("{sheet} sheet name is missing for {fl}",
-                      sheet = sheet,
-                      fl = fl)
-
-    assertthat::assert_that(sheet %in% readxl::excel_sheets(pth),
-                            msg = msg)
-
-    df <- readxl::read_excel(pth, sheet = sheet)
   })
+  return(TRUE)
 }

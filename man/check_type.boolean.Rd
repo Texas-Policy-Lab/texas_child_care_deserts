@@ -4,7 +4,7 @@
 \alias{check_type.boolean}
 \title{Test for boolean (logical) column or vector}
 \usage{
-\method{check_type}{boolean}(v)
+\method{check_type}{boolean}(v, msg = "Not a boolean (logical) vector")
 }
 \description{
 Test for boolean (logical) column or vector

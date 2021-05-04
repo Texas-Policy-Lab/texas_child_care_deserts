@@ -24,30 +24,34 @@ test_input <- function(df, input_columns) {
 
 #' @title Tests the vector or column type
 #' @param v. Vector. A vector to test.
-check_type <- function(v) UseMethod("check_type")
+#' @param msg. String. A message to return if the check fails.
+check_type <- function(v, msg = NULL) UseMethod("check_type")
 
 #' @title Test for character (string) column or vector
 #' @inheritParams check_type
-check_type.character <- function(v) {
+check_type.character <- function(v, 
+                                 msg = "Not a character (string) vector") {
 
   assertthat::assert_that(class(v) == "character",
-                          msg = "Not a character (string) vector")
+                          msg = msg)
 }
 
 #' @title Test for numeric column or vector
 #' @inheritParams check_type
-check_type.numeric <- function(v) {
+check_type.numeric <- function(v, 
+                               msg = "Not a numeric vector") {
 
   assertthat::assert_that(class(v) == "numeric",
-                          msg = "Not a numeric vector")
+                          msg = msg)
 }
 
 #' @title Test for date column or vector
 #' @inheritParams check_type
-check_type.date <- function(v) {
+check_type.date <- function(v, 
+                            msg = "Not a date vector") {
 
   assertthat::assert_that(class(v) == "Date",
-                          msg = "Not a date vector")
+                          msg = msg)
 }
 
 #' @title Test for POSIXct date column or vector
@@ -60,8 +64,9 @@ check_type.POSIXct <- function(v) {
 
 #' @title Test for boolean (logical) column or vector
 #' @inheritParams check_type
-check_type.boolean <- function(v) {
+check_type.boolean <- function(v,
+                               msg = "Not a boolean (logical) vector") {
   
   assertthat::assert_that(class(v) == "logical",
-                          msg = "Not a boolean (logical) vector")
+                          msg = msg)
 }

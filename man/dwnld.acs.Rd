@@ -4,12 +4,12 @@
 \alias{dwnld.acs}
 \title{Download ACS}
 \usage{
-dwnld.acs(tbls, pth)
+dwnld.acs(tbls, raw_pth, ...)
 }
 \arguments{
 \item{tbls}{list. List of census tables with attributes to download}
 
-\item{pth}{string. The path to download the data to.}
+\item{raw_pth.}{Path to save the raw data.}
 }
 \description{
 Passes in a list of parameters to download the ACS census
@@ -21,9 +21,9 @@ tidycensus::get_acs
 }
 \examples{
 \dontrun{
-census_tbls <- list(B23008 = list(year = 2019, state = 48, 
-                                  geography = "tract", county = 439))
-pth <- "C:/"
-dwnld.acs(tbls = census_tbls, pth = pth)
+tbls <- list(B23008 = list(year = 2019, state = 48, 
+                               geography = "tract", county = 439))
+raw_pth <- "C:/"
+dwnld.acs(tbls = tbls, raw_pth = raw_pth)
 }
 }

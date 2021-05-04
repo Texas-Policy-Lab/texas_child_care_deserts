@@ -4,7 +4,7 @@
 \alias{check_type.numeric}
 \title{Test for numeric column or vector}
 \usage{
-\method{check_type}{numeric}(v)
+\method{check_type}{numeric}(v, msg = "Not a numeric vector")
 }
 \description{
 Test for numeric column or vector
