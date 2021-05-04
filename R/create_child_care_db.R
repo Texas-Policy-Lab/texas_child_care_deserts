@@ -53,7 +53,7 @@ child_care_db <- function(root,
                               list(raw_pth = raw_pth,
                                    acf_qtr_years = acf_qtr_years)
   )
-  
+
   env$DF_DEMAND <- process.acs(acs_year = acs_year,
                                acs_state_code = acs_state_code,
                                acs_geography = acs_geography,
