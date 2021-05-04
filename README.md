@@ -23,11 +23,11 @@ API to create data for any count on child care deserts in Texas
 
 1. Make changes to the code according the to ticket you are working on
 2. Load the package `devtools::load_all()`
-3. Run the `childcare_db` function
+3. Run the `child_care_db` function
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
 
-childcare_db(root = root)
+child_care_db(root = root)
 ```
 4. Update the function documentation `devtools::document()`
 5. Run all the tests to make sure they are passing`devtools::test()`

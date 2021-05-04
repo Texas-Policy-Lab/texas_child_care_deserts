@@ -1,5 +1,5 @@
 #' @title Add default parameters for ACS tables
-#' @inheritParams childcare_db
+#' @inheritParams child_care_db
 acs_tables <- function(acs_year,
                        acs_state_code,
                        acs_geography,

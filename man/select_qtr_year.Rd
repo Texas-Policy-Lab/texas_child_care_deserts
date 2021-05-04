@@ -8,8 +8,6 @@ select_qtr_year(pth, acf_qtr_years)
 }
 \arguments{
 \item{pth}{String. Path to the data}
-
-\item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
 }
 \value{
 A vector of file paths associated with the given quarter year

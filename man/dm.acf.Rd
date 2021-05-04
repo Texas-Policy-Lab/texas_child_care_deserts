@@ -4,12 +4,10 @@
 \alias{dm.acf}
 \title{Data management ACF}
 \usage{
-dm.acf(raw_pth, acf_qtr_years, ...)
+\method{dm}{acf}(raw_pth, acf_qtr_years, ...)
 }
 \arguments{
-\item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
-\item{raw_pth}{String. Path to the data}
-\method{dm}{acf}(raw_pth)
+\item{pth}{String. Path to the data}
 }
 \value{
 data.frame

@@ -140,7 +140,7 @@ dm_acf <- function(x) {
 #' @title Data management ACF
 #' @description Data are located: 
 #' https://www.twc.texas.gov/programs/childcare#dataAndReports
-#' @inheritParams childcare_db
+#' @inheritParams child_care_db
 #' @param pth String. Path to the data
 #' @return data.frame
 dm.acf <- function(raw_pth,

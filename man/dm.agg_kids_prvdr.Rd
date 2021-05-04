@@ -4,7 +4,7 @@
 \alias{dm.agg_kids_prvdr}
 \title{Aggregate number of kids per provider}
 \usage{
-dm.agg_kids_prvdr(acf)
+\method{dm}{agg_kids_prvdr}(acf)
 }
 \arguments{
 \item{acf}{data.frame. The cleaned acf dataframe.}
