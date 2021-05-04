@@ -131,7 +131,7 @@ dm_acf <- function(x) {
   check_type.character(df$operation_number,
                        msg = "Provider ID is not a string")
   
-  check_type.character(df$county_code,
+  check_type.character(df$family_fips_code,
                        msg = "County FIPS code is not a string")
 
   return(df)
