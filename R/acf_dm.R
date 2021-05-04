@@ -107,7 +107,7 @@ dm_acf <- function(x) {
   }
 
   df <- df %>%
-    dplyr::select(operation_number, child_id, family_id, family_zip, county_code) %>% 
+    dplyr::select(operation_number, child_id, family_id, family_zip, family_fips_code) %>% 
     dplyr::distinct() %>% 
     dplyr::mutate(operation_number = as.character(ifelse(nchar(operation_number) < 9,
                                         stringr::str_pad(operation_number, side = "left", pad = "0", width = 9),
