@@ -4,10 +4,12 @@
 \alias{assign_acf_class}
 \title{Assigns a class to ACF data}
 \usage{
-assign_acf_class(pth, acf_qtr_years)
+assign_acf_class(pth, acf_qtr_years, max_child_age)
 }
 \arguments{
 \item{pth}{String. Path to the data}
+
+\item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
 }
 \description{
 Assigns a class to all the incoming files which will perform different

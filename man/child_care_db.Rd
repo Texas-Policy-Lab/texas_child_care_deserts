@@ -11,6 +11,7 @@ child_care_db(
   acs_state_code = 48,
   acs_geography = "tract",
   acs_county = NULL,
+  max_child_age = 4,
   db_name = "child_care_env.Rdata"
 )
 }
