@@ -34,12 +34,12 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
-                         acf_qtr_years = NULL,
-                         acs_year = 2019,
-                         acs_state_code = 48,
-                         acs_geography = "tract",
-                         acs_county = NULL,
-                         db_name = "child_care_env.Rdata") {
+                          acf_qtr_years = NULL,
+                          acs_year = 2019,
+                          acs_state_code = 48,
+                          acs_geography = "tract",
+                          acs_county = NULL,
+                          db_name = "child_care_env.Rdata") {
 
   env <- new.env()
   data_pth <- file.path(root, "data")
