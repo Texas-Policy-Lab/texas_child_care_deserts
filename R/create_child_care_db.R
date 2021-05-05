@@ -34,9 +34,9 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
+                          state_code = 48,
                           acf_qtr_years = NULL,
                           acs_year = 2019,
-                          acs_state_code = 48,
                           acs_geography = "tract",
                           acs_county = NULL,
                           db_name = "child_care_env.Rdata") {
@@ -55,7 +55,7 @@ child_care_db <- function(root,
   )
 
   env$DF_DEMAND <- process.acs(acs_year = acs_year,
-                               acs_state_code = acs_state_code,
+                               acs_state_code = state_code,
                                acs_geography = acs_geography,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
@@ -64,6 +64,14 @@ child_care_db <- function(root,
                                                  name = "HHSC_CCL"))
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
+
+  env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
+
+  env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
+
+  env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
+
+  env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
 
   save(env, file = file.path(processed_pth, db_name))
 }
@@ -93,9 +101,11 @@ save_subset_child_care_db <- function(pth, county) {
       i <- grep("anchor_county|family_fips_code", names(env[[name]]))
       n <- names(env[[name]])[i]
       names(env[[name]])[i] <- "county_code"
-
-      env[[name]] <- env[[name]] %>% 
-        dplyr::filter(county_code == county)
+      
+      if ("county_code" %in% names(env[[name]])) {
+        env[[name]] <- env[[name]] %>%
+          dplyr::filter(county_code == county) 
+      }
 
       names(env[[name]])[i] <- n
     }
