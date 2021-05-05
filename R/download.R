@@ -101,28 +101,40 @@ dwnld.acf <- function(raw_pth,
 }
 
 #' @title Get county and ZCTA (zip code) Crosswalk
-#' @description Downloads the crosswalk between county fips codes and county names for Texas.
-#' @param pth Link to data: https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt
+#' @description Downloads the crosswalk between county fips codes and county 
+#' names for Texas.
+#' @param pth Link to data: 
+#' https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt
 #' @param data_in_name string. The name to of the data to read in.
 #' @param data_in_pth string. The path to read the data in from.
 #' @export
-
-dwnld.zip_county_xwalk <- function(data_in_name = NULL,
-                                 data_in_pth = NULL,
-                                 pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt",
-                                 state_fips = 48) {
+dwnld.zip_county_xwalk <- function(pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt",
+                                   state_fips = 48) {
   
   df <- read.csv(url(pth)) %>%
-    dplyr::rename_all(tolower) %>% 
-    dplyr::filter(state == state_fips) %>% 
+    dplyr::rename_all(tolower) %>%
+    dplyr::filter(state == state_fips) %>%
     dplyr::select(zip = zcta5,
-                  county = county)
+                  county_code = county) %>% 
+    dplyr::mutate(county_code = paste0(state_fips,
+                                       stringr::str_pad(county_code, side = "left",
+                                                 width = 3, pad = "0")))
   
-  assertthat::assert_that(all(c("zip", "county") %in% colnames(df)),
+  assertthat::assert_that(all(c("zip", "county_code") %in% colnames(df)),
                           msg = "Zip county xwalk missing column")
   
-  #write.csv(df, file.path(data_in_pth, data_in_name), row.names = FALSE)
-  
   return(df)
-  
+}
+
+#' @title Get ZCTA (Zip Code) and Latitude/Longitude Coordinate Crosswalk
+#' @description Downloads the crosswalk between zip codes and latitude longitude
+#' coordinates of the center for Texas
+#' @export
+dwnld.geo_zip <- function(state_fips = 48) {
+
+  tigris::zctas(state = state_fips) %>% 
+    dplyr::mutate(zip = as.numeric(ZCTA5CE10),
+                  lat = as.numeric(INTPTLAT10),
+                  lon = as.numeric(INTPTLON10)) %>% 
+    dplyr::select(zip, lat, lon)
 }
