@@ -108,21 +108,23 @@ dwnld.acf <- function(raw_pth,
 #' @param data_in_name string. The name to of the data to read in.
 #' @param data_in_pth string. The path to read the data in from.
 #' @export
-dwnld.zip_county_xwalk <- function(pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt",
-                                   state_fips = 48) {
-  
+dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt",
+                                   state_fips) {
+
   df <- read.csv(url(pth)) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::filter(state == state_fips) %>%
     dplyr::select(zip = zcta5,
-                  county_code = county) %>% 
+                  county_code = county) %>%
     dplyr::mutate(county_code = paste0(state_fips,
-                                       stringr::str_pad(county_code, side = "left",
-                                                 width = 3, pad = "0")))
-  
+                                       stringr::str_pad(county_code, 
+                                                        side = "left",
+                                                        width = 3, 
+                                                        pad = "0")))
+
   assertthat::assert_that(all(c("zip", "county_code") %in% colnames(df)),
                           msg = "Zip county xwalk missing column")
-  
+
   return(df)
 }
 
@@ -130,11 +132,40 @@ dwnld.zip_county_xwalk <- function(pth = "https://www2.census.gov/geo/docs/maps-
 #' @description Downloads the crosswalk between zip codes and latitude longitude
 #' coordinates of the center for Texas
 #' @export
-dwnld.geo_zip <- function(state_fips = 48) {
+dwnld.geo_zip <- function(state_fips) {
 
   tigris::zctas(state = state_fips) %>% 
     dplyr::mutate(zip = as.numeric(ZCTA5CE10),
                   lat = as.numeric(INTPTLAT10),
                   lon = as.numeric(INTPTLON10)) %>% 
     dplyr::select(zip, lat, lon)
+}
+
+#' @title Get State FIPS and State Name Crosswalk
+#' @description Downloads the crosswalk between county fips codes and county 
+#' names for Texas
+#' @export
+dwnld.lu_county_code <- function(state_fips) {
+
+  df <- tigris::fips_codes %>%
+    dplyr::filter(state_code == state_fips) %>%
+    dplyr::select(county_code, county) %>% 
+    dplyr::mutate(county_code = paste0(state_fips, county_code))
+
+  assertthat::assert_that(nrow(df) == 254)
+
+  return(df)
+}
+
+#' @title Get tract by latitude and longitude
+#' @description Downloads shape file for Texas (48) using the tigris package, 
+#' which pulls the most recent shape from the United States Census Bureau.
+#' @export
+dwnld.geo_tracts <- function(state_fips) {
+
+  tigris::tracts(state = state_fips, cb = TRUE) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::rename(tract = geoid) %>%
+    dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
+    dplyr::select(tract, county_code, geometry)
 }
