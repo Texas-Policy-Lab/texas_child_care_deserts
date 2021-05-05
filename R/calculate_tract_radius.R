@@ -53,7 +53,7 @@ dm.acf_dist <- function(df,
 summary.acf_dist <- function(df,
                              county_list = NULL){
   
-  zip_county_xwalk <- get.zip_county_xwalk()
+  zip_county_xwalk <- dwnld.zip_county_xwalk()
   
   df <- df %>% 
     dplyr::left_join(zip_county_xwalk, by = c("family_zip" = "zip")) %>% 
