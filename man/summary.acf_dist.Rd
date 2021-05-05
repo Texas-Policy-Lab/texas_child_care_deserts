@@ -7,14 +7,19 @@
 \method{summary}{acf_dist}(df, county_list = NULL)
 }
 \arguments{
-\item{df}{data.frame. The merged family/home ACF data from dm.acf_dist function.}
+\item{df}{data.frame. The merged family/home ACF data from dm.acf_dist 
+function.}
 
-\item{county_list.}{A list of TX county codes of counties of interest to compare. 
-Eg county_list = c(439) for Tarrant County; county_list = c(201, 439) to compare Harris to Tarrant County}
+\item{county_list.}{A list of TX county codes of counties of interest to 
+compare. 
+Eg county_list = c(439) for Tarrant County; county_list = c(201, 439) to 
+compare Harris to Tarrant County}
 }
 \value{
-a table and a plot. Decile values for distance between home and provider zip code and density plot of distances.
+a table and a plot. Decile values for distance between home and 
+provider zip code and density plot of distances.
 }
 \description{
-Clean ACF provider data, find coordinates for each zip code, calculate straight line distance.
+Clean ACF provider data, find coordinates for each zip code, 
+calculate straight line distance.
 }

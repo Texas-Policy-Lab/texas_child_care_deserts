@@ -5,8 +5,6 @@
 \title{Get the neighborhood to census tract data}
 \usage{
 get.kinder_neighborhood_tract_xwalk(
-  data_in_name = NULL,
-  data_in_pth = NULL,
   pth = "https://www.datahouston.org/cta_crosswalk.txt"
 )
 }

@@ -4,7 +4,7 @@
 \alias{dm.acf}
 \title{Data management ACF}
 \usage{
-\method{dm}{acf}(raw_pth, acf_qtr_years, max_child_age, ...)
+\method{dm}{acf}(raw_pth, acf_qtr_years, ...)
 }
 \arguments{
 \item{acf_qtr_years}{vector. Default is 'Q2-2019'.}

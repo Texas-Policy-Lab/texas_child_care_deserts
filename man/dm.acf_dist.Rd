@@ -9,7 +9,8 @@
 \arguments{
 \item{df}{data.frame. The dataframe of ACF data.}
 
-\item{max_child_age.}{Integer. Age to filter the child age to be less than or equal.}
+\item{max_child_age.}{Integer. Age to filter the child age to be less than or
+equal.}
 }
 \value{
 data.frame

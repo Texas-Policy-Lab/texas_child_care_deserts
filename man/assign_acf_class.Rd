@@ -4,7 +4,7 @@
 \alias{assign_acf_class}
 \title{Assigns a class to ACF data}
 \usage{
-assign_acf_class(pth, acf_qtr_years, max_child_age)
+assign_acf_class(pth, acf_qtr_years)
 }
 \arguments{
 \item{pth}{String. Path to the data}

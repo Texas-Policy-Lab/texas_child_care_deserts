@@ -17,5 +17,6 @@ distance_between_zips(df, zip1, zip2)
 data.frame with distance column.
 }
 \description{
-Find lat/lon coordinates for each zip code, calculate straight line distance.
+Find lat/lon coordinates for each zip code, calculate straight 
+line distance.
 }
