@@ -120,11 +120,14 @@ dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-
                                        stringr::str_pad(county_code, 
                                                         side = "left",
                                                         width = 3, 
-                                                        pad = "0")))
+                                                        pad = "0")),
+                  zip = as.character(zip))
 
   assertthat::assert_that(all(c("zip", "county_code") %in% colnames(df)),
                           msg = "Zip county xwalk missing column")
-
+  assertthat::assert_that(all(nchar(df$zip) == 5))
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
+  
   return(df)
 }
 
