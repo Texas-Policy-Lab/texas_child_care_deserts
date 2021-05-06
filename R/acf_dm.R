@@ -116,7 +116,7 @@ dm_acf <- function(x) {
                           msg = "ACF files are not in the expected format of 
                                 .xlsx or .xls")
 
-  lapply(names(x$sheet), function(sheet) {
+  df <- lapply(names(x$sheet), function(sheet) {
 
     df <- readxl::read_excel(x$pth, sheet = sheet)
     names(df) <- ifelse(!grepl(paste0(sheet, "\\."), names(df)), paste(sheet, names(df), sep = "."), 
@@ -130,7 +130,11 @@ dm_acf <- function(x) {
 
     if ("operation_number" %in% names(df)) {
       df <- df %>%
-        dplyr::mutate(operation_number = as.character(operation_number))
+        dplyr::mutate(operation_number = as.character(operation_number),
+                      operation_number = stringr::str_pad(operation_number,
+                                                          side = "left",
+                                                          pad = "0",
+                                                          width = 15))
     }
 
     if ("child_id" %in% names(df)) {
@@ -147,14 +151,25 @@ dm_acf <- function(x) {
       dplyr::distinct()
     }) %>% 
     purrr::reduce(dplyr::inner_join) %>%
-    dplyr::mutate(operation_number = stringr::str_pad(operation_number,
-                                                      side = "left",
-                                                      pad = "0",
-                                                      width = 9),
-                  family_fips_code = as.character(family_fips_code),
+    dplyr::mutate(family_zip = stringr::str_pad(family_zip,
+                                                side = "left",
+                                                pad = "0",
+                                                width = 5),
+                  family_fips_code = as.character(ifelse(family_fips_code == -1, 
+                                                         NA, family_fips_code)),
+                  child_age = as.numeric(child_age),
+                  family_id = as.character(family_id),
+                  family_zip = as.character(family_zip),
+                  provider_zip = as.character(provider_zip),
                   quarter = x$qtr,
                   year = x$year,
                   quarter_year = x$qtr_year)
+
+  assertthat::assert_that(all(nchar(df$family_zip) == 5))
+  assertthat::assert_that(all(nchar(df$provider_zip) == 5))
+  assertthat::assert_that(all(nchar(df$family_fips_code) == 5, na.rm = TRUE))
+
+  return(df)
 }
 
 #' @title Data management ACF
@@ -189,31 +204,29 @@ process.acf <- function(cls) {
 #' @param acf data.frame. The cleaned acf dataframe.
 #' @return Summarized data with the max, median, and minimum number of kids per
 #' provider
-dm.agg_kids_prvdr <- function(acf) {
+dm.agg_kids_prvdr <- function(df = DF_ACF) {
 
-  acf %>%
-    dplyr::group_by(quarter_year, operation_number) %>%
+  df %>%
+    dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
-    tidyr::pivot_longer(-operation_number) %>%
-    dplyr::group_by(operation_number) %>%
+    tidyr::pivot_longer(names_to = "quarter_year", values_to = "value", -c(operation_number)) %>%
+    dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
-                     min_n_kids = min(value))
+                     min_n_kids = min(value)) %>% 
+    dplyr::arrange(operation_number, quarter_year)
 }
 
 #' @title Create market subsidy
-dm.mkt_subsidy <- function(acf, 
-                           tracts_xwalk, 
+dm.mkt_subsidy <- function(tracts_xwalk, 
                            cpp) {
 
-  #TODO: Update this function  
-  n_kids <- dm.agg_kids_prvdr(acf)
+  n_kids <- dm.agg_kids_prvdr()
 
-  provider_kids <- n_kids %>% 
-    dplyr::left_join(ccp %>% 
-      dplyr::select(operation_number, total_capacity, subsidy),
-      by = "operation_number") %>% 
+  provider_kids <- n_kids %>%
+    dplyr::left_join(DF_HHSC_CCL %>% 
+      dplyr::select(operation_number, licensed_capacity, subsidy)) %>% 
     dplyr::filter(subsidy) %>%
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
