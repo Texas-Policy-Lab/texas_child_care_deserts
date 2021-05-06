@@ -138,7 +138,7 @@ dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-
 dwnld.geo_zip <- function(state_fips) {
 
   tigris::zctas(state = state_fips) %>% 
-    dplyr::mutate(zip = as.numeric(ZCTA5CE10),
+    dplyr::mutate(zip = as.character(ZCTA5CE10),
                   lat = as.numeric(INTPTLAT10),
                   lon = as.numeric(INTPTLON10)) %>% 
     dplyr::select(zip, lat, lon)
