@@ -153,6 +153,7 @@ dwnld.lu_county_code <- function(state_fips) {
     dplyr::mutate(county_code = paste0(state_fips, county_code))
 
   assertthat::assert_that(nrow(df) == 254)
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
 
   return(df)
 }
