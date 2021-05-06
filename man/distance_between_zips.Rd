@@ -4,14 +4,13 @@
 \alias{distance_between_zips}
 \title{Calculate distance between two zip codes in miles}
 \usage{
-distance_between_zips(df, zip1, zip2)
+distance_between_zips(df, meter = 1609)
 }
 \arguments{
 \item{df.}{The data frame containing matched zip code columns.}
 
-\item{zip1.}{One of the zip code columns.}
-
-\item{zip2.}{The other zip code column.}
+\item{meter.}{Default is 1609, the conversion for the number of meters in a 
+mile.}
 }
 \value{
 data.frame with distance column.
