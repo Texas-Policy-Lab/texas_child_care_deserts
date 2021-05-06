@@ -10,3 +10,17 @@ create_folder_str <- function(pths) {
     }
   })
 }
+
+
+#' @title Load environment
+#' @description Loads the saved environment
+#' @param pth string. Path the the environment
+load_env <- function (pth) {
+
+  load(file.path(pth))
+
+  for (i in names(env)) {
+    assign(i, env[[i]])
+  }
+  rm(env, i)
+}
