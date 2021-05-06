@@ -61,7 +61,8 @@ child_care_db <- function(root,
                                raw_pth = raw_pth)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 name = "HHSC_CCL"))
+                                                 name = "HHSC_CCL",
+                                                 state_fips = state_code))
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
@@ -102,7 +103,7 @@ save_subset_child_care_db <- function(pth, county) {
       n <- names(env[[name]])[i]
       names(env[[name]])[i] <- "county_code"
       
-      if ("county_code" %in% names(env[[name]])) {
+      if ("county_code" %in% names(env[[name]]) & name != "DF_HHSC_CCL") {
         env[[name]] <- env[[name]] %>%
           dplyr::filter(county_code == county) 
       }
