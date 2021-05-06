@@ -12,7 +12,7 @@ col.operation_number <- function(df) {
     dplyr::mutate(operation_number = gsub("-.*", "", operation_number),
                   operation_number = stringr::str_pad(operation_number,
                                                       side = "left", 
-                                                      width = 9,
+                                                      width = 15,
                                                       pad = "0"))
 
   assertthat::assert_that(all(!grepl("-", df$operation_number)))
