@@ -11,7 +11,6 @@ create_folder_str <- function(pths) {
   })
 }
 
-
 #' @title Load environment
 #' @description Loads the saved environment
 #' @param pth string. Path the the environment
