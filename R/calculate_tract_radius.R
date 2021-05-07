@@ -1,163 +1,95 @@
-#' @title ACF data management to get zip codes for families
-#' @description Clean ACF family data.
-#' @param df data.frame. The dataframe of acf family data.
-#' @param zip_latlong_xwalk data.frame. The crosswalk of zip code to latitude/longitude.
-#' @param zip_county_xwalk data.frame. The crosswalk of zip code to county.
-#' @param input_columns. List. List of the columns to keep.
-#' @param max_child_age. Integer. Age to filter the child age to be less than or equal.
-#' @return data.frame
-
-dm.acf_family <- function(df,
-                          max_child_age = 4){
-  
-  df <- df %>% 
-    dplyr::filter(Age <= max_child_age) %>% 
-    dplyr::select(child_id = ChildrenID,
-                  family_zip = Parents.FamilyZip,
-                  provider_id = CCSettings.ProviderStateID,
-                  date = Parents.ReportingDate)
-  
-  assertthat::assert_that(is.numeric(df$family_zip),
-                          msg = "Zip not numeric")
-  
-  assertthat::assert_that(is.numeric(df$provider_id),
-                          msg = "Provider ID not numeric")
-  
-  return(df)
-  
-}
-
-#' @title ACF data management to get zip codes for providers
-#' @description Clean ACF provider data.
-#' @param df data.frame. The dataframe of acf provider data.
-#' @param zip_latlong_xwalk data.frame. The crosswalk of zip code to latitude/longitude.
-#' @param zip_county_xwalk data.frame. The crosswalk of zip code to county.
-#' @param input_columns. List. List of the columns to keep.
-#' @return data.frame
-
-dm.acf_provider <- function(df){
-  
-  df <- df %>% 
-    dplyr::mutate(provider_zip = as.numeric(Data.ZipCode)) %>% 
-    dplyr::select(provider_id = Data.StateID,
-                  provider_zip,
-                  date = Data.ReportingDate)
-  
-  assertthat::assert_that(is.numeric(df$provider_id),
-                          msg = "Provider ID not numeric")
-  
-  assertthat::assert_that(is.numeric(df$provider_zip),
-                          msg = "Zip not numeric")
-  
-  return(df)
-  
-}
-
 #' @title Calculate distance between two zip codes in miles
-#' @description Find lat/lon coordinates for each zip code, calculate straight line distance.
+#' @description Find lat/lon coordinates for each zip code, calculate straight 
+#' line distance.
 #' @param df. The data frame containing matched zip code columns.
-#' @param zip1. One of the zip code columns.
-#' @param zip2. The other zip code column.
+#' @param meter. Default is 1609, the conversion for the number of meters in a 
+#' mile.
 #' @return data.frame with distance column.
+distance_between_zips <- function(df,
+                                  meter = 1609) {
 
-distance_between_zips <- function(df, zip1, zip2) {
+  assertthat::assert_that(all(c("zip1", "zip2") %in% colnames(df)))
+
+  GEO_ZIP$geometry <- NULL
   
-  zip_latlong_xwalk <- get.zip_latlong_xwalk()
-  
-  byvar1 <- enquo(zip1)
-  byvar2 <- enquo(zip2)
-  
-  by1 <- setNames("zip", quo_name(byvar1))
-  by2 <- setNames("zip", quo_name(byvar2))
-  
-  df <- df %>% 
-    dplyr::left_join(zip_latlong_xwalk, by = by1) %>% 
-    dplyr::left_join(zip_latlong_xwalk, by = by2)
-  
-  df <- df %>% 
-    dplyr::mutate(distance = geosphere::distHaversine(cbind(lon.x, lat.x), cbind(lon.y, lat.y)) / 1609)
-  
+  df <- df %>%
+    dplyr::left_join(GEO_ZIP %>% 
+                       dplyr::rename(zip1 = zip,
+                                     lat1 = lat,
+                                     lon1 = lon)) %>%
+    dplyr::left_join(GEO_ZIP %>% 
+                       dplyr::rename(zip2 = zip,
+                                     lat2 = lat,
+                                     lon2 = lon)) %>% 
+    dplyr::mutate(distance = geosphere::distHaversine(cbind(lon1, lat1), 
+                                                      cbind(lon2, lat2)) / meter)
+
   return(df)
-  
 }
 
 #' @title ACF data management to get zip codes for providers
 #' @description Merge home and child care zip codes and calculate distance
-#' @param df_family data.frame. The dataframe of acf family data.
-#' @param df_family data.frame. The dataframe of acf family data.
+#' @param df data.frame. The dataframe of ACF data.
+#' @param max_child_age. Integer. Age to filter the child age to be less than or
+#' equal.
 #' @return data.frame
+dm.acf_dist <- function(df,
+                        max_child_age = 4) {
+  
+  df <- df %>%
+    dplyr::filter(child_age <= max_child_age) %>% 
+    dplyr::rename(zip1 = family_zip, 
+                  zip2 = provider_zip) %>% 
+    distance_between_zips()
 
-dm.acf_dist <- function(df_family,
-                        df_provider,
-                        input_family = list(ChildrenID = "numeric",
-                                            Parents.FamilyZip = "numeric",
-                                            CCSettings.ProviderStateID = "numeric",
-                                            Parents.ReportingDate = "POSIXct",
-                                            Age = "numeric"),
-                        input_provider = list(Data.StateID = "numeric",
-                                              Data.ZipCode = "character",
-                                              Data.ReportingDate = "POSIXct")){
-  
-  browser()
-  
-  df_family <- df_family %>% 
-    test_input(input_family) %>% 
-    dm.acf_family()
-  
-  df_provider <- df_provider %>% 
-    test_input(input_provider) %>% 
-    dm.acf_provider()
-  
-  df <- df_family %>% 
-    dplyr::left_join(df_provider, by = c("provider_id", "date"), suffix = c("_family", "_provider")) %>% 
-    distance_between_zips(zip1 = family_zip, zip2 = provider_zip)
-  
   assertthat::assert_that(is.numeric(df$distance))
-  assertthat::assert_that(all(df$distance[df$provider_zip == df$family_zip] %in% c(0, NA)))
-  
+  assertthat::assert_that(all(df$distance[df$zip1 == df$zip2] %in% c(0, NA)))
+
   return(df)
 }
 
-#' @title ACF data management to get zip codes for providers
-#' @description Clean ACF provider data, find coordinates for each zip code, calculate straight line distance.
-#' @param df data.frame. The merged family/home ACF data from dm.acf_dist function.
-#' @param county_list. A list of TX county codes of counties of interest to compare. 
-#' Eg county_list = c(439) for Tarrant County; county_list = c(201, 439) to compare Harris to Tarrant County
-#' @return a table and a plot. Decile values for distance between home and provider zip code and density plot of distances.
+#' @title Distance density plot
+#' @param df. data.frame. Default is DF_ACF.
+#' @param county_list. A list of TX county codes of counties of interest to 
+#' compare. E.g county_list = c(48439) for Tarrant County; 
+#' county_list = c("48201", "48439") to compare Harris to Tarrant County
+#' @return plot
+distance_density_plot <- function(df = DF_ACF, county_list) {
 
-summary.acf_dist <- function(df,
-                             county_list = NULL){
-  
-  browser()
-  
-  zip_county_xwalk <- get.zip_county_xwalk()
-  
-  df <- df %>% 
-    dplyr::left_join(zip_county_xwalk, by = c("family_zip" = "zip")) %>% 
-    dplyr::left_join(zip_county_xwalk, by = c("provider_zip" ="zip"), suffix = c("_family", "_provider"))
-  
-  subset <- df %>% 
-    dplyr::filter(county_family %in% county_list & county_provider %in% county_list & county_family == county_provider) %>% 
-    dplyr::left_join(tigris::fips_codes %>% dplyr::filter(state_code == 48) %>% dplyr::mutate(county_code = as.numeric(county_code)),
-                     by = c("county_family" ="county_code")) %>% 
-    dplyr::rename(county_label = county)
-  
-  assertthat::assert_that(all(unique(subset$county_family) %in% county_list))
-  assertthat::assert_that(all(unique(subset$county_provider) %in% county_list))
-  assertthat::assert_that(all(subset$county_provider == subset$county_provider))
-  
-  assertthat::assert_that(sum(is.na(subset$distance)) == 0,
-                          msg = "NAs in the distance")
-  
-  density_plot <- ggplot2::ggplot(subset) +
-    ggplot2::geom_density(ggplot2::aes(x = distance, group=county_label, fill = county_label), alpha = .5) +
-    ggplot2::theme_minimal()
-  
-  decile_table <- subset %>% 
-    dplyr::group_by(county_label) %>% 
-    dplyr::summarise(decile = list(quantile(distance, prob = seq(0, 1, .1)))) %>% 
+  summary.acf_dist(df = df, county_list = county_list) %>%
+    dplyr::filter(distance <= 10) %>% 
+    ggplot2::ggplot() +
+    ggplot2::geom_density(ggplot2::aes(x = distance,
+                                       fill = quarter_year), alpha = .5) +
+    ggplot2::theme_minimal() +
+    ggplot2::facet_grid(. ~ family_fips_code)
+}
+
+#' @title Distance decile table
+#' @param df. data.frame. Default is DF_ACF.
+#' @param county_list. A list of TX county codes of counties of interest to 
+#' compare. E.g county_list = c(48439) for Tarrant County; 
+#' county_list = c("48201", "48439") to compare Harris to Tarrant County
+#' @return table
+distance_decile_table <- function(df = DF_ACF, county_list) {
+
+  summary.acf_dist(df = df, county_list = county_list) %>%
+    dplyr::summarise(decile = list(quantile(distance, prob = seq(0, 1, .1), 
+                                            na.rm = TRUE))) %>% 
     tidyr::unnest_wider(col = decile)
+}
+
+#' @title ACF data management to get zip codes for providers
+#' @description Clean ACF provider data, find coordinates for each zip code, 
+#' calculate straight line distance.
+#' @param df data.frame.
+#' @param county_list. A list of TX county codes of counties of interest to 
+#' compare. E.g county_list = c(48439) for Tarrant County; 
+#' county_list = c("48201", "48439") to compare Harris to Tarrant County
+summary.acf_dist <- function(df, county_list) {
   
-  return(list(density_plot, decile_table))
-  
+  df <- df %>%
+    dplyr::filter(family_fips_code %in% county_list) %>%
+    dm.acf_dist() %>% 
+    dplyr::group_by(family_fips_code, quarter_year)
 }
