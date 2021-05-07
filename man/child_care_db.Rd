@@ -6,9 +6,9 @@
 \usage{
 child_care_db(
   root,
+  state_code = 48,
   acf_qtr_years = NULL,
   acs_year = 2019,
-  acs_state_code = 48,
   acs_geography = "tract",
   acs_county = NULL,
   db_name = "child_care_env.Rdata"

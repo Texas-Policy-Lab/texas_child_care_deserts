@@ -9,7 +9,11 @@ col.operation_number <- function(df) {
                           msg = "NAs in the operation_number")
 
   df <- df %>%
-    dplyr::mutate(operation_number = gsub("-.*", "", operation_number))
+    dplyr::mutate(operation_number = gsub("-.*", "", operation_number),
+                  operation_number = stringr::str_pad(operation_number,
+                                                      side = "left", 
+                                                      width = 15,
+                                                      pad = "0"))
 
   assertthat::assert_that(all(!grepl("-", df$operation_number)))
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
@@ -21,11 +25,12 @@ col.operation_number <- function(df) {
 #' @title Data management steps for the county column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.county <- function(df) {
+col.county <- function(df, state_fips) {
 
   df <- df %>%
     dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
     dplyr::inner_join(tigris::fips_codes %>% 
+                        dplyr::filter(state_code == state_fips) %>%
                         dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county)),
                                       county = gsub("county", "", county),
                                       county_code = paste0(state_code, county_code)) %>% 
@@ -180,13 +185,14 @@ dm.hhsc_ccl <- function(df,
                         county_fips = NULL,
                         processed_pth,
                         name,
+                        state_fips,
                         ...) {
 
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
-    col.county() %>%
+    col.county(state_fips = state_fips) %>%
     col.location_address_geo() %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%

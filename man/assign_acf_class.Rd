@@ -8,6 +8,8 @@ assign_acf_class(pth, acf_qtr_years)
 }
 \arguments{
 \item{pth}{String. Path to the data}
+
+\item{acf_qtr_years}{vector. Default is 'Q2-2019'.}
 }
 \description{
 Assigns a class to all the incoming files which will perform different

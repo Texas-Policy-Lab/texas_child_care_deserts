@@ -14,6 +14,7 @@
   county_fips = NULL,
   processed_pth,
   name,
+  state_fips,
   ...
 )
 }
