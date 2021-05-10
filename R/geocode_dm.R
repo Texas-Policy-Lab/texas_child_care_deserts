@@ -82,7 +82,7 @@ dm.geocode_address <- function(df,
                                url = "http://www.mapquestapi.com/geocoding/{version}/batch?key={key}",
                                limit = 100) {
   
-  check_key.mapquest()
+  get_key.mapquest()
 
   bb <- tx_bounding_box(state_fips = state_fips)
 
@@ -135,7 +135,7 @@ dm.reverse_geocode <- function(latLng,
                                version = "v1",
                                url = "http://www.mapquestapi.com/geocoding/{version}/reverse?key={key}") {
 
-  check_key.mapquest()
+  get_key.mapquest()
   
   l <- lapply(latLng, function(x, url, version) {
     r <- httr::POST(url = glue::glue(url, version = version, key = key),
