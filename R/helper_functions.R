@@ -16,10 +16,10 @@ create_folder_str <- function(pths) {
 #' @param pth string. Path the the environment
 load_env <- function (pth) {
 
-  load(file.path(pth))
+  load(pth)
 
   for (i in names(env)) {
-    assign(i, env[[i]])
+    assign(i, env[[i]], envir = .GlobalEnv)
   }
-  rm(env, i)
+
 }
