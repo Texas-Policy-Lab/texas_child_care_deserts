@@ -51,7 +51,7 @@ get_key.census <- function(env_var = "CENSUS_API_KEY",
 #' texascc::check_key.mapquest()
 #' }
 #' @return TRUE if a census api key exists, error if it does not exist
-check_key.mapquest <- function(env_var = "MAPQUEST_API_KEY",
+get_key.mapquest <- function(env_var = "MAPQUEST_API_KEY",
                                title = "MAPQUEST",
                                url = "https://developer.mapquest.com/",
                                install = "texascc::mapquest_api_key(key = 'X')") {
