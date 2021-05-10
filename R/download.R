@@ -13,22 +13,22 @@
 #' dwnld.acs(tbls = tbls, raw_pth = raw_pth)
 #' }
 dwnld.acs <- function(tbls, raw_pth, ...) {
-  
-  check_census_key()
-  
+
+  get_key.census()
+
   f <- function(name, tbls, pth) {
-    
+
     attr <- tbls[[name]]
     attr$table <- name
-    
+
     test_attr(attr)
-    
+
     df <- do.call(tidycensus::get_acs, attr)
-    
+
     if (!is.null(pth)) {
       readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
     }
-    
+
     attr$df <- df
     return(structure(attr, class = name))
   }
