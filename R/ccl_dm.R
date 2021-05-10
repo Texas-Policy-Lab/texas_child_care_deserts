@@ -75,7 +75,8 @@ col.location_address_geo <- function(df) {
   df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
-                    sep = "([(,)])")
+                    sep = "([(,)])") %>% 
+    dplyr::mutate(address = gsub("\n", "", address))
 
   return(df)
 }
@@ -183,7 +184,6 @@ dm.hhsc_ccl <- function(df,
                                              email_address = "character",
                                              PHONE_NUMBER = "character"),
                         county_fips = NULL,
-                        processed_pth,
                         name,
                         state_fips,
                         ...) {
@@ -199,15 +199,35 @@ dm.hhsc_ccl <- function(df,
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.total_capacity() %>%
+    col.total_capacity() %>% 
     dplyr::mutate(download_date = Sys.Date())
 
   return(df)
+}
+
+#' @title HHSC CCL Population
+#' @description Creates a dataframe unique on operation number and download date
+#' to be able to track when child care providers enter and leave the CCL database
+#' @return data.frame
+pop.hhsc_ccl <- function(new, old) {
+
+  new %>%
+    dplyr::bind_rows(old) %>%
+    dplyr::distinct(operation_number, download_date)
+}
+
+pop.hhsc_ccl_most_recent_attr <- function(new, old) {
+
+  new %>%
+    dplyr::bind_rows(old) %>%
+    dplyr::group_by(operation_number) %>%
+    dplyr::slice(which.max(download_date))
 }
 
 #' @title Process the CCL data
 process.hhsc_ccl <- function(cls) {
 
   cls$df <- do.call(dwnld.hhsc_ccl, cls)
-  df <- do.call(dm.hhsc_ccl, cls)  
+  df <- do.call(dm.hhsc_ccl, cls)
+
 }
