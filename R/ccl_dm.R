@@ -216,6 +216,10 @@ pop.hhsc_ccl <- function(new, old) {
     dplyr::distinct(operation_number, download_date)
 }
 
+#' @title HHSC CCL Population
+#' @description Keeps to most recent attributes for each provider by download
+#' date
+#' @return data.frame
 pop.hhsc_ccl_most_recent_attr <- function(new, old) {
 
   new %>%
