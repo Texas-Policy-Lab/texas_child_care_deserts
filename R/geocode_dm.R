@@ -27,11 +27,6 @@ split_calls <- function(v, limit) {
   return(calls)
 }
 
-#' @title Set Mapquest API Key
-mapquest_api_key <- function(key) {
-  Sys.setenv(MAPQUEST_API_KEY = key)
-}
-
 #' @title Response -> Dataframe
 #' @description Turns the response from mapquest into a dataframe
 #' @export
@@ -77,7 +72,7 @@ dm.drop_poor_quality <- function(df,
 }
 
 #' @title Geocode addresses
-#' @descrption Geocodes addresses using the Mapquest API
+#' @description Geocodes addresses using the Mapquest API
 #' @param addresses vector. The list of addresses to geocode.
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @export
@@ -88,14 +83,14 @@ dm.geocode_address <- function(df,
                                limit = 100) {
   
   check_key.mapquest()
-  
+
   bb <- tx_bounding_box(state_fips = state_fips)
 
   calls <- split_calls(v = df$address,
                        limit = limit)
   
   l <- lapply(calls, function(call, url, version) {
-    r <- httr::POST(url = glue::glue(url, version = version),
+    r <- httr::POST(url = glue::glue(url, version = version, key = ),
                     query = list(key = key),
                     body = list(locations = call,
                                 boundingBox = bb,
@@ -128,7 +123,7 @@ dm.geocode_address <- function(df,
 }
 
 #' @title Geocode addresses
-#' @descrption Geocodes addresses using the Mapquest API
+#' @description Geocodes addresses using the Mapquest API
 #' @param latLng list. The list of addresses to geocode.
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @examples
