@@ -41,13 +41,25 @@ child_care_db <- function(root,
                           acs_county = NULL,
                           db_name = "child_care_env.Rdata") {
 
-  env <- new.env()
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
   pths <- c(data_pth, raw_pth, processed_pth)
-
   create_folder_str(pths = pths)
+
+  load_env(file.path(processed_pth, db_name))
+
+  env <- new.env()
+
+  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
+                                                 processed_pth = processed_pth,
+                                                 name = "HHSC_CCL",
+                                                 state_fips = state_code))
+
+  env$POP_HHSC_CCL <- pop.hhsc_ccl(new = env$DF_HHSC_CCL, old = DF_HHSC_CCL)
+
+  env$POP_HHSC_CCL_ATTR <- pop.hhsc_ccl_most_recent_attr(new = env$DF_HHSC_CCL,
+                                                         old = DF_HHSC_CCL)
 
   env$DF_ACF <- process.acf(cls =
                               list(raw_pth = raw_pth,
@@ -60,14 +72,13 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 name = "HHSC_CCL",
-                                                 state_fips = state_code))
-
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
+  env$XWALK_TRACTS_PRVDR <- process.xwalk_tract_prdr(tracts = env$XWALK_TRACTS,
+                                                     providers = env$DF_HHSC_CCL)
+  
   env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
