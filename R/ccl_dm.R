@@ -70,13 +70,26 @@ col.licensed_to_serve_ages <- function(df) {
 #' @title Data management steps to clean the operation type column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.location_address_geo <- function(df) {
+col.location_address_geo <- function(df, bb) {
 
   df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
                     sep = "([(,)])") %>% 
-    dplyr::mutate(address = gsub("\n", "", address))
+    dplyr::mutate(address = gsub("\n", "", address)) %>%
+    dplyr::ungroup() %>% 
+    check_tx_bounds(bb = bb) %>%
+    dplyr::left_join(DF_HHSC_CCL %>% 
+                       dplyr::select(operation_number, address, lat, long) %>% 
+                       dplyr::rename(lat2 = lat,
+                                     long2 = long)) %>%
+    dplyr::mutate(lat = ifelse(!is.na(lat2), lat2, lat),
+                  long = ifelse(!is.na(long2), long2, long),
+                  lat = stringr::str_trim(lat, "both"),
+                  long = stringr::str_trim(long, "both")) %>% 
+    dplyr::select(-c(lat2, long2)) %>% 
+    dm.geocode_address(bb = bb) %>% 
+    dm.reverse_geocode()
 
   return(df)
 }
@@ -162,6 +175,15 @@ col.total_capacity <- function(df) {
   return(df)
 }
 
+#' @title Assign deserts
+col.assign_deserts <- function(df) {
+
+  df <- df %>%
+    dplyr::mutate(all_provider = ifelse(!after_school, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE))
+
+}
+
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and 
 #' select variables
@@ -188,18 +210,21 @@ dm.hhsc_ccl <- function(df,
                         state_fips,
                         ...) {
 
+  bb <- tx_bounding_box(state_fips = state_fips)
+
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
     col.county(state_fips = state_fips) %>%
-    col.location_address_geo() %>%
+    col.location_address_geo(bb = bb) %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.total_capacity() %>% 
+    col.assign_deserts() %>%
     dplyr::mutate(download_date = Sys.Date())
 
   return(df)
