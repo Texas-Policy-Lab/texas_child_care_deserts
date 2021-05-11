@@ -4,22 +4,8 @@
 \alias{dm.reverse_geocode}
 \title{Geocode addresses}
 \usage{
-\method{dm}{reverse_geocode}(
-  latLng,
-  version = "v1",
-  url = "http://www.mapquestapi.com/geocoding/{version}/reverse?key={key}"
-)
-}
-\arguments{
-\item{latLng}{list. The list of addresses to geocode.}
-
-\item{key}{string. The api key registered with your personal Mapquest account.}
+\method{dm}{reverse_geocode}(df, url = "https://geo.fcc.gov", path = "/api/census/block/find")
 }
 \description{
-Geocodes addresses using the Mapquest API
-}
-\examples{
- latLng <- list(lat = 30.333472, lng = -81.470448)
- key <- "XXXXX"
- address <- dm.reverse_geocode(latLng = latLng, key = key)
+Geocodes addresses using FCC
 }

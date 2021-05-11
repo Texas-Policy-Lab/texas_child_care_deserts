@@ -4,7 +4,7 @@
 \alias{dm.geocode_request}
 \title{Response -> Dataframe}
 \usage{
-\method{dm}{geocode_request}(c)
+\method{dm}{geocode_request}(results, call)
 }
 \description{
 Turns the response from mapquest into a dataframe

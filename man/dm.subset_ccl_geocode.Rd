@@ -4,7 +4,7 @@
 \alias{dm.subset_ccl_geocode}
 \title{Subset CCL for geocoding}
 \usage{
-\method{dm}{subset_ccl_geocode}(df)
+\method{dm}{subset_ccl_geocode}(df, bb)
 }
 \description{
 Subset CCL for geocoding

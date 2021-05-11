@@ -3,7 +3,6 @@
 S3method(dm,drop_poor_quality)
 S3method(dm,geocode_address)
 S3method(dm,geocode_request)
-S3method(dm,reverse_geocode)
 S3method(dm,xwalk_tracts)
 export(dwnld.geo_tracts)
 export(dwnld.geo_zip)

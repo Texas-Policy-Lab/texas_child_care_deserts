@@ -6,9 +6,10 @@
 \usage{
 \method{dm}{geocode_address}(
   df,
-  state_fips,
+  bb,
   version = "v1",
-  url = "http://www.mapquestapi.com/geocoding/{version}/batch?key={key}",
+  url = "http://www.mapquestapi.com",
+  path = "/geocoding/v1/batch",
   limit = 100
 )
 }
