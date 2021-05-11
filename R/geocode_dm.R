@@ -180,7 +180,7 @@ dm.reverse_geocode <- function(df,
       }) %>% dplyr::bind_rows()
     ) %>%
     dplyr::mutate(tract = ifelse(county_code != county_code2, NA, tract),
-                  tract = dplyr::mutate(tract = substr(tract, 1, 11))
+                  tract = substr(tract, 1, 11))
 }
 
 #' @title Subset CCL for geocoding
