@@ -1,7 +1,6 @@
 #' @title Pulls down bounding box parameters for Texas
 #' @export
-tx_bounding_box <- function(df,
-                            url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv",
+tx_bounding_box <- function(url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv",
                             state_fips) {
 
   bb <- readr::read_csv(url) %>%
@@ -91,14 +90,11 @@ dm.drop_poor_quality <- function(df,
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @export
 dm.geocode_address <- function(df,
-                               state_fips,
+                               bb,
                                version = "v1",
                                url = "http://www.mapquestapi.com",
                                path = "/geocoding/v1/batch",
                                limit = 100) {
-
-  bb <- tx_bounding_box(df = df,
-                        state_fips = state_fips)
 
   subset <- dm.subset_ccl_geocode(df, bb)
 
@@ -146,49 +142,51 @@ dm.geocode_address <- function(df,
     dplyr::select(-c(lat2, long2))
 }
 
+#' @title Unlist FCC request
+fcc_request <- function(result) {
+
+  data.frame(tract = result$Block$FIPS,
+             county_code2 = result$County$FIPS,
+             stringsAsFactors = FALSE)
+}
+
 #' @title Geocode addresses
-#' @description Geocodes addresses using the Mapquest API
-#' @param latLng list. The list of addresses to geocode.
-#' @param key string. The api key registered with your personal Mapquest account.
-#' @examples
-#'  latLng <- list(lat = 30.333472, lng = -81.470448)
-#'  key <- "XXXXX"
-#'  address <- dm.reverse_geocode(latLng = latLng, key = key)
-#' @export
-dm.reverse_geocode <- function(latLng,
-                               version = "v1",
-                               url = "http://www.mapquestapi.com/geocoding/{version}/reverse?key={key}") {
+#' @description Geocodes addresses using FCC
+dm.reverse_geocode <- function(df,
+                               url = "https://geo.fcc.gov",
+                               path = "/api/census/block/find") {
 
-  key <- get_key.mapquest()
+  url <- httr::modify_url(url = url, path = path)
 
-  l <- lapply(latLng, function(x, url, version, key) {
-    r <- httr::POST(url = glue::glue(url, version = version, 
-                                     key = key),
-                    query = list(key = key),
-                    body = list(location = list(latLng = x)),
-                    encode = "json")
+  df %>%
+    dplyr::left_join(
+      lapply(1:nrow(df), function(i) {
 
-    if(r$status_code == 200) {
+        r <- httr::GET(url = url,
+                       query = list(latitude=df$lat[i],
+                                    longitude=df$long[i],
+                                    showall="true",
+                                    format="json"),
+                       encode = "json")
 
-      c <- httr::content(r)
+        resp <- httr::content(r)
 
-      df <- dm.geocode_request(c)
+        if (httr::http_type(r) != "application/json") {
+          stop("API did not return json", call. = FALSE)
+        }
 
-    } else {
-      warning("status not 200")
-    }
-
-  }, url = url, version = version, key = key)
-
-  l %>% 
-    dplyr::bind_rows()
+        fcc_request(resp) %>% 
+          dplyr::mutate(operation_number = df$operation_number[i])
+      }) %>% dplyr::bind_rows()
+    ) %>%
+    dplyr::mutate(tract = ifelse(county_code != county_code2, NA, tract),
+                  tract = dplyr::mutate(tract = substr(tract, 1, 11))
 }
 
 #' @title Subset CCL for geocoding
 dm.subset_ccl_geocode <- function(df, bb) {
 
   df %>%
-    check_tx_bounds(bb) %>%
     dplyr::filter(is.na(lat) | is.na(long)) %>%
     dplyr::select(operation_number, address)
 
