@@ -7,7 +7,7 @@
 \method{get_key}{google}(
   env_var = "Google_API_KEY",
   title = "Goggle",
-  url = "https://developer.mapquest.com/",
+  url = "https://console.cloud.google.com/project/_/apiui/credential",
   install = "texascc::api_key.google(key = 'X')"
 )
 }
