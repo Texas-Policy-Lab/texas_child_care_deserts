@@ -2,7 +2,8 @@
 % Please edit documentation in R/api_helper_functions.R
 \name{get_key.google}
 \alias{get_key.google}
-\title{Checks to make sure the census API key is set as an environment variable}
+\title{Checks to make sure the google API key is set as an environment 
+variable}
 \usage{
 \method{get_key}{google}(
   env_var = "Google_API_KEY",
@@ -18,7 +19,8 @@
 TRUE if a census api key exists, error if it does not exist
 }
 \description{
-Checks to make sure the census API key is set as an environment variable
+Checks to make sure the google API key is set as an environment 
+variable
 }
 \examples{
 \dontrun{
