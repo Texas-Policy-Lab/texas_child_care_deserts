@@ -231,7 +231,6 @@ dm.mkt_subsidy <- function(tracts_xwalk,
     dplyr::inner_join(tract_provider_xwalk %>%
                         dplyr::mutate(operation_number= as.character(operation_number)),
                       by= "operation_number")
-  
 
   provider_kids <- provider_kids %>% 
     dplyr::select(-operation_number) %>% 
