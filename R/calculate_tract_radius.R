@@ -48,13 +48,28 @@ dm.acf_dist <- function(df,
   return(df)
 }
 
+#' @title ACF data management to get zip codes for providers
+#' @description Clean ACF provider data, find coordinates for each zip code, 
+#' calculate straight line distance.
+#' @param df data.frame.
+#' @param county_list. A list of TX county codes of counties of interest to 
+#' compare. E.g county_list = c(48439) for Tarrant County; 
+#' county_list = c("48201", "48439") to compare Harris to Tarrant County
+summary.acf_dist <- function(df, county_list) {
+  
+  df <- df %>%
+    dplyr::filter(family_fips_code %in% county_list) %>%
+    dm.acf_dist() %>% 
+    dplyr::group_by(family_fips_code, quarter_year)
+}
+
 #' @title Distance density plot
 #' @param df. data.frame. Default is DF_ACF.
 #' @param county_list. A list of TX county codes of counties of interest to 
 #' compare. E.g county_list = c(48439) for Tarrant County; 
 #' county_list = c("48201", "48439") to compare Harris to Tarrant County
 #' @return plot
-distance_density_plot <- function(df = DF_ACF, county_list) {
+calc.distance_density_plot <- function(df, county_list) {
 
   summary.acf_dist(df = df, county_list = county_list) %>%
     dplyr::filter(distance <= 10) %>% 
@@ -71,25 +86,10 @@ distance_density_plot <- function(df = DF_ACF, county_list) {
 #' compare. E.g county_list = c(48439) for Tarrant County; 
 #' county_list = c("48201", "48439") to compare Harris to Tarrant County
 #' @return table
-distance_decile_table <- function(df = DF_ACF, county_list) {
+calc.distance_decile_table <- function(df, county_list) {
 
   summary.acf_dist(df = df, county_list = county_list) %>%
     dplyr::summarise(decile = list(quantile(distance, prob = seq(0, 1, .1), 
                                             na.rm = TRUE))) %>% 
     tidyr::unnest_wider(col = decile)
-}
-
-#' @title ACF data management to get zip codes for providers
-#' @description Clean ACF provider data, find coordinates for each zip code, 
-#' calculate straight line distance.
-#' @param df data.frame.
-#' @param county_list. A list of TX county codes of counties of interest to 
-#' compare. E.g county_list = c(48439) for Tarrant County; 
-#' county_list = c("48201", "48439") to compare Harris to Tarrant County
-summary.acf_dist <- function(df, county_list) {
-  
-  df <- df %>%
-    dplyr::filter(family_fips_code %in% county_list) %>%
-    dm.acf_dist() %>% 
-    dplyr::group_by(family_fips_code, quarter_year)
 }
