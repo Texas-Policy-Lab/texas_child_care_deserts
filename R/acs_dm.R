@@ -139,3 +139,17 @@ process.acs <- function(acs_year,
   acs_tbls <- c(acs_tbls, lapply(tbls, dm))
   do.call(dm.demand, acs_tbls)
 }
+
+#' @title Drop the bottom 1 percent
+drop_bottom_1pct <- function(df) {
+  
+  df <- df %>%
+    dplyr::group_by(dsrt_type) %>% 
+    dplyr::mutate(mkt_value = ifelse(mkt_value <= quantile(mkt_value, .01), 
+                                     NA, mkt_value))
+  
+  assertthat::assert_that(any(is.na(df$mkt_value)))
+  
+  return(df)
+}
+
