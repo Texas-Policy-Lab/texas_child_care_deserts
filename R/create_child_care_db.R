@@ -76,9 +76,6 @@ child_care_db <- function(root,
 
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
-  env$XWALK_TRACTS_PRVDR <- process.xwalk_tract_prdr(tracts = env$XWALK_TRACTS,
-                                                     providers = env$DF_HHSC_CCL)
-  
   env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
