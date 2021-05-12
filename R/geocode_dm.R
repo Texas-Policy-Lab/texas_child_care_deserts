@@ -145,7 +145,7 @@ dm.geocode_address <- function(df,
 #' @title Unlist FCC request
 fcc_request <- function(result) {
 
-  data.frame(tract = result$Block$FIPS,
+  data.frame(tract2 = result$Block$FIPS,
              county_code2 = result$County$FIPS,
              stringsAsFactors = FALSE)
 }
@@ -158,13 +158,16 @@ dm.reverse_geocode <- function(df,
 
   url <- httr::modify_url(url = url, path = path)
 
+  subset <- df %>% 
+    dplyr::filter(is.na(tract))
+
   df %>%
     dplyr::left_join(
-      lapply(1:nrow(df), function(i) {
+      lapply(1:nrow(subset), function(i) {
 
         r <- httr::GET(url = url,
-                       query = list(latitude=df$lat[i],
-                                    longitude=df$long[i],
+                       query = list(latitude=subset$lat[i],
+                                    longitude=subset$long[i],
                                     showall="true",
                                     format="json"),
                        encode = "json")
@@ -176,11 +179,13 @@ dm.reverse_geocode <- function(df,
         }
 
         fcc_request(resp) %>% 
-          dplyr::mutate(operation_number = df$operation_number[i])
+          dplyr::mutate(operation_number = subset$operation_number[i])
       }) %>% dplyr::bind_rows()
     ) %>%
-    dplyr::mutate(tract = ifelse(county_code != county_code2, NA, tract),
-                  tract = substr(tract, 1, 11))
+    dplyr::mutate(tract2 = ifelse(county_code != county_code2, NA, tract2),
+                  tract2 = substr(tract2, 1, 11),
+                  tract = ifelse(is.na(tract), tract2, tract)) %>% 
+    dplyr::select(-tract2)
 }
 
 #' @title Subset CCL for geocoding
