@@ -204,9 +204,9 @@ process.acf <- function(cls) {
 #' @param acf data.frame. The cleaned acf dataframe.
 #' @return Summarized data with the max, median, and minimum number of kids per
 #' provider
-dm.agg_kids_prvdr <- function(df = DF_ACF) {
+dm.agg_kids_prvdr <- function(df_acf) {
 
-  df %>%
+  df_acf %>%
     dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
@@ -219,26 +219,23 @@ dm.agg_kids_prvdr <- function(df = DF_ACF) {
 }
 
 #' @title Create market subsidy
-dm.mkt_subsidy <- function(tracts_xwalk, 
-                           cpp) {
+dm.mkt_subsidy <- function(xwalk_track_pvrdr, 
+                           df_hhsc_ccl,
+                           df_acf) {
 
-  n_kids <- dm.agg_kids_prvdr()
+  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
 
-  provider_kids <- n_kids %>%
-    dplyr::left_join(DF_HHSC_CCL %>% 
-      dplyr::select(operation_number, licensed_capacity, subsidy)) %>% 
+  mkt_enrollment_ratios <- n_kids %>%
+    dplyr::left_join(df_hhsc_ccl %>% 
+                       dplyr::select(operation_number, licensed_capacity, subsidy)) %>%
     dplyr::filter(subsidy) %>%
-    dplyr::inner_join(tract_provider_xwalk %>%
-                        dplyr::mutate(operation_number= as.character(operation_number)),
-                      by= "operation_number")
-
-  provider_kids <- provider_kids %>% 
+    dplyr::inner_join(xwalk_track_pvrdr) %>%
     dplyr::select(-operation_number) %>% 
-    dplyr::summarise(max_ratio = max_n_kids/total_capacity,
-                     med_ratio = med_n_kids/total_capacity,
-                     max_ratio = min_n_kids/total_capacity) %>% 
+    dplyr::summarise(max_ratio = max_n_kids/licensed_capacity,
+                     med_ratio = med_n_kids/licensed_capacity,
+                     min_ratio = min_n_kids/licensed_capacity) %>% 
     # replace ratios over 1 with 1
-    dplyr::mutate_at(vars(max_ratio, med_ratio, min_ratio), 
+    dplyr::mutate_at(dplyr::vars(max_ratio, med_ratio, min_ratio), 
                      list(~ ifelse(.>=1,1,.))) %>% 
     #drop markets that have no providers and therefore na for the ratios
     tidyr::drop_na()
@@ -251,7 +248,7 @@ dm.mkt_subsidy <- function(tracts_xwalk,
     # aggregate moments across markets
     dplyr::summarise(mu_hat_1 = mean(mu_1))
 
-  tri_params <-market_enrollment_ratios %>% 
+  tri_params <- mkt_enrollment_ratios %>% 
     dplyr::summarise(a=mean(min_ratio),
                      b=mean(max_ratio)) %>% 
     dplyr::bind_cols(mom_params) %>% 
