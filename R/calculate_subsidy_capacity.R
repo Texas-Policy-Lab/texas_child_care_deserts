@@ -6,7 +6,7 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
     dplyr::inner_join(df_hhsc_ccl %>%
                         dplyr::select(operation_number, tract),
                         by = c("surround_tract" = "tract")) %>% 
-    dplyr::select(anchor_tract, operation_number)
+    dplyr::select(operation_number, anchor_county, anchor_tract)
 }
 
 #' @title Aggregate number of kids per provider
