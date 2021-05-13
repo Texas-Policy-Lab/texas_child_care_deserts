@@ -94,32 +94,42 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county) {
+save_subset_child_care_db <- function(pth, county, tract_radius) {
 
   check_type.character(county)
 
-  assertthat::assert_that(nchar(county) == 5,
+  assertthat::assert_that(all(nchar(county) == 5),
                           msg = "Please enter a string 5-digit FIPS code")
 
   if(file.exists(pth)) {
 
-    load(pth)
+    load_env(file.path(pth))
 
-    for (name in names(env)) {
+    env <- new.env()
 
-      i <- grep("anchor_county|family_fips_code", names(env[[name]]))
-      n <- names(env[[name]])[i]
-      names(env[[name]])[i] <- "county_code"
-      
-      if ("county_code" %in% names(env[[name]]) & name != "DF_HHSC_CCL") {
-        env[[name]] <- env[[name]] %>%
-          dplyr::filter(county_code == county) 
-      }
+    env$XWALK_TRACTS <- XWALK_TRACTS %>%
+      dplyr::filter(anchor_county %in% county) %>%
+      dplyr::filter(mi_to_tract <= tract_radius)
 
-      names(env[[name]])[i] <- n
-    }
+    env$GEO_TRACTS <- GEO_TRACTS %>%
+      dplyr::filter(county_code %in% county)
 
-    save(env, file = file.path(dirname(pth), paste(county, basename(pth), sep = "_")))
+    env$DF_DEMAND <- DF_DEMAND %>%
+      dplyr::filter(county_code %in% county)
+
+    env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
+                                                       df_hhsc_ccl = DF_HHSC_CCL)
+
+    surround_tracts <- env$XWALK_TRACTS %>% 
+      dplyr::distinct(surround_tract) %>% 
+      dplyr::pull(surround_tract)
+
+    env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
+      dplyr::filter(tract %in% surround_tracts)
+
+    save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
+                                                   basename(pth), sep = "_")))
+
   } else {
     assertthat::assert_that(FALSE, 
                            msg = "Please run child_care_db() function to create
