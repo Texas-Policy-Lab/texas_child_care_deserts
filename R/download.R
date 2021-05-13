@@ -173,3 +173,15 @@ dwnld.geo_tracts <- function(state_fips) {
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
     dplyr::select(tract, county_code, geometry)
 }
+
+#' @title Get tract by latitude and longitude
+#' @description Downloads shape file for Texas (48) using the tigris package, 
+#' which pulls the most recent shape from the United States Census Bureau.
+#' @export
+dwnld.geo_county <- function(state_fips) {
+  
+  tigris::counties(state = "48", cb = TRUE) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
+    dplyr::select(county_code, geometry)
+}
