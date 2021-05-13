@@ -80,6 +80,8 @@ child_care_db <- function(root,
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 
+  env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
+  
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
 
   save(env, file = file.path(processed_pth, db_name))
@@ -111,19 +113,28 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::filter(anchor_county %in% county) %>%
       dplyr::filter(mi_to_tract <= tract_radius)
 
+    surround_tracts <- env$XWALK_TRACTS %>% 
+      dplyr::distinct(surround_tract) %>% 
+      dplyr::pull(surround_tract)
+    
+    surround_county <- env$XWALK_TRACTS %>% 
+      dplyr::distinct(surround_county) %>% 
+      dplyr::pull(surround_county)
+
     env$GEO_TRACTS <- GEO_TRACTS %>%
-      dplyr::filter(county_code %in% county)
+      dplyr::filter(tract %in% surround_tracts) %>% 
+      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+
+    env$GEO_COUNTY <- GEO_COUNTY %>%
+      dplyr::filter(county_code %in% surround_county) %>%
+      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
 
     env$DF_DEMAND <- DF_DEMAND %>%
       dplyr::filter(county_code %in% county)
 
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-
-    surround_tracts <- env$XWALK_TRACTS %>% 
-      dplyr::distinct(surround_tract) %>% 
-      dplyr::pull(surround_tract)
-
+    
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
