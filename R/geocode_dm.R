@@ -133,9 +133,7 @@ dm.geocode_address <- function(df,
     dm.drop_poor_quality() %>%
     dplyr::mutate(lat2 = as.character(lat),
                   long2 = as.character(long)) %>% 
-    dplyr::select(operation_number, lat2, long2)
-
-  df %>%
+    dplyr::select(operation_number, lat2, long2) %>%
     dplyr::left_join(l) %>% 
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long)) %>% 
@@ -158,7 +156,7 @@ dm.reverse_geocode <- function(df,
 
   url <- httr::modify_url(url = url, path = path)
 
-  subset <- df %>% 
+  subset <- df %>%
     dplyr::filter(is.na(tract))
 
   df %>%
@@ -185,7 +183,8 @@ dm.reverse_geocode <- function(df,
     dplyr::mutate(tract2 = ifelse(county_code != county_code2, NA, tract2),
                   tract2 = substr(tract2, 1, 11),
                   tract = ifelse(is.na(tract), tract2, tract)) %>% 
-    dplyr::select(-tract2)
+    dplyr::select(-c(tract2, county_code2))
+
 }
 
 #' @title Subset CCL for geocoding
