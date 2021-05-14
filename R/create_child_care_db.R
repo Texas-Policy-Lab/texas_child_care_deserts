@@ -138,6 +138,8 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
+    env$HARRIS_NEIGHBORHOOD <- dwnld.harris_neighborhood()
+    
     save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
