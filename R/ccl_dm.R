@@ -72,7 +72,7 @@ col.licensed_to_serve_ages <- function(df) {
 #' @return data.frame
 col.location_address_geo <- function(df, bb) {
 
-  df %>%
+  df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
                     sep = "([(,)])") %>% 
@@ -83,16 +83,18 @@ col.location_address_geo <- function(df, bb) {
     dplyr::ungroup() %>% 
     check_tx_bounds(bb = bb) %>%
     dplyr::left_join(DF_HHSC_CCL %>%
-                       dplyr::select(operation_number, address, lat, long, tract) %>% 
-                       dplyr::rename(lat2 = lat,
-                                     long2 = long,
-                                     tract2 = tract)) %>%
+                       dplyr::select(operation_number, lat, long, tract
+                                     ) %>%
+                       dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
+                                   )) %>%
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long),
-                  tract = ifelse(is.na(tract), tract2, tract)) %>% 
-    dplyr::select(-c(lat2, long2, tract2)) %>% 
-    dm.geocode_address(bb = bb) %>%
-    dm.reverse_geocode()
+                  tract = ifelse(is.na(tract), tract2, tract)
+                 ) %>%
+    dplyr::select(-c(lat2, long2, tract2)) %>%
+    # dm.geocode_address(bb = bb) %>%
+    dm.reverse_geocode() %>%
+    dplyr::mutate(address = stringr::str_to_title(address))
 
   return(df)
 }
