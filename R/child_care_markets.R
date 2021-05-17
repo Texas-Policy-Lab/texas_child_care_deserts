@@ -1,21 +1,20 @@
 #' @title Create tract supply
 create_tract_supply <- function(supply) {
 
-  tract_supply <- supply %>%
+  supply %>%
     dplyr::filter(!is.na(tract)) %>%
-    dplyr::select(tract, county_code, licensed_capacity, all_provider, sub_provider) %>%
+    dplyr::select(tract, county_code, licensed_capacity, all_provider, sub_provider,
+                  sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
                         cols = -c(tract, county_code, licensed_capacity)) %>%
     dplyr::filter(supply) %>% 
     dplyr::select(-supply) %>% 
     dplyr::group_by(tract, desert) %>% 
     dplyr::summarise(tract_supply = sum(licensed_capacity, na.rm = TRUE))
-  
 }
 
 #' @title Create market supply
-create_market_supply <- function(tract_supply) {
-
+create_market_supply <- function(tract_supply, tracts) {
   tracts %>%
     dplyr::inner_join(tract_supply, by = c("surround_tract" = "tract")) %>% 
     dplyr::group_by(anchor_county, anchor_tract, desert) %>% 
@@ -25,7 +24,6 @@ create_market_supply <- function(tract_supply) {
 
 #' @title Create tract demand
 create_tract_demand <- function(demand) {
-  
   demand %>%
     dplyr::select(tract, county_code, n_kids_working_parents_lt5, 
                   n_kids_lt5_working_under200_pct) %>%
@@ -40,7 +38,6 @@ create_tract_demand <- function(demand) {
 
 #' @title Create Market demand
 create_market_demand <- function(tract_demand, tracts) {
-
   tracts %>%
     dplyr::inner_join(tract_demand, by = c("surround_tract" = "tract")) %>% 
     dplyr::group_by(anchor_county, anchor_tract, desert) %>% 
@@ -48,14 +45,33 @@ create_market_demand <- function(tract_demand, tracts) {
     dplyr::ungroup()
 }
 
+#' @title Create market ratio
+create_market_ratio <- function(mkt_supply, mkt_demand) {
+  
+  mkt_supply %>% 
+    dplyr::full_join(mkt_demand) %>% 
+    dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,
+                  desert_type = desert,
+                  desert = ifelse(seats_per_100 < 33, TRUE, FALSE),
+                  label = dplyr:::case_when(seats_per_100 < 5 ~ "< 5 seats",
+                                            seats_per_100 >= 5 & seats_per_100 < 15 ~ ">= 5 and < 15",
+                                            seats_per_100 >= 15 & seats_per_100 < 25 ~ ">= 15 and < 25",
+                                            seats_per_100 >= 25 & seats_per_100 < 33 ~ ">= 25 and < 33",
+                                            seats_per_100 >= 33 ~ "Not a desert"),
+                  label = ordered(label,
+                                  levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert"))
+    )
+
+}
+
 #' @title Drop the bottom 1 percent
 drop_bottom_1pct <- function(df) {
-  
+
   df <- df %>%
     dplyr::group_by(desert) %>% 
     dplyr::mutate(mkt_value = ifelse(mkt_value <= quantile(mkt_value, .01), 
                                      NA, mkt_value))
-  
+
   assertthat::assert_that(any(is.na(df$mkt_value)))
   
   return(df)
