@@ -50,6 +50,8 @@ child_care_db <- function(root,
   load_env(file.path(processed_pth, db_name))
 
   env <- new.env()
+  
+  env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
@@ -83,7 +85,7 @@ child_care_db <- function(root,
   env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
   
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
-
+  
   save(env, file = file.path(processed_pth, db_name))
 }
 
@@ -108,6 +110,8 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
     load_env(file.path(pth))
 
     env <- new.env()
+
+    env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
 
     env$XWALK_TRACTS <- XWALK_TRACTS %>%
       dplyr::filter(anchor_county %in% county) %>%
@@ -138,8 +142,6 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
-    env$HARRIS_NEIGHBORHOOD <- dwnld.harris_neighborhood()
-    
     save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
