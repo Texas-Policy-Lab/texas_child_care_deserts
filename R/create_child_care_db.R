@@ -83,9 +83,9 @@ child_care_db <- function(root,
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 
   env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
-  
+
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
-  
+
   save(env, file = file.path(processed_pth, db_name))
 }
 
@@ -135,6 +135,9 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
 
     env$DF_DEMAND <- DF_DEMAND %>%
       dplyr::filter(county_code %in% county)
+    
+    env$DF_MKT_DEMAND <- create_market_demand(demand = env$DF_DEMAND, 
+                                              tracts = env$XWALK_TRACTS)
 
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
