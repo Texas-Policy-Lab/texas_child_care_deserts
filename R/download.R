@@ -203,17 +203,38 @@ dwnld.geo_county <- function(state_fips) {
     dplyr::select(X, Y, L2, county_code, geometry)
 }
 
-#' @title Get the neighborhood to census tract data
-#' @description Download the neighbordhood to census tract cross walk create by the Kinder Institute. https://www.arcgis.com/apps/MapSeries/index.html?appid=95320b06677c438d91027cb5feb241bf
-#' @param data_in_name string. The name to of the data to read in.
-#' @param data_in_pth string. The path to read the data in from.
-#' @export
-dwnld.harris_neighborhood <- function(pth = "https://www.datahouston.org/cta_crosswalk.txt") {
+#' @title Get the Harris County Neighborhood to census tract data
+#' @description Download the neighbordhood to census tract cross walk create by 
+#' the Kinder Institute. 
+#' https://www.arcgis.com/apps/MapSeries/index.html?appid=95320b06677c438d91027cb5feb241bf
+#' @return data.frame
+dwnld.harris_neighborhood <- function(url = "https://www.datahouston.org/cta_crosswalk.txt",
+                                      name = "HARRIS_NEIGHBORHOOD",
+                                      ext = "csv",
+                                      raw_pth) {
 
-  df <- read.csv(url(pth)) %>%
-    dplyr::rename(tract = GEOID10) %>%
-    dplyr::rename_all(tolower) %>%
-    dplyr::select(-id) %>% 
-    dplyr::mutate(county_code = "48201")
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
+  
+  if (!file.exists(dwnld_pth)) {
+    download.file(url, destfile = dwnld_pth, mode = "wb") 
+  }
+  
+  df <- readr::read_csv(dwnld_pth)
+}
+
+#' @title Get the Tarrant County Neighborhood data
+#' @return data.frame
+dwnld.tarrant_neighborhood <- function(url = "https://data.fortworthtexas.gov/api/views/ruhd-2sjc/rows.csv?accessType=DOWNLOAD",
+                                       name = "TARRANT_NEIGHBORHOOD",
+                                       ext = "csv",
+                                       raw_pth) {
+
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
+
+  if (!file.exists(dwnld_pth)) {
+    download.file(url, destfile = dwnld_pth, mode = "wb") 
+  }
+
+  df <- readr::read_csv(dwnld_pth)
 }
 
