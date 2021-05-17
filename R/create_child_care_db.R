@@ -50,7 +50,7 @@ child_care_db <- function(root,
   load_env(file.path(processed_pth, db_name))
 
   env <- new.env()
-  
+
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
@@ -133,10 +133,10 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::filter(county_code %in% surround_county) %>%
       dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
 
-    env$DF_DEMAND <- DF_DEMAND %>%
-      dplyr::filter(county_code %in% county)
+    env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
+                                           dplyr::filter(county_code %in% county))
     
-    env$DF_MKT_DEMAND <- create_market_demand(demand = env$DF_DEMAND, 
+    env$DF_MKT_DEMAND <- create_market_demand(demand = env$DF_TRACT_DEMAND, 
                                               tracts = env$XWALK_TRACTS)
 
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
