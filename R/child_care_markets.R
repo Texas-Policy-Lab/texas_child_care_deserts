@@ -1,48 +1,62 @@
+#' @title Create Supply
+create_supply <- function(df_hhsc_ccl) {
+
+  df_hhsc_ccl %>%
+    dplyr::filter(!is.na(tract)) %>%
+    dplyr::select(operation_number, tract, county_code, licensed_capacity, all_provider, sub_provider,
+                  sub_trs_provider, sub_trs4_provider) %>%
+    tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
+                        cols = -c(operation_number, tract, county_code, licensed_capacity)) %>%
+    dplyr::filter(supply) %>% 
+    dplyr::select(-supply)
+}
+
+
 #' @title Create tract supply
 create_tract_supply <- function(supply) {
 
-  supply %>%
-    dplyr::filter(!is.na(tract)) %>%
-    dplyr::select(tract, county_code, licensed_capacity, all_provider, sub_provider,
-                  sub_trs_provider, sub_trs4_provider) %>%
-    tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
-                        cols = -c(tract, county_code, licensed_capacity)) %>%
-    dplyr::filter(supply) %>% 
-    dplyr::select(-supply) %>% 
-    dplyr::group_by(tract, desert) %>% 
+   supply %>%
+    dplyr::group_by(tract, desert) %>%
     dplyr::summarise(tract_supply = sum(licensed_capacity, na.rm = TRUE))
 }
 
 #' @title Create market supply
-create_market_supply <- function(tract_supply, tracts) {
+create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
+
   tracts %>%
-    dplyr::inner_join(tract_supply, by = c("surround_tract" = "tract")) %>% 
-    dplyr::group_by(anchor_county, anchor_tract, desert) %>% 
+    dplyr::left_join(tract_supply, by = c("surround_tract" = "tract")) %>%
+    dplyr::group_by(anchor_county, anchor_tract, desert) %>%
     dplyr::summarise(mkt_supply = sum(tract_supply, na.rm = T)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>% 
+    dplyr::right_join(xwalk_tract_desert) %>% 
+    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply),
+                  anchor_county = ifelse(is.na(anchor_county), substr(anchor_tract, 1, 5), anchor_county))
 }
 
 #' @title Create tract demand
 create_tract_demand <- function(demand) {
+
   demand %>%
     dplyr::select(tract, county_code, n_kids_working_parents_lt5, 
                   n_kids_lt5_working_under200_pct) %>%
     dplyr::rename(all_provider = n_kids_working_parents_lt5,
-                  sub_provider = n_kids_lt5_working_under200_pct) %>% 
+                  sub_provider = n_kids_lt5_working_under200_pct) %>%
     dplyr::mutate(sub_trs4_provider = sub_provider,
-                  sub_trs_provider = sub_provider) %>% 
+                  sub_trs_provider = sub_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "tract_demand", 
                         cols = -c(tract, county_code))
-
 }
 
 #' @title Create Market demand
-create_market_demand <- function(tract_demand, tracts) {
+create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
+  
   tracts %>%
     dplyr::inner_join(tract_demand, by = c("surround_tract" = "tract")) %>% 
     dplyr::group_by(anchor_county, anchor_tract, desert) %>% 
     dplyr::summarise(mkt_demand = sum(tract_demand, na.rm = T)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>% 
+    dplyr::right_join(xwalk_tract_desert) %>% 
+    dplyr::mutate(mkt_demand = ifelse(is.na(mkt_demand), 0, mkt_demand))
 }
 
 #' @title Create market ratio
@@ -63,6 +77,17 @@ create_market_ratio <- function(mkt_supply, mkt_demand) {
     )
 
 }
+
+#' @title Tract desert crosswalk
+xwalk_tract_desert <- function(tracts) {
+
+  expand.grid(unique(tracts$anchor_tract), 
+              c("all_provider", "sub_provider", "sub_trs_provider", "sub_trs4_provider")) %>% 
+    as.data.frame(stringsAsFactors = FALSE) %>% 
+    dplyr::rename(anchor_tract = Var1,
+                  desert = Var2)
+}
+
 
 #' @title Drop the bottom 1 percent
 drop_bottom_1pct <- function(df) {
