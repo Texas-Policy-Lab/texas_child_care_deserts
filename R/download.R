@@ -167,11 +167,20 @@ dwnld.lu_county_code <- function(state_fips) {
 #' @export
 dwnld.geo_tracts <- function(state_fips) {
 
-  tigris::tracts(state = state_fips, cb = TRUE) %>%
+  geo <- tigris::tracts(state = state_fips, cb = TRUE) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::rename(tract = geoid) %>%
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
-    dplyr::select(tract, county_code, geometry)
+    dplyr::select(tract, county_code, geometry) %>% 
+    dplyr::mutate(id = seq(1, dplyr::n(), 1))
+
+  x <- geo %>%
+    sf::st_coordinates(geometry) %>% 
+    data.frame() %>%
+    dplyr::rename(id = L3) %>% 
+    dplyr::inner_join(geo) %>% 
+    dplyr::select(X, Y, tract, county_code, geometry)
+  
 }
 
 #' @title Get tract by latitude and longitude
@@ -180,8 +189,52 @@ dwnld.geo_tracts <- function(state_fips) {
 #' @export
 dwnld.geo_county <- function(state_fips) {
   
-  tigris::counties(state = "48", cb = TRUE) %>%
+  geo <- tigris::counties(state = "48", cb = TRUE) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
-    dplyr::select(county_code, geometry)
+    dplyr::select(county_code, geometry) %>%
+    dplyr::mutate(id = seq(1, dplyr::n(), 1))
+  
+  x <- geo %>%
+    sf::st_coordinates(geometry) %>% 
+    data.frame() %>%
+    dplyr::rename(id = L3) %>% 
+    dplyr::inner_join(geo) %>% 
+    dplyr::select(X, Y, L2, county_code, geometry)
 }
+
+#' @title Get the Harris County Neighborhood to census tract data
+#' @description Download the neighbordhood to census tract cross walk create by 
+#' the Kinder Institute. 
+#' https://www.arcgis.com/apps/MapSeries/index.html?appid=95320b06677c438d91027cb5feb241bf
+#' @return data.frame
+dwnld.harris_neighborhood <- function(url = "https://www.datahouston.org/cta_crosswalk.txt",
+                                      name = "HARRIS_NEIGHBORHOOD",
+                                      ext = "csv",
+                                      raw_pth) {
+
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
+  
+  if (!file.exists(dwnld_pth)) {
+    download.file(url, destfile = dwnld_pth, mode = "wb") 
+  }
+  
+  df <- readr::read_csv(dwnld_pth)
+}
+
+#' @title Get the Tarrant County Neighborhood data
+#' @return data.frame
+dwnld.tarrant_neighborhood <- function(url = "https://data.fortworthtexas.gov/api/views/ruhd-2sjc/rows.csv?accessType=DOWNLOAD",
+                                       name = "TARRANT_NEIGHBORHOOD",
+                                       ext = "csv",
+                                       raw_pth) {
+
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
+
+  if (!file.exists(dwnld_pth)) {
+    download.file(url, destfile = dwnld_pth, mode = "wb") 
+  }
+
+  df <- readr::read_csv(dwnld_pth)
+}
+
