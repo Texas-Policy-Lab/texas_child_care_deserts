@@ -70,8 +70,10 @@ col.licensed_to_serve_ages <- function(df) {
 #' @title Data management steps to clean the operation type column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.location_address_geo <- function(df, bb) {
-
+col.location_address_geo <- function(df, state_fips) {
+  
+  bb <- tx_bounding_box(state_fips = state_fips)
+  
   df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
@@ -89,12 +91,12 @@ col.location_address_geo <- function(df, bb) {
                                    )) %>%
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long),
-                  tract = ifelse(is.na(tract), tract2, tract)
-                 ) %>%
+                  tract = ifelse(is.na(tract), tract2, tract),
+                  address = stringr::str_to_title(address)) %>%
     dplyr::select(-c(lat2, long2, tract2)) %>%
-    # dm.geocode_address(bb = bb) %>%
+    dm.geocode_address(bb = bb) %>%
     dm.reverse_geocode() %>%
-    dplyr::mutate(address = stringr::str_to_title(address))
+    check_tx_bounds(bb = bb)
 
   return(df)
 }
@@ -230,14 +232,12 @@ dm.hhsc_ccl <- function(df,
                         trs_pth,
                         ...) {
 
-  bb <- tx_bounding_box(state_fips = state_fips)
-
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
     col.county(state_fips = state_fips) %>%
-    col.location_address_geo(bb = bb) %>%
+    col.location_address_geo(state_fips = state_fips) %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
     col.operation_name() %>%
