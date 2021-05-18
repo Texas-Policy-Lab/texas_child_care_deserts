@@ -16,7 +16,7 @@ create_supply <- function(df_hhsc_ccl) {
 create_tract_supply <- function(supply) {
 
    supply %>%
-    dplyr::group_by(tract, desert) %>%
+    dplyr::group_by(tract, county_code, desert) %>%
     dplyr::summarise(tract_supply = sum(licensed_capacity, na.rm = TRUE))
 }
 
