@@ -119,10 +119,12 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::filter(anchor_county %in% county) %>%
       dplyr::filter(mi_to_tract <= tract_radius)
 
+    env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
+
     surround_tracts <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_tract) %>% 
       dplyr::pull(surround_tract)
-    
+
     surround_county <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_county) %>% 
       dplyr::pull(surround_county)
@@ -136,10 +138,11 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
 
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
-                                           dplyr::filter(county_code %in% county))
+                                                 dplyr::filter(tract %in% surround_tracts))
 
     env$DF_MKT_DEMAND <- create_market_demand(tract_demand = env$DF_TRACT_DEMAND, 
-                                              tracts = env$XWALK_TRACTS)
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
 
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
@@ -147,10 +150,13 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
-    env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_HHSC_CCL)
+    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL)
+
+    env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
 
     env$DF_MKT_SUPPLY <- create_market_supply(tract_supply = env$DF_TRACT_SUPPLY,
-                                              tracts = env$XWALK_TRACTS)
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
 
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
