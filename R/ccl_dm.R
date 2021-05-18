@@ -139,7 +139,10 @@ col.programs_provided <- function(df) {
 
   df <- df %>%
     dplyr::mutate(after_school = ifelse(grepl("after school care", 
-                                              tolower(programs_provided)), TRUE, FALSE)) %>%
+                                              tolower(programs_provided)), TRUE, FALSE),
+                  after_school_only = grepl("afterschool|after school|after-school|school age", tolower(operation_name)),
+                  school_age_only = ifelse(!infant & !toddler & !prek & school, TRUE, FALSE),
+                  after_school_school_age_only = ifelse(after_school_only | school_age_only, TRUE, FALSE)) %>%
     dplyr::select(-programs_provided)
 
   assertthat::assert_that(all(c(df$after_school) %in% c(TRUE, FALSE)),
@@ -192,7 +195,7 @@ col.assign_deserts <- function(df, trs_pth) {
 
   df <- df %>%
     dplyr::left_join(trs) %>%
-    dplyr::mutate(all_provider = ifelse(!after_school, TRUE, FALSE),
+    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
                   sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE),
                   sub_trs_provider = ifelse(sub_provider & trs_provider, TRUE, FALSE),
                   sub_trs_provider = ifelse(is.na(trs_provider) & !subsidy, FALSE, sub_trs_provider),
