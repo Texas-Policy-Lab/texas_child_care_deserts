@@ -100,7 +100,8 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county, tract_radius) {
+save_subset_child_care_db <- function(pth, county, tract_radius, 
+                                      home_prvdr_capacity, center_prvdr_capacity) {
 
   check_type.character(county)
 
@@ -150,7 +151,9 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
-    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL)
+    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
+                                   home_prvdr_capacity = home_prvdr_capacity, 
+                                   center_prvdr_capacity = center_prvdr_capacity)
 
     env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
 

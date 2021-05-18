@@ -1,12 +1,23 @@
 #' @title Create Supply
-create_supply <- function(df_hhsc_ccl) {
+create_supply <- function(df_hhsc_ccl, 
+                          home_prvdr_capacity, 
+                          center_prvdr_capacity) {
+
+  assertthat::assert_that(home_prvdr_capacity >= 0 & home_prvdr_capacity <= 1,
+                          msg = "home_prvdr_capacity should be a number between 0 and 1")
+  assertthat::assert_that(center_prvdr_capacity >= 0 & center_prvdr_capacity <= 1,
+                          msg = "center_prvdr_capacity should be a number between 0 and 1")
 
   df_hhsc_ccl %>%
     dplyr::filter(!is.na(tract)) %>%
-    dplyr::select(operation_number, tract, county_code, licensed_capacity, all_provider, sub_provider,
-                  sub_trs_provider, sub_trs4_provider) %>%
+    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr ~ licensed_capacity*home_prvdr_capacity,
+                                                  center_prvdr ~ licensed_capacity*center_prvdr_capacity,
+                                                  TRUE ~ NA_real_)) %>%
+    dplyr::select(operation_number, tract, county_code, adj_capacity,
+                  all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
-                        cols = -c(operation_number, tract, county_code, licensed_capacity)) %>%
+                        cols = -c(operation_number, tract, county_code,
+                                  adj_capacity)) %>%
     dplyr::filter(supply) %>% 
     dplyr::select(-supply)
 }
@@ -17,7 +28,7 @@ create_tract_supply <- function(supply) {
 
    supply %>%
     dplyr::group_by(tract, county_code, desert) %>%
-    dplyr::summarise(tract_supply = sum(licensed_capacity, na.rm = TRUE))
+    dplyr::summarise(tract_supply = sum(adj_capacity, na.rm = TRUE))
 }
 
 #' @title Create market supply
