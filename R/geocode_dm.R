@@ -96,7 +96,9 @@ dm.geocode_address <- function(df,
                                path = "/geocoding/v1/batch",
                                limit = 100) {
 
-  subset <- dm.subset_ccl_geocode(df, bb)
+  subset <- df %>%
+    dplyr::filter(is.na(lat) | is.na(long)) %>%
+    dplyr::select(operation_number, address)
 
   calls <- split_calls(v = subset$address,
                        limit = limit)
@@ -131,9 +133,11 @@ dm.geocode_address <- function(df,
     dplyr::bind_cols(subset %>%
                         dplyr::select(operation_number)) %>%
     dm.drop_poor_quality() %>%
-    dplyr::mutate(lat2 = as.character(lat),
-                  long2 = as.character(long)) %>% 
-    dplyr::select(operation_number, lat2, long2) %>%
+    dplyr::mutate(lat2 = lat,
+                  long2 = long) %>% 
+    dplyr::select(operation_number, lat2, long2)
+
+  df %>%
     dplyr::left_join(l) %>% 
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long)) %>% 
@@ -184,14 +188,5 @@ dm.reverse_geocode <- function(df,
                   tract2 = substr(tract2, 1, 11),
                   tract = ifelse(is.na(tract), tract2, tract)) %>% 
     dplyr::select(-c(tract2, county_code2))
-
-}
-
-#' @title Subset CCL for geocoding
-dm.subset_ccl_geocode <- function(df, bb) {
-
-  df %>%
-    dplyr::filter(is.na(lat) | is.na(long)) %>%
-    dplyr::select(operation_number, address)
 
 }
