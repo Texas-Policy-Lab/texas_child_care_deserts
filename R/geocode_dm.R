@@ -21,8 +21,8 @@ check_tx_bounds <- function(df,
   df %>%
     dplyr::mutate(lat = as.numeric(lat),
                   long = as.numeric(long),
-                  lat = ifelse(lat >= bb$lr$lat & lat <= bb$ul$lat, lat, NA),
-                  long = ifelse(long >= bb$ul$lng & long <= bb$lr$lng, long, NA)
+                  lat = ifelse(lat >= bb$lr$lat & lat <= bb$ul$lat & long >= bb$ul$lng & long <= bb$lr$lng, lat, NA),
+                  long = ifelse(long >= bb$ul$lng & long <= bb$lr$lng & lat >= bb$lr$lat & lat <= bb$ul$lat, long, NA)
                   )
 }
 
