@@ -58,6 +58,19 @@ create_tract_demand <- function(demand) {
                         cols = -c(tract, county_code))
 }
 
+#' @title Drop the bottom 1 percent
+drop_bottom_1pct <- function(df) {
+  
+  df <- df %>%
+    dplyr::group_by(desert) %>% 
+    dplyr::mutate(mkt_demand = ifelse(mkt_demand <= quantile(mkt_demand, .01), 
+                                      NA, mkt_demand))
+  
+  assertthat::assert_that(any(is.na(df$mkt_demand)))
+  
+  return(df)
+}
+
 #' @title Create Market demand
 create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
   
@@ -67,25 +80,13 @@ create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
     dplyr::summarise(mkt_demand = sum(tract_demand, na.rm = T)) %>%
     dplyr::ungroup() %>% 
     dplyr::right_join(xwalk_tract_desert) %>% 
-    dplyr::mutate(mkt_demand = ifelse(is.na(mkt_demand), 0, mkt_demand))
-}
-
-#' @title Drop the bottom 1 percent
-drop_bottom_1pct <- function(df) {
-  
-  df <- df %>%
-    dplyr::group_by(desert_type) %>% 
-    dplyr::mutate(label = ifelse(seats_per_100 <= quantile(seats_per_100, .01), 
-                                 NA, label))
-
-  assertthat::assert_that(any(is.na(df$label)))
-  
-  return(df)
+    dplyr::mutate(mkt_demand = ifelse(is.na(mkt_demand), 0, mkt_demand)) %>% 
+    drop_bottom_1pct()
 }
 
 #' @title Create market ratio
 create_market_ratio <- function(mkt_supply, mkt_demand) {
-  
+
   mkt_supply %>%
     dplyr::full_join(mkt_demand) %>%
     dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,
@@ -96,13 +97,11 @@ create_market_ratio <- function(mkt_supply, mkt_demand) {
                                             seats_per_100 >= 15 & seats_per_100 < 25 ~ ">= 15 and < 25",
                                             seats_per_100 >= 25 & seats_per_100 < 33 ~ ">= 25 and < 33",
                                             seats_per_100 >= 33 ~ "Not a desert")
-    ) %>% 
-    drop_bottom_1pct() %>% 
+    ) %>%
     dplyr::mutate(
                   label = ordered(label,
                                   levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert"))
     )
-
 }
 
 #' @title Tract desert crosswalk
