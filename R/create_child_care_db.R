@@ -41,13 +41,27 @@ child_care_db <- function(root,
                           acs_county = NULL,
                           db_name = "child_care_env.Rdata") {
 
-  env <- new.env()
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
   pths <- c(data_pth, raw_pth, processed_pth)
-
   create_folder_str(pths = pths)
+
+  load_env(file.path(processed_pth, db_name))
+
+  env <- new.env()
+  
+  env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
+
+  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
+                                                 processed_pth = processed_pth,
+                                                 name = "HHSC_CCL",
+                                                 state_fips = state_code))
+
+  env$POP_HHSC_CCL <- pop.hhsc_ccl(new = env$DF_HHSC_CCL, old = DF_HHSC_CCL)
+
+  env$POP_HHSC_CCL_ATTR <- pop.hhsc_ccl_most_recent_attr(new = env$DF_HHSC_CCL,
+                                                         old = DF_HHSC_CCL)
 
   env$DF_ACF <- process.acf(cls =
                               list(raw_pth = raw_pth,
@@ -60,10 +74,6 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 name = "HHSC_CCL",
-                                                 state_fips = state_code))
-
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
@@ -72,8 +82,10 @@ child_care_db <- function(root,
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 
+  env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
+  
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
-
+  
   save(env, file = file.path(processed_pth, db_name))
 }
 
@@ -86,32 +98,53 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county) {
+save_subset_child_care_db <- function(pth, county, tract_radius) {
 
   check_type.character(county)
 
-  assertthat::assert_that(nchar(county) == 5,
+  assertthat::assert_that(all(nchar(county) == 5),
                           msg = "Please enter a string 5-digit FIPS code")
 
   if(file.exists(pth)) {
 
-    load(pth)
+    load_env(file.path(pth))
 
-    for (name in names(env)) {
+    env <- new.env()
 
-      i <- grep("anchor_county|family_fips_code", names(env[[name]]))
-      n <- names(env[[name]])[i]
-      names(env[[name]])[i] <- "county_code"
-      
-      if ("county_code" %in% names(env[[name]]) & name != "DF_HHSC_CCL") {
-        env[[name]] <- env[[name]] %>%
-          dplyr::filter(county_code == county) 
-      }
+    env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
 
-      names(env[[name]])[i] <- n
-    }
+    env$XWALK_TRACTS <- XWALK_TRACTS %>%
+      dplyr::filter(anchor_county %in% county) %>%
+      dplyr::filter(mi_to_tract <= tract_radius)
 
-    save(env, file = file.path(dirname(pth), paste(county, basename(pth), sep = "_")))
+    surround_tracts <- env$XWALK_TRACTS %>% 
+      dplyr::distinct(surround_tract) %>% 
+      dplyr::pull(surround_tract)
+    
+    surround_county <- env$XWALK_TRACTS %>% 
+      dplyr::distinct(surround_county) %>% 
+      dplyr::pull(surround_county)
+
+    env$GEO_TRACTS <- GEO_TRACTS %>%
+      dplyr::filter(tract %in% surround_tracts) %>% 
+      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+
+    env$GEO_COUNTY <- GEO_COUNTY %>%
+      dplyr::filter(county_code %in% surround_county) %>%
+      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+
+    env$DF_DEMAND <- DF_DEMAND %>%
+      dplyr::filter(county_code %in% county)
+
+    env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
+                                                       df_hhsc_ccl = DF_HHSC_CCL)
+    
+    env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
+      dplyr::filter(tract %in% surround_tracts)
+
+    save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
+                                                   basename(pth), sep = "_")))
+
   } else {
     assertthat::assert_that(FALSE, 
                            msg = "Please run child_care_db() function to create

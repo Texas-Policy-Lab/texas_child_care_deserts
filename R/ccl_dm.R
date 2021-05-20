@@ -70,12 +70,33 @@ col.licensed_to_serve_ages <- function(df) {
 #' @title Data management steps to clean the operation type column
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
-col.location_address_geo <- function(df) {
-
+col.location_address_geo <- function(df, state_fips) {
+  
+  bb <- tx_bounding_box(state_fips = state_fips)
+  
   df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
-                    sep = "([(,)])")
+                    sep = "([(,)])") %>% 
+    dplyr::mutate(address = gsub("\n", "", address),
+                  lat = stringr::str_trim(lat, "both"),
+                  long = stringr::str_trim(long, "both"),
+                  tract = NA) %>%
+    dplyr::ungroup() %>% 
+    check_tx_bounds(bb = bb) %>%
+    dplyr::left_join(DF_HHSC_CCL %>%
+                       dplyr::select(operation_number, lat, long, tract
+                                     ) %>%
+                       dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
+                                   )) %>%
+    dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
+                  long = ifelse(is.na(long), long2, long),
+                  tract = ifelse(is.na(tract), tract2, tract),
+                  address = stringr::str_to_title(address)) %>%
+    dplyr::select(-c(lat2, long2, tract2)) %>%
+    dm.geocode_address(bb = bb) %>%
+    dm.reverse_geocode() %>%
+    check_tx_bounds(bb = bb)
 
   return(df)
 }
@@ -161,6 +182,15 @@ col.total_capacity <- function(df) {
   return(df)
 }
 
+#' @title Assign deserts
+col.assign_deserts <- function(df) {
+
+  df <- df %>%
+    dplyr::mutate(all_provider = ifelse(!after_school, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE))
+
+}
+
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and 
 #' select variables
@@ -183,7 +213,6 @@ dm.hhsc_ccl <- function(df,
                                              email_address = "character",
                                              PHONE_NUMBER = "character"),
                         county_fips = NULL,
-                        processed_pth,
                         name,
                         state_fips,
                         ...) {
@@ -193,21 +222,46 @@ dm.hhsc_ccl <- function(df,
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
     col.county(state_fips = state_fips) %>%
-    col.location_address_geo() %>%
+    col.location_address_geo(state_fips = state_fips) %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.total_capacity() %>%
+    col.total_capacity() %>% 
+    col.assign_deserts() %>%
     dplyr::mutate(download_date = Sys.Date())
 
   return(df)
+}
+
+#' @title HHSC CCL Population
+#' @description Creates a dataframe unique on operation number and download date
+#' to be able to track when child care providers enter and leave the CCL database
+#' @return data.frame
+pop.hhsc_ccl <- function(new, old) {
+
+  new %>%
+    dplyr::bind_rows(old) %>%
+    dplyr::distinct(operation_number, download_date)
+}
+
+#' @title HHSC CCL Population
+#' @description Keeps to most recent attributes for each provider by download
+#' date
+#' @return data.frame
+pop.hhsc_ccl_most_recent_attr <- function(new, old) {
+
+  new %>%
+    dplyr::bind_rows(old) %>%
+    dplyr::group_by(operation_number) %>%
+    dplyr::slice(which.max(download_date))
 }
 
 #' @title Process the CCL data
 process.hhsc_ccl <- function(cls) {
 
   cls$df <- do.call(dwnld.hhsc_ccl, cls)
-  df <- do.call(dm.hhsc_ccl, cls)  
+  df <- do.call(dm.hhsc_ccl, cls)
+
 }

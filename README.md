@@ -2,7 +2,63 @@
 
 API to create data for any count on child care deserts in Texas
 
-## Getting started
+## Function and attributes of the Texas Child Care Deserts Package
+
+1. Create a database of data to be used to create the Texas Child Care Deserts
+
+```{r}
+root <- "F:/Early_Childhood/04_Tarrant_County"
+child_care_db(root = root)
+```
+
+2. Load an child care deserts database or a subset of the database with clean and processed data for use
+
+```{r}
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+load_env(pth)
+```
+
+3. Compute child care distance distributions
+
+```{r}
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+load_env(pth)
+calc.distance_decile_table(df = DF_ACF, county_list = c("48201", "48439"))
+````
+
+```{r}
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+load_env(pth)
+calc.distance_density_plot(df = DF_ACF, county_list = c("48201", "48439"))
+```
+
+4. Calculate subsidy providers average capacity
+
+Note: subset the `XWALK_TRACTS` to the county of interest and mileage of interest.
+The mileage should be informed by the distribution that parents travel to get
+childcare which can be calculated using the above listed functions.
+
+```{r}
+XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = XWALK_TRACTS %>% 
+                                                 dplyr::filter(anchor_county == "48201" & mi_to_tract <= 3),
+                                               df_hhsc_ccl = DF_HHSC_CCL)
+
+calc.mkt_subsidy(xwalk_track_pvrdr = XWALK_TRACT_PRVDR, 
+                 df_hhsc_ccl = DF_HHSC_CCL,
+                 df_acf = DF_ACF)
+```
+
+5. Subset the database to a specific county to application development
+
+```{r}
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+county <- "48439"
+tract_radius <- 3 # This should be informed by the literature and the calculations from child care distance distribution functions
+
+save_subset_child_care_db(pth, county, tract_radius)
+```
+
+## Project workflow
 
 ### Clone the analysis and set-up the environment
 
@@ -26,12 +82,10 @@ API to create data for any count on child care deserts in Texas
 3. Run the `child_care_db` function
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
-
 child_care_db(root = root)
 ```
 4. Update the function documentation `devtools::document()`
 5. Run all the tests to make sure they are passing`devtools::test()`
-
 
 ### Ask for review
 1. Ask a team member to review your work by sending a pull request

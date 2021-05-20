@@ -12,7 +12,6 @@
     PROGRAMS_PROVIDED = "character", ACCEPTS_CHILD_CARE_SUBSIDIES = "character",
     email_address = "character", PHONE_NUMBER = "character"),
   county_fips = NULL,
-  processed_pth,
   name,
   state_fips,
   ...

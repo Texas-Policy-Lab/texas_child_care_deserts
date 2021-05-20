@@ -1,22 +1,3 @@
-#' @title Checks to make sure the census API key is set as an environment variable
-#' @param env_var. String. The environment variable to check for. Default is CENSUS_API_KEY
-#' @examples 
-#' \dontrun{
-#' key <- "X"
-#' tidycensus::census_api_key(key)
-#' check_census_key()
-#' }
-#' @return TRUE if a census api key exists, error if it does not exist
-check_census_key <- function(env_var = "CENSUS_API_KEY") {
-  msg <- "Please sign up for a census API key at:
-          'https://api.census.gov/data/key_signup.html'. Then install the key 
-          using tidycensus::census_api_key(key = 'X'), where 'X' is the key
-          you received from the Census."
-  
-  assertthat::assert_that(Sys.getenv(env_var) != "",
-                          msg = msg)
-}
-
 #' @title Test attributes
 #' @description Test's that the attributes of the parameters passed in are 
 #' correct
@@ -158,3 +139,17 @@ process.acs <- function(acs_year,
   acs_tbls <- c(acs_tbls, lapply(tbls, dm))
   do.call(dm.demand, acs_tbls)
 }
+
+#' @title Drop the bottom 1 percent
+drop_bottom_1pct <- function(df) {
+  
+  df <- df %>%
+    dplyr::group_by(dsrt_type) %>% 
+    dplyr::mutate(mkt_value = ifelse(mkt_value <= quantile(mkt_value, .01), 
+                                     NA, mkt_value))
+  
+  assertthat::assert_that(any(is.na(df$mkt_value)))
+  
+  return(df)
+}
+

@@ -4,7 +4,7 @@
 \alias{col.location_address_geo}
 \title{Data management steps to clean the operation type column}
 \usage{
-col.location_address_geo(df)
+col.location_address_geo(df, bb)
 }
 \arguments{
 \item{df}{data.frame. The dataframe}
