@@ -4,7 +4,7 @@
 \alias{col.assign_deserts}
 \title{Assign deserts}
 \usage{
-col.assign_deserts(df)
+col.assign_deserts(df, trs_pth)
 }
 \description{
 Assign deserts
