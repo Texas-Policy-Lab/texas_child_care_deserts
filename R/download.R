@@ -179,7 +179,7 @@ dwnld.geo_tracts <- function(state_fips) {
     data.frame() %>%
     dplyr::rename(id = L3) %>% 
     dplyr::inner_join(geo) %>% 
-    dplyr::select(X, Y, tract, county_code, geometry)
+    dplyr::select(X, Y, tract, county_code)
   
 }
 
@@ -200,7 +200,7 @@ dwnld.geo_county <- function(state_fips) {
     data.frame() %>%
     dplyr::rename(id = L3) %>% 
     dplyr::inner_join(geo) %>% 
-    dplyr::select(X, Y, L2, county_code, geometry)
+    dplyr::select(X, Y, L2, county_code)
 }
 
 #' @title Get the Harris County Neighborhood to census tract data
@@ -218,7 +218,7 @@ dwnld.harris_neighborhood <- function(url = "https://www.datahouston.org/cta_cro
   if (!file.exists(dwnld_pth)) {
     download.file(url, destfile = dwnld_pth, mode = "wb") 
   }
-  
+
   df <- readr::read_csv(dwnld_pth)
 }
 

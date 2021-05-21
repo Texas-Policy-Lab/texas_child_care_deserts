@@ -34,6 +34,7 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
+                          trs_pth,
                           state_code = 48,
                           acf_qtr_years = NULL,
                           acs_year = 2019,
@@ -50,11 +51,12 @@ child_care_db <- function(root,
   load_env(file.path(processed_pth, db_name))
 
   env <- new.env()
-  
+
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
+                                                 trs_pth = trs_pth,
                                                  name = "HHSC_CCL",
                                                  state_fips = state_code))
 
@@ -83,9 +85,9 @@ child_care_db <- function(root,
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 
   env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
-  
+
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
-  
+
   save(env, file = file.path(processed_pth, db_name))
 }
 
@@ -98,7 +100,8 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county, tract_radius) {
+save_subset_child_care_db <- function(pth, county, tract_radius, 
+                                      home_prvdr_capacity, center_prvdr_capacity) {
 
   check_type.character(county)
 
@@ -117,10 +120,12 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::filter(anchor_county %in% county) %>%
       dplyr::filter(mi_to_tract <= tract_radius)
 
+    env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
+
     surround_tracts <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_tract) %>% 
       dplyr::pull(surround_tract)
-    
+
     surround_county <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_county) %>% 
       dplyr::pull(surround_county)
@@ -133,15 +138,32 @@ save_subset_child_care_db <- function(pth, county, tract_radius) {
       dplyr::filter(county_code %in% surround_county) %>%
       dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
 
-    env$DF_DEMAND <- DF_DEMAND %>%
-      dplyr::filter(county_code %in% county)
+    env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
+                                                 dplyr::filter(tract %in% surround_tracts))
+
+    env$DF_MKT_DEMAND <- create_market_demand(tract_demand = env$DF_TRACT_DEMAND, 
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
 
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-    
+
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
 
+    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
+                                   home_prvdr_capacity = home_prvdr_capacity, 
+                                   center_prvdr_capacity = center_prvdr_capacity)
+
+    env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
+
+    env$DF_MKT_SUPPLY <- create_market_supply(tract_supply = env$DF_TRACT_SUPPLY,
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
+
+    env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
+                                            mkt_demand = env$DF_MKT_DEMAND)
+    
     save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 

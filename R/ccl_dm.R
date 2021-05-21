@@ -141,7 +141,10 @@ col.programs_provided <- function(df) {
 
   df <- df %>%
     dplyr::mutate(after_school = ifelse(grepl("after school care", 
-                                              tolower(programs_provided)), TRUE, FALSE)) %>%
+                                              tolower(programs_provided)), TRUE, FALSE),
+                  after_school_only = grepl("afterschool|after school|after-school|school age", tolower(operation_name)),
+                  school_age_only = ifelse(!infant & !toddler & !prek & school, TRUE, FALSE),
+                  after_school_school_age_only = ifelse(after_school_only | school_age_only, TRUE, FALSE)) %>%
     dplyr::select(-programs_provided)
 
   assertthat::assert_that(all(c(df$after_school) %in% c(TRUE, FALSE)),
@@ -183,11 +186,22 @@ col.total_capacity <- function(df) {
 }
 
 #' @title Assign deserts
-col.assign_deserts <- function(df) {
+col.assign_deserts <- function(df, trs_pth) {
+
+  trs <- readr::read_csv(trs_pth) %>% 
+    dplyr::select(operation_number, trs_provider, subsidy_provider, trs_star_level) %>% 
+    dplyr::mutate(operation_number = stringr::str_pad(operation_number, 
+                                                      side = "left",
+                                                      width = 15,
+                                                      pad = "0"))
 
   df <- df %>%
-    dplyr::mutate(all_provider = ifelse(!after_school, TRUE, FALSE),
-                  sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE))
+    dplyr::left_join(trs) %>%
+    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE),
+                  sub_trs_provider = ifelse(sub_provider & trs_provider, TRUE, FALSE),
+                  sub_trs_provider = ifelse(is.na(trs_provider) & !subsidy, FALSE, sub_trs_provider),
+                  sub_trs4_provider = ifelse(sub_trs_provider & trs_star_level == 4, TRUE, FALSE))
 
 }
 
@@ -215,6 +229,7 @@ dm.hhsc_ccl <- function(df,
                         county_fips = NULL,
                         name,
                         state_fips,
+                        trs_pth,
                         ...) {
 
   df <- df %>%
@@ -229,7 +244,7 @@ dm.hhsc_ccl <- function(df,
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.total_capacity() %>% 
-    col.assign_deserts() %>%
+    col.assign_deserts(trs_pth) %>%
     dplyr::mutate(download_date = Sys.Date())
 
   return(df)

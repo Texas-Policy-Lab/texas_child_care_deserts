@@ -110,7 +110,8 @@ dm.demand <- function(B17024,
                            msg = "Poverty rate should be less than or equal to 1")
 
   df <- B17024 %>%
-    dplyr::left_join(B23008) %>%
+    dplyr::left_join(B23008 %>% 
+                       dplyr::select(-c(n_kids_lt6, n_kids_lt5))) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
     dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5)
@@ -139,17 +140,3 @@ process.acs <- function(acs_year,
   acs_tbls <- c(acs_tbls, lapply(tbls, dm))
   do.call(dm.demand, acs_tbls)
 }
-
-#' @title Drop the bottom 1 percent
-drop_bottom_1pct <- function(df) {
-  
-  df <- df %>%
-    dplyr::group_by(dsrt_type) %>% 
-    dplyr::mutate(mkt_value = ifelse(mkt_value <= quantile(mkt_value, .01), 
-                                     NA, mkt_value))
-  
-  assertthat::assert_that(any(is.na(df$mkt_value)))
-  
-  return(df)
-}
-
