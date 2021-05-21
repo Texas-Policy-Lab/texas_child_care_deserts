@@ -55,6 +55,7 @@ dm.acf_dist <- function(df,
 #' @param county_list. A list of TX county codes of counties of interest to 
 #' compare. E.g county_list = c(48439) for Tarrant County; 
 #' county_list = c("48201", "48439") to compare Harris to Tarrant County
+#' @export
 summary.acf_dist <- function(df, county_list) {
   
   df <- df %>%
@@ -69,6 +70,7 @@ summary.acf_dist <- function(df, county_list) {
 #' compare. E.g county_list = c(48439) for Tarrant County; 
 #' county_list = c("48201", "48439") to compare Harris to Tarrant County
 #' @return plot
+#' @export
 calc.distance_density_plot <- function(df, county_list) {
 
   summary.acf_dist(df = df, county_list = county_list) %>%
@@ -86,6 +88,7 @@ calc.distance_density_plot <- function(df, county_list) {
 #' compare. E.g county_list = c(48439) for Tarrant County; 
 #' county_list = c("48201", "48439") to compare Harris to Tarrant County
 #' @return table
+#' @export
 calc.distance_decile_table <- function(df, county_list) {
 
   summary.acf_dist(df = df, county_list = county_list) %>%

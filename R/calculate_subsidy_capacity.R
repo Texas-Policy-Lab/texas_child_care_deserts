@@ -13,6 +13,7 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
 #' @param acf data.frame. The cleaned acf dataframe.
 #' @return Summarized data with the max, median, and minimum number of kids per
 #' provider
+#' @export
 dm.agg_kids_prvdr <- function(df_acf) {
   
   df_acf %>%
@@ -28,6 +29,7 @@ dm.agg_kids_prvdr <- function(df_acf) {
 }
 
 #' @title Create market subsidy
+#' @export
 calc.mkt_subsidy <- function(xwalk_track_pvrdr, 
                              df_hhsc_ccl,
                              df_acf) {
