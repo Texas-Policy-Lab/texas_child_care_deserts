@@ -86,7 +86,7 @@ create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
 
 #' @title Create market ratio
 create_market_ratio <- function(mkt_supply, mkt_demand) {
-
+  
   mkt_supply %>%
     dplyr::full_join(mkt_demand) %>%
     dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,
@@ -96,11 +96,13 @@ create_market_ratio <- function(mkt_supply, mkt_demand) {
                                             seats_per_100 >= 5 & seats_per_100 < 15 ~ ">= 5 and < 15",
                                             seats_per_100 >= 15 & seats_per_100 < 25 ~ ">= 15 and < 25",
                                             seats_per_100 >= 25 & seats_per_100 < 33 ~ ">= 25 and < 33",
-                                            seats_per_100 >= 33 ~ "Not a desert")
+                                            seats_per_100 >= 33 ~ "Not a desert",
+                                            is.na(seats_per_100) ~ "Not enough children to estimate")
     ) %>%
     dplyr::mutate(
                   label = ordered(label,
-                                  levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert"))
+                                  levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert",
+                                             "Not enough children to estimate"))
     )
 }
 
