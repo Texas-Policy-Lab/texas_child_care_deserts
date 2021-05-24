@@ -28,11 +28,11 @@ dm.agg_kids_prvdr <- function(df_acf) {
     dplyr::arrange(operation_number, quarter_year)
 }
 
-#' @title Create market subsidy
+#' @title Create subsidy capacity estimate
 #' @export
-calc.mkt_subsidy <- function(xwalk_track_pvrdr, 
-                             df_hhsc_ccl,
-                             df_acf) {
+calc.subsidy_capacity <- function(xwalk_tract_pvrdr, 
+                                  df_hhsc_ccl,
+                                  df_acf) {
   
   n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
   
