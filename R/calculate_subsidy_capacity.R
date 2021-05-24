@@ -36,8 +36,8 @@ dm.agg_kids_prvdr <- function(df_acf,
 calc.subsidy_capacity <- function(xwalk_tract_pvrdr, 
                                   df_hhsc_ccl,
                                   df_acf,
-                                  year = 2019,
-                                  quarters = c(1,2,4)) {
+                                  year,
+                                  quarters) {
   
   n_kids <- dm.agg_kids_prvdr(df_acf = df_acf,
                               year = year,
@@ -47,11 +47,11 @@ calc.subsidy_capacity <- function(xwalk_tract_pvrdr,
     dplyr::left_join(df_hhsc_ccl %>% 
                        dplyr::select(operation_number, licensed_capacity, subsidy)) %>%
     dplyr::filter(subsidy) %>%
-    dplyr::inner_join(xwalk_track_pvrdr) %>%
-    dplyr::select(-operation_number) %>% 
-    dplyr::summarise(max_ratio = max_n_kids/licensed_capacity,
-                     med_ratio = med_n_kids/licensed_capacity,
-                     min_ratio = min_n_kids/licensed_capacity) %>% 
+    dplyr::inner_join(xwalk_tract_prvdr) %>%
+    dplyr::group_by(anchor_tract) %>% 
+    dplyr::summarise(max_ratio = sum(max_n_kids)/sum(licensed_capacity),
+                     med_ratio = sum(med_n_kids)/sum(licensed_capacity),
+                     min_ratio = sum(min_n_kids)/sum(licensed_capacity)) %>% 
     # replace ratios over 1 with 1
     dplyr::mutate_at(dplyr::vars(max_ratio, med_ratio, min_ratio), 
                      list(~ ifelse(.>=1,1,.))) %>% 
