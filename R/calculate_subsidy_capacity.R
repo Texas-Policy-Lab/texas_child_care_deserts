@@ -31,19 +31,14 @@ dm.agg_kids_prvdr <- function(df_acf,
     dplyr::ungroup()
 }
 
-#' @title Create subsidy capacity estimate
+#' @title Calculate enrollment ratios aggregated to market level
+#' @param n_kids data.frame. Result of dm.agg_kids_prvdr.
 #' @export
-calc.subsidy_capacity <- function(xwalk_tract_prvdr, 
-                                  df_hhsc_ccl,
-                                  df_acf,
-                                  year,
-                                  quarters) {
+dm.agg_ratio_mkt <- function(n_kids, 
+                             df_hhsc_ccl, 
+                             xwalk_tract_prvdr){
   
-  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf,
-                              year = year,
-                              quarters = quarters)
-  
-  mkt_enrollment_ratios <- n_kids %>%
+  n_kids %>%
     dplyr::left_join(df_hhsc_ccl %>% 
                        dplyr::select(operation_number, licensed_capacity, subsidy)) %>%
     dplyr::filter(subsidy) %>%
@@ -54,7 +49,42 @@ calc.subsidy_capacity <- function(xwalk_tract_prvdr,
                      min_ratio = sum(min_n_kids)/sum(licensed_capacity)) %>% 
     # replace ratios over 1 with 1
     dplyr::mutate_at(dplyr::vars(max_ratio, med_ratio, min_ratio), 
-                     list(~ ifelse(.>=1,1,.))) 
+                     list(~ ifelse(.>=1,1,.)))
+}
+
+#' @title Calculate enrollment ratios by market
+#' @export
+dm.mkt_enrollment_ratio <- function(df_acf,
+                                    year,
+                                    quarters,
+                                    df_hhsc_ccl,
+                                    xwalk_tract_prvdr) {
+  
+  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf,
+                              year = year,
+                              quarters = quarters)
+  
+  mkt_ratios <- dm.agg_ratio_mkt(n_kids, 
+                                 df_hhsc_ccl, 
+                                 xwalk_tract_prvdr)
+  
+  return(mkt_ratios)
+
+}
+
+#' @title Create subsidy capacity estimate
+#' @export
+calc.subsidy_capacity <- function(xwalk_tract_prvdr, 
+                                  df_hhsc_ccl,
+                                  df_acf,
+                                  year,
+                                  quarters) {
+  
+  mkt_enrollment_ratios <- dm.mkt_enrollment_ratio(df_acf = df_acf,
+                                                   year = year,
+                                                   quarters = quarters,
+                                                   df_hhsc_ccl = df_hhsc_ccl,
+                                                   xwalk_tract_prvdr = xwalk_tract_prvdr)
   
   m1_param <- mkt_enrollment_ratios %>% 
     tidyr::pivot_longer(-anchor_tract) %>% 
