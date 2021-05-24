@@ -56,19 +56,15 @@ calc.subsidy_capacity <- function(xwalk_tract_prvdr,
     dplyr::mutate_at(dplyr::vars(max_ratio, med_ratio, min_ratio), 
                      list(~ ifelse(.>=1,1,.))) 
   
-  mom_params <- mkt_enrollment_ratios %>% 
+  m1_param <- mkt_enrollment_ratios %>% 
     tidyr::pivot_longer(-anchor_tract) %>% 
-    dplyr::group_by(anchor_tract) %>% 
-    #raw moments
-    dplyr::summarise(mu_1=mean(value)) %>% 
-    # aggregate moments across markets
-    dplyr::summarise(mu_hat_1 = mean(mu_1))
+    dplyr::summarise(m1 = mean(value))
   
   tri_params <- mkt_enrollment_ratios %>% 
     dplyr::summarise(a=mean(min_ratio),
                      b=mean(max_ratio)) %>% 
-    dplyr::bind_cols(mom_params) %>% 
-    dplyr::mutate(c=3*mu_hat_1 - a - b)
+    dplyr::bind_cols(m1_param) %>% 
+    dplyr::mutate(c=3*m1 - a - b)
   
   return(tri_params$b)
 }
