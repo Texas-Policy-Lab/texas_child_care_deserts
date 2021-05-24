@@ -33,7 +33,7 @@ dm.agg_kids_prvdr <- function(df_acf,
 
 #' @title Create subsidy capacity estimate
 #' @export
-calc.subsidy_capacity <- function(xwalk_tract_pvrdr, 
+calc.subsidy_capacity <- function(xwalk_tract_prvdr, 
                                   df_hhsc_ccl,
                                   df_acf,
                                   year,
@@ -54,9 +54,7 @@ calc.subsidy_capacity <- function(xwalk_tract_pvrdr,
                      min_ratio = sum(min_n_kids)/sum(licensed_capacity)) %>% 
     # replace ratios over 1 with 1
     dplyr::mutate_at(dplyr::vars(max_ratio, med_ratio, min_ratio), 
-                     list(~ ifelse(.>=1,1,.))) %>% 
-    #drop markets that have no providers and therefore na for the ratios
-    tidyr::drop_na()
+                     list(~ ifelse(.>=1,1,.))) 
   
   mom_params <- mkt_enrollment_ratios %>% 
     tidyr::pivot_longer(-anchor_tract) %>% 
