@@ -14,6 +14,7 @@
   county_fips = NULL,
   name,
   state_fips,
+  trs_pth,
   ...
 )
 }
