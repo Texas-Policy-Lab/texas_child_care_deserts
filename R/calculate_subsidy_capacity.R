@@ -14,9 +14,12 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
 #' @return Summarized data with the max, median, and minimum number of kids per
 #' provider
 #' @export
-dm.agg_kids_prvdr <- function(df_acf) {
+dm.agg_kids_prvdr <- function(df_acf,
+                              year,
+                              quarters) {
   
   df_acf %>%
+    
     dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
@@ -32,9 +35,13 @@ dm.agg_kids_prvdr <- function(df_acf) {
 #' @export
 calc.subsidy_capacity <- function(xwalk_tract_pvrdr, 
                                   df_hhsc_ccl,
-                                  df_acf) {
+                                  df_acf,
+                                  year = 2019,
+                                  quarters = c(1,2,4)) {
   
-  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
+  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf,
+                              year = year,
+                              quarters = quarters)
   
   mkt_enrollment_ratios <- n_kids %>%
     dplyr::left_join(df_hhsc_ccl %>% 
