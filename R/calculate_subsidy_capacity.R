@@ -19,16 +19,16 @@ dm.agg_kids_prvdr <- function(df_acf,
                               quarters) {
   
   df_acf %>%
-    
+    dplyr::filter(year == year & quarter %in% quarters) %>%
     dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
-    tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
+    tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0)%>%
     tidyr::pivot_longer(names_to = "quarter_year", values_to = "value", -c(operation_number)) %>%
-    dplyr::group_by(operation_number, quarter_year) %>%
+    dplyr::group_by(operation_number) %>%
     dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
                      min_n_kids = min(value)) %>% 
-    dplyr::arrange(operation_number, quarter_year)
+    dplyr::ungroup()
 }
 
 #' @title Create subsidy capacity estimate
