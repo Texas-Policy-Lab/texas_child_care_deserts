@@ -15,11 +15,11 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
 #' provider
 #' @export
 dm.agg_kids_prvdr <- function(df_acf,
-                              year,
-                              quarters) {
+                              yr,
+                              qtrs) {
   
   df_acf %>%
-    dplyr::filter(year == year & quarter %in% quarters) %>%
+    dplyr::filter(year == yr & quarter %in% qtrs) %>%
     dplyr::group_by(operation_number, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0)%>%
@@ -55,14 +55,14 @@ dm.agg_ratio_mkt <- function(n_kids,
 #' @title Calculate enrollment ratios by market
 #' @export
 dm.mkt_enrollment_ratio <- function(df_acf,
-                                    year,
-                                    quarters,
+                                    yr,
+                                    qtrs,
                                     df_hhsc_ccl,
                                     xwalk_tract_prvdr) {
   
   n_kids <- dm.agg_kids_prvdr(df_acf = df_acf,
-                              year = year,
-                              quarters = quarters)
+                              yr = yr,
+                              qtrs = qtrs)
   
   mkt_ratios <- dm.agg_ratio_mkt(n_kids, 
                                  df_hhsc_ccl, 
@@ -77,12 +77,12 @@ dm.mkt_enrollment_ratio <- function(df_acf,
 calc.subsidy_capacity <- function(xwalk_tract_prvdr, 
                                   df_hhsc_ccl,
                                   df_acf,
-                                  year,
-                                  quarters) {
+                                  yr,
+                                  qtrs) {
   
   mkt_enrollment_ratios <- dm.mkt_enrollment_ratio(df_acf = df_acf,
-                                                   year = year,
-                                                   quarters = quarters,
+                                                   yr = yr,
+                                                   qtrs = qtrs,
                                                    df_hhsc_ccl = df_hhsc_ccl,
                                                    xwalk_tract_prvdr = xwalk_tract_prvdr)
   
