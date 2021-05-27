@@ -36,16 +36,19 @@ calc.distance_density_plot(df = DF_ACF, county_list = c("48201", "48439"))
 
 Note: subset the `XWALK_TRACTS` to the county of interest and mileage of interest.
 The mileage should be informed by the distribution that parents travel to get
-childcare which can be calculated using the above listed functions.
+childcare which can be calculated using the above listed functions. Choose year and
+quarters of interest. Three quarter-years must be used.
 
 ```{r}
 XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = XWALK_TRACTS %>% 
                                                  dplyr::filter(anchor_county == "48201" & mi_to_tract <= 3),
                                                df_hhsc_ccl = DF_HHSC_CCL)
 
-calc.mkt_subsidy(xwalk_track_pvrdr = XWALK_TRACT_PRVDR, 
-                 df_hhsc_ccl = DF_HHSC_CCL,
-                 df_acf = DF_ACF)
+calc.subsidy_capacity(xwalk_tract_prvdr = XWALK_TRACT_PRVDR, 
+                              df_hhsc_ccl = DF_HHSC_CCL,
+                              df_acf = DF_ACF,
+                              yr = "2019",
+                              qtrs = c("1","2","4"))
 ```
 
 5. Subset the database to a specific county to application development
