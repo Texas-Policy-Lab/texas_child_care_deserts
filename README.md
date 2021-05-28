@@ -57,8 +57,11 @@ calc.subsidy_capacity(xwalk_tract_prvdr = XWALK_TRACT_PRVDR,
 pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
 county <- "48439"
 tract_radius <- 3 # This should be informed by the literature and the calculations from child care distance distribution functions
+home_prvdr_capacity <- .85 
+center_prvdr_capacity <- .85
+subsidy_prvdr_capacity <- .65 # This should be informed by the calculations from the subsidy capacity functions. Tarrant = .65, Harris = .78
 
-save_subset_child_care_db(pth, county, tract_radius)
+save_subset_child_care_db(pth, county, tract_radius, home_prvdr_capacity, center_prvdr_capacity, subsidy_prvdr_capacity)
 ```
 
 ## Project workflow

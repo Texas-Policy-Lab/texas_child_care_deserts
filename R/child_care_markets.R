@@ -1,17 +1,22 @@
 #' @title Create Supply
 create_supply <- function(df_hhsc_ccl, 
                           home_prvdr_capacity, 
-                          center_prvdr_capacity) {
-
+                          center_prvdr_capacity,
+                          subsidy_prvdr_capacity) {
+  browser()
   assertthat::assert_that(home_prvdr_capacity >= 0 & home_prvdr_capacity <= 1,
                           msg = "home_prvdr_capacity should be a number between 0 and 1")
   assertthat::assert_that(center_prvdr_capacity >= 0 & center_prvdr_capacity <= 1,
                           msg = "center_prvdr_capacity should be a number between 0 and 1")
-
+  assertthat::assert_that(subsidy_prvdr_capacity >= 0 & center_prvdr_capacity <= 1,
+                          msg = "subsidy_prvdr_capacity should be a number between 0 and 1")
+  
   df_hhsc_ccl %>%
     dplyr::filter(!is.na(tract)) %>%
-    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr ~ licensed_capacity*home_prvdr_capacity,
-                                                  center_prvdr ~ licensed_capacity*center_prvdr_capacity,
+    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*home_prvdr_capacity,
+                                                  center_prvdr & !sub_provider ~ licensed_capacity*center_prvdr_capacity,
+                                                  home_prvdr & sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
+                                                  center_prvdr & sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
                                                   TRUE ~ NA_real_)) %>%
     dplyr::select(operation_number, tract, county_code, adj_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
