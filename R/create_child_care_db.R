@@ -103,7 +103,7 @@ child_care_db <- function(root,
 save_subset_child_care_db <- function(pth, county, tract_radius, 
                                       home_prvdr_capacity, center_prvdr_capacity,
                                       subsidy_prvdr_capacity) {
-  browser()
+
   check_type.character(county)
 
   assertthat::assert_that(all(nchar(county) == 5),

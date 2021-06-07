@@ -3,7 +3,7 @@ create_supply <- function(df_hhsc_ccl,
                           home_prvdr_capacity, 
                           center_prvdr_capacity,
                           subsidy_prvdr_capacity) {
-  browser()
+
   assertthat::assert_that(home_prvdr_capacity >= 0 & home_prvdr_capacity <= 1,
                           msg = "home_prvdr_capacity should be a number between 0 and 1")
   assertthat::assert_that(center_prvdr_capacity >= 0 & center_prvdr_capacity <= 1,
