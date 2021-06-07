@@ -23,42 +23,44 @@ load_env(pth)
 ```{r}
 pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
 load_env(pth)
-calc.distance_decile_table(df = DF_ACF, county_list = c("48201", "48439"))
+county <- c("48201", "48439")
+calc.distance_decile_table(df = DF_ACF, county_list = county)
 ````
 
 ```{r}
 pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
 load_env(pth)
-calc.distance_density_plot(df = DF_ACF, county_list = c("48201", "48439"))
+county <- c("48201", "48439")
+calc.distance_density_plot(df = DF_ACF, county_list = county)
 ```
 
 4. Calculate subsidy providers average capacity
 
-Note: subset the `XWALK_TRACTS` to the county of interest and mileage of interest.
-The mileage should be informed by the distribution that parents travel to get
+Note: The mileage should be informed by the distribution that parents travel to get
 childcare which can be calculated using the above listed functions. Choose year and
 quarters of interest. Three quarter-years must be used.
 
 ```{r}
-XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = XWALK_TRACTS %>% 
-                                                 dplyr::filter(anchor_county == "48201" & mi_to_tract <= 3),
-                                               df_hhsc_ccl = DF_HHSC_CCL)
-
-calc.subsidy_capacity(xwalk_tract_prvdr = XWALK_TRACT_PRVDR, 
-                              df_hhsc_ccl = DF_HHSC_CCL,
-                              df_acf = DF_ACF,
-                              yr = "2019",
-                              qtrs = c("1","2","4"))
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+load_env(pth)
+county <- c("48439", "48201")
+tract_radius <- 3
+calc.subsidy_capacity(county = county,
+                      tract_radius = tract_radius,
+                      xwalk_tracts = XWALK_TRACTS,
+                      df_hhsc_ccl = DF_HHSC_CCL,
+                      df_acf = DF_ACF,
+                      qtrs = c("1","2","4"))
 ```
 
 5. Subset the database to a specific county to application development
 
 ```{r}
 pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
-county <- "48439"
+county <- c("48439", "48201")
 tract_radius <- 3 # This should be informed by the literature and the calculations from child care distance distribution functions
 home_prvdr_capacity <- .85 
-center_prvdr_capacity <- .85
+center_prvdr_capacity <- .76
 subsidy_prvdr_capacity <- .65 # This should be informed by the calculations from the subsidy capacity functions. Tarrant = .65, Harris = .78
 
 save_subset_child_care_db(pth, county, tract_radius, home_prvdr_capacity, center_prvdr_capacity, subsidy_prvdr_capacity)
