@@ -117,15 +117,13 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
 
     env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
 
-    env$XWALK_TRACTS <- XWALK_TRACTS %>%
-      dplyr::filter(anchor_county %in% county) %>%
-      dplyr::filter(mi_to_tract <= tract_radius)
+    env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+                                      county = county, 
+                                      tract_radius = tract_radius)
 
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
-    surround_tracts <- env$XWALK_TRACTS %>% 
-      dplyr::distinct(surround_tract) %>% 
-      dplyr::pull(surround_tract)
+    surround_tracts <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
 
     surround_county <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_county) %>% 
@@ -149,8 +147,8 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
 
-    env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
-      dplyr::filter(tract %in% surround_tracts)
+    env$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       surround_tracts = surround_tracts)
 
     env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
                                    home_prvdr_capacity = home_prvdr_capacity, 
