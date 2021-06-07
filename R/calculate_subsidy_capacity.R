@@ -110,7 +110,8 @@ calc.subsidy_capacity <- function(county,
                      b=mean(max_ratio)) %>% 
     dplyr::inner_join(m1_param) %>% 
     dplyr::mutate(c=3*m1 - a - b) %>%
-    dplyr::select(anchor_county, year, b)
+    dplyr::select(anchor_county, year, b) %>% 
+    tidyr::pivot_wider(names_from = "anchor_county", values_from = b)
 
   return(tri_params)
 }
