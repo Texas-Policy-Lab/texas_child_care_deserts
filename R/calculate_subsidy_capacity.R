@@ -41,7 +41,7 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
 dm.agg_kids_prvdr <- function(df_acf) {
 
   df_acf %>%
-    dplyr::group_by(operation_number, anchor_county, anchor_tract, quarter_year,  year) %>%
+    dplyr::group_by(operation_number, anchor_county, anchor_tract, quarter_year, year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
     tidyr::pivot_longer(names_to = "quarter_year", values_to = "value", -c(operation_number, anchor_county, anchor_tract, year)) %>%
@@ -58,7 +58,7 @@ dm.agg_kids_prvdr <- function(df_acf) {
 dm.agg_ratio_mkt <- function(n_kids) {
 
   n_kids %>%
-    dplyr::group_by(anchor_tract, anchor_county, year) %>% 
+    dplyr::group_by(anchor_tract, anchor_county, year, center_prvdr) %>% 
     dplyr::summarise(max_ratio = sum(max_n_kids)/sum(licensed_capacity),
                      med_ratio = sum(med_n_kids)/sum(licensed_capacity),
                      min_ratio = sum(min_n_kids)/sum(licensed_capacity)) %>% 
@@ -100,17 +100,17 @@ calc.subsidy_capacity <- function(county,
                                    dplyr::inner_join(df_hhsc_ccl))
 
   m1_param <- mkt_ratios %>%
-    tidyr::pivot_longer(-c(anchor_tract, anchor_county, year)) %>% 
+    tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, center_prvdr)) %>% 
     dplyr::group_by(anchor_county, year) %>%
     dplyr::summarise(m1 = mean(value))
 
   tri_params <- mkt_ratios %>%
-    dplyr::group_by(anchor_county, year) %>%
+    dplyr::group_by(anchor_county, year, center_prvdr) %>%
     dplyr::summarise(a=mean(min_ratio),
                      b=mean(max_ratio)) %>% 
     dplyr::inner_join(m1_param) %>% 
     dplyr::mutate(c=3*m1 - a - b) %>%
-    dplyr::select(anchor_county, year, b) %>% 
+    dplyr::select(anchor_county, year, center_prvdr, b) %>% 
     tidyr::pivot_wider(names_from = "anchor_county", values_from = b)
 
   return(tri_params)
