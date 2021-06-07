@@ -15,8 +15,8 @@ create_supply <- function(df_hhsc_ccl,
     dplyr::filter(!is.na(tract)) %>%
     dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*home_prvdr_capacity,
                                                   center_prvdr & !sub_provider ~ licensed_capacity*center_prvdr_capacity,
-                                                  home_prvdr & sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
-                                                  center_prvdr & sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
+                                                  sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
+                                                  sub_provider ~ licensed_capacity*subsidy_prvdr_capacity,
                                                   TRUE ~ NA_real_)) %>%
     dplyr::select(operation_number, tract, county_code, adj_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
