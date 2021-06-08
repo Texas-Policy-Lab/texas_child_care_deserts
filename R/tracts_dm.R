@@ -73,7 +73,24 @@ dm.xwalk_tracts <- function(x,
 
 #' @title Process ACF data
 process.tracts_xwalk <- function(cls) {
-  
+
   cls$df <- dwnld.xwalk_tracts(raw_pth = cls$raw_pth)
   tracts_xwalk <- dm.xwalk_tracts(cls)
+}
+
+#' @title Process adjacent tracts
+#' @description Data from: https://s4.ad.brown.edu/Projects/Diversity/Researcher/Pooling.htm
+process.adj_tracts <- function(cls,
+                               fl = "nlist_2010.csv") {
+
+  readr::read_csv(file.path(cls$raw_pth, fl)) %>% 
+    dplyr::rename(anchor_tract = SOURCE_TRACTID,
+                  surround_tract = NEIGHBOR_TRACTID) %>%
+    dplyr::mutate(texas = ifelse(substr(anchor_tract, 1, 2) == "48", TRUE, FALSE),
+                  anchor_tract = as.character(anchor_tract),
+                  surround_tract = as.character(surround_tract),
+                  anchor_county = substr(anchor_tract, 1, 5),
+                  surround_county = substr(surround_tract, 1, 5)) %>%
+    dplyr::filter(texas) %>%
+    dplyr::select(-texas)
 }
