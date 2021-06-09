@@ -50,7 +50,8 @@ dm.agg_kids_prvdr <- function(df_acf) {
     dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
                      min_n_kids = min(value)) %>% 
-    dplyr::ungroup()
+    dplyr::ungroup() %>% 
+    dplyr::filter(max_n_kids > 0)
 }
 
 #' @title Calculate enrollment ratios aggregated to market level
