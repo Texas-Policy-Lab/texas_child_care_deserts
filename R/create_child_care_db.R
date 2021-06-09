@@ -135,8 +135,17 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
       dplyr::pull(surround_county)
 
     env$GEO_TRACTS <- GEO_TRACTS %>%
-      dplyr::filter(tract %in% surround_tracts) %>% 
-      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+      dplyr::inner_join(env$XWALK_TRACTS, by = c("tract" = "surround_tract"))
+
+    env$BB_COUNTY <- env$GEO_TRACTS %>% 
+      dplyr::group_by(anchor_county) %>% 
+      dplyr::summarise(minx = min(X), maxx = max(X), 
+                       miny = min(Y), maxy = max(Y))
+    
+    env$BB_TRACT <- env$GEO_TRACTS %>% 
+      dplyr::group_by(anchor_tract, anchor_county) %>% 
+      dplyr::summarise(minx = min(X), maxx = max(X), 
+                       miny = min(Y), maxy = max(Y))
 
     env$GEO_COUNTY <- GEO_COUNTY %>%
       dplyr::filter(county_code %in% surround_county) %>%
