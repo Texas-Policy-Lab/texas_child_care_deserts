@@ -103,7 +103,7 @@ calc.subsidy_capacity <- function(county,
 
   m1_param <- mkt_ratios %>%
     tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, center_prvdr)) %>% 
-    dplyr::group_by(anchor_county, year) %>%
+    dplyr::group_by(anchor_county, year, center_prvdr) %>%
     dplyr::summarise(m1 = mean(value))
 
   tri_params <- mkt_ratios %>%
