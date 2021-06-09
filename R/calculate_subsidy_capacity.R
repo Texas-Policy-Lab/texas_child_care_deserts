@@ -41,10 +41,11 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
 dm.agg_kids_prvdr <- function(df_acf) {
 
   df_acf %>%
-    dplyr::group_by(operation_number, anchor_county, anchor_tract, quarter_year, year) %>%
+    dplyr::group_by(operation_number, anchor_county, anchor_tract, quarter_year) %>%
     dplyr::summarise(n_kids = dplyr::n_distinct(child_id)) %>%
     tidyr::pivot_wider(names_from = quarter_year, values_from = n_kids, values_fill = 0) %>%
-    tidyr::pivot_longer(names_to = "quarter_year", values_to = "value", -c(operation_number, anchor_county, anchor_tract, year)) %>%
+    tidyr::pivot_longer(names_to = "quarter_year", values_to = "value", -c(operation_number, anchor_county, anchor_tract)) %>% 
+    dplyr::mutate(year = gsub(".*-", "", quarter_year)) %>%
     dplyr::group_by(operation_number, anchor_county, anchor_tract, year) %>%
     dplyr::summarise(max_n_kids = max(value),
                      med_n_kids = median(value),
