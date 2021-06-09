@@ -13,12 +13,15 @@ county_name <- function(cnty, lu_code) {
 get_geo <- function(lu_code, county, key, value) {
 
   f <- function(name) {
+
+    fips <- class(name)
+    
     osmdata::getbb(name$name) %>%
       osmdata::opq() %>%
       osmdata::add_osm_feature(key = key, value = c(value)) %>%
       osmdata::osmdata_sf() %>% 
       purrr::pluck("osm_lines") %>% 
-      dplyr::mutate(county_code = class(name))
+      dplyr::mutate(county_code = fips)
   }
 
   name <- lapply(county, county_name, lu_code = lu_code)
