@@ -10,6 +10,7 @@ create_supply <- function(df_hhsc_ccl,
 
   df_hhsc_ccl %>%
     dplyr::filter(!is.na(tract)) %>%
+    dplyr::filter(home_prvdr | center_prvdr) %>%
     dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr ~ licensed_capacity*home_prvdr_capacity,
                                                   center_prvdr ~ licensed_capacity*center_prvdr_capacity,
                                                   TRUE ~ NA_real_)) %>%
