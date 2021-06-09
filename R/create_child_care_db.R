@@ -118,7 +118,11 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
 
     env$XWALK_TRACTS <- XWALK_TRACTS %>%
       dplyr::filter(anchor_county %in% county) %>%
-      dplyr::filter(mi_to_tract <= tract_radius)
+      dplyr::filter(mi_to_tract <= tract_radius) %>% 
+      dplyr::select(-mi_to_tract) %>% 
+      dplyr::bind_rows(ADJ_TRACTS %>%
+                         dplyr::filter(anchor_county %in% county)) %>% 
+      dplyr::distinct()
 
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
