@@ -457,6 +457,13 @@
       "Repository": "CRAN",
       "Hash": "3471fb65971f1a7b2d4ae7848cf2db8d"
     },
+    "lubridate": {
+      "Package": "lubridate",
+      "Version": "1.7.9.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5b5b02f621d39a499def7923a5aee746"
+    },
     "magrittr": {
       "Package": "magrittr",
       "Version": "2.0.1",
@@ -519,6 +526,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "a399e4773075fc2375b71f45fca186c4"
+    },
+    "osmdata": {
+      "Package": "osmdata",
+      "Version": "0.1.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "09cb8ca21fdd38cf94b189b023799c22"
     },
     "pillar": {
       "Package": "pillar",
@@ -802,10 +816,10 @@
     },
     "tigris": {
       "Package": "tigris",
-      "Version": "1.0",
+      "Version": "1.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "aee2de0b104694cd563e52f2f23b8ea8"
+      "Hash": "00255e04726a40e9f8f79a58a28d4b90"
     },
     "units": {
       "Package": "units",
