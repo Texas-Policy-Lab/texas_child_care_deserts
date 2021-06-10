@@ -106,6 +106,9 @@ save_subset_child_care_db <- function(pth, config) {
 
   if(file.exists(pth)) {
 
+    config <- config %>%
+      dplyr::bind_rows(.id = "county_code")
+    
     load_env(file.path(pth))
 
     env <- new.env()
@@ -126,11 +129,11 @@ save_subset_child_care_db <- function(pth, config) {
 
     env$GEO_TRACTS <- GEO_TRACTS %>%
       dplyr::filter(tract %in% surround_tracts) %>% 
-      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
 
     env$GEO_COUNTY <- GEO_COUNTY %>%
       dplyr::filter(county_code %in% surround_county) %>%
-      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
 
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% surround_tracts))
@@ -157,7 +160,7 @@ save_subset_child_care_db <- function(pth, config) {
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
     
-    save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {
