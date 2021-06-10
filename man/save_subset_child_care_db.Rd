@@ -9,7 +9,8 @@ save_subset_child_care_db(
   county,
   tract_radius,
   home_prvdr_capacity,
-  center_prvdr_capacity
+  center_prvdr_capacity,
+  subsidy_prvdr_capacity
 )
 }
 \arguments{

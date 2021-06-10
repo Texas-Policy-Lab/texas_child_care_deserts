@@ -4,7 +4,15 @@
 \alias{calc.subsidy_capacity}
 \title{Create subsidy capacity estimate}
 \usage{
-calc.subsidy_capacity(xwalk_tract_prvdr, df_hhsc_ccl, df_acf, yr, qtrs)
+calc.subsidy_capacity(
+  county,
+  tract_radius,
+  xwalk_tracts,
+  adj_tracts,
+  df_hhsc_ccl,
+  df_acf,
+  qtrs
+)
 }
 \description{
 Create subsidy capacity estimate
