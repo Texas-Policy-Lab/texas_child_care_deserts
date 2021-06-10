@@ -5,7 +5,8 @@ dm.tarrant_neighborhood_center <- function(df, ...) {
     dplyr::distinct(NPA_NAME, LATITUDE, LONGITUDE) %>% 
     dplyr::group_by(NPA_NAME) %>% 
     dplyr::summarise(mean_lat = mean(LATITUDE),
-                     mean_long = mean(LONGITUDE)) %>% 
+                     mean_long = mean(LONGITUDE),
+                     size = dplyr::n()) %>% 
     dplyr::rename(neighborhood = NPA_NAME) %>% 
     dplyr::mutate(county_code = "48439")
 }
@@ -25,7 +26,8 @@ dm.harris_neighborhood_center <- function(df, ...) {
     dplyr::inner_join(GEO_TRACTS, by = c("GEOID10" = "tract")) %>%
     dplyr::group_by(KCTA_NAME) %>%
     dplyr::summarise(mean_long = mean(X),
-                     mean_lat = mean(Y)) %>%
+                     mean_lat = mean(Y),
+                     size = dplyr::n()) %>%
     dplyr::rename(neighborhood = KCTA_NAME) %>%
     dplyr::mutate(county_code = "48201")
 }

@@ -1,11 +1,16 @@
 #' @title Subset the tract crosswalk crosswalk
 subset_tracts <- function(xwalk_tracts,
+                          adj_tracts,
                           county,
                           tract_radius) {
 
   xwalk_tracts %>%
     dplyr::filter(anchor_county %in% county) %>%
-    dplyr::filter(mi_to_tract <= tract_radius)
+    dplyr::filter(mi_to_tract <= tract_radius) %>% 
+    dplyr::select(-mi_to_tract) %>% 
+    dplyr::bind_rows(adj_tracts %>%
+                       dplyr::filter(anchor_county %in% county)) %>% 
+    dplyr::distinct()
 }
 
 #' @title Subset surround tracts

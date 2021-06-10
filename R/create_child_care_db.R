@@ -78,6 +78,8 @@ child_care_db <- function(root,
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
+  env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
+
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
   env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
@@ -118,6 +120,7 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
 
     env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+                                      adj_tracts = ADJ_TRACTS,
                                       county = county, 
                                       tract_radius = tract_radius)
 
