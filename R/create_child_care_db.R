@@ -102,14 +102,7 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county, tract_radius, 
-                                      home_prvdr_capacity, center_prvdr_capacity,
-                                      subsidy_prvdr_capacity) {
-
-  check_type.character(county)
-
-  assertthat::assert_that(all(nchar(county) == 5),
-                          msg = "Please enter a string 5-digit FIPS code")
+save_subset_child_care_db <- function(pth, config) {
 
   if(file.exists(pth)) {
 
@@ -121,8 +114,7 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
 
     env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS,
-                                      county = county, 
-                                      tract_radius = tract_radius)
+                                      config = config)
 
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
@@ -154,9 +146,7 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
                                        surround_tracts = surround_tracts)
 
     env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
-                                   home_prvdr_capacity = home_prvdr_capacity, 
-                                   center_prvdr_capacity = center_prvdr_capacity,
-                                   subsidy_prvdr_capacity = subsidy_prvdr_capacity)
+                                   config = config)
 
     env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
 
