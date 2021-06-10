@@ -1,15 +1,16 @@
 #' @title Subset the tract crosswalk crosswalk
 subset_tracts <- function(xwalk_tracts,
                           adj_tracts,
-                          county,
-                          tract_radius) {
+                          config) {
+
+  test_config(config = config, str = "tract_radius")
 
   xwalk_tracts %>%
-    dplyr::filter(anchor_county %in% county) %>%
+    dplyr::inner_join(config, by = c("anchor_county" = "county_code")) %>%
     dplyr::filter(mi_to_tract <= tract_radius) %>% 
     dplyr::select(-mi_to_tract) %>% 
     dplyr::bind_rows(adj_tracts %>%
-                       dplyr::filter(anchor_county %in% county)) %>% 
+                       dplyr::inner_join(config, by = c("anchor_county" = "county_code"))) %>% 
     dplyr::distinct()
 }
 
@@ -26,6 +27,26 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
   df_hhsc_ccl %>%
     dplyr::filter(tract %in% surround_tracts)
 } 
+
+#' @title Test config
+#' @description Test to make sure configuration is set-up correctly
+test_config <- function(config,
+                        str,
+                        msg = "Parameter '{str}' is missing from {n} county in the list") {
+  assertthat::assert_that(all(!is.na(config[[str]])),
+                          msg = glue::glue(msg, str = str, n = sum(is.na(config[[str]]))))
+}
+
+#' @title Test config pct
+#' @description Test percent parameters are between 0 and 1
+test_config_pct <- function(config,
+                            str,
+                            msg = "Parameter '{str}' should be between 0 and 1") {
+
+  assertthat::assert_that(all(config[[str]] <= 1) & all(config[[str]] >= 0),
+                          msg = glue::glue(msg, str = str))
+}
+
 
 #' @title Process the Tracts and Provider crosswalk
 process.xwalk_tract_prvdr <- function(xwalk_tracts,
@@ -75,7 +96,7 @@ dm.agg_ratio_mkt <- function(n_kids, grouping_vars) {
 }
 
 #' @title Create subsidy capacity estimate
-#' @param county vector. Vector of county FIPS codes
+#' @param config list. Vector of county FIPS codes with names attributes
 #' @param tract_radius numeric. A number indicating the tract radius in miles.
 #' @param xwalk_tracts data.frame. 
 #' @param adj_tracts data.frame.
@@ -84,8 +105,7 @@ dm.agg_ratio_mkt <- function(n_kids, grouping_vars) {
 #' @param grouping_vars string. The results to be grouped by. Default is NULL.
 #' @param qtrs vector of strings. Default is c("1","2","4").
 #' @export
-calc.subsidy_capacity <- function(county,
-                                  tract_radius,
+calc.subsidy_capacity <- function(config,
                                   xwalk_tracts,
                                   adj_tracts,
                                   df_hhsc_ccl,
@@ -93,10 +113,12 @@ calc.subsidy_capacity <- function(county,
                                   grouping_vars = NULL,
                                   qtrs = c("1","2","4")) {
 
+  config <- config %>%
+    dplyr::bind_rows(.id = "county_code")
+
   xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
                                 adj_tracts = adj_tracts,
-                                county = county,
-                                tract_radius = tract_radius)
+                                config = config)
 
   surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
 
