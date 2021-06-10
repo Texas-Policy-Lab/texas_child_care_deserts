@@ -62,10 +62,10 @@ dm.agg_kids_prvdr <- function(df_acf) {
 #' @title Calculate enrollment ratios aggregated to market level
 #' @param n_kids data.frame. Result of dm.agg_kids_prvdr.
 #' @export
-dm.agg_ratio_mkt <- function(n_kids) {
-
+dm.agg_ratio_mkt <- function(n_kids, grouping_vars) {
+  
   n_kids %>%
-    dplyr::group_by(anchor_tract, anchor_county, year, center_prvdr) %>% 
+    dplyr::group_by_at(dplyr::vars(anchor_tract, anchor_county, year, grouping_vars)) %>% 
     dplyr::summarise(max_ratio = sum(max_n_kids)/sum(licensed_capacity),
                      med_ratio = sum(med_n_kids)/sum(licensed_capacity),
                      min_ratio = sum(min_n_kids)/sum(licensed_capacity)) %>% 
@@ -75,15 +75,26 @@ dm.agg_ratio_mkt <- function(n_kids) {
 }
 
 #' @title Create subsidy capacity estimate
+#' @param county vector. Vector of county FIPS codes
+#' @param tract_radius numeric. A number indicating the tract radius in miles.
+#' @param xwalk_tracts data.frame. 
+#' @param adj_tracts data.frame.
+#' @param df_hhsc_ccl data.frame.
+#' @param df_acf data.frame.
+#' @param grouping_vars string. The results to be grouped by. Default is NULL.
+#' @param qtrs vector of strings. Default is c("1","2","4").
 #' @export
 calc.subsidy_capacity <- function(county,
                                   tract_radius,
-                                  xwalk_tracts, 
+                                  xwalk_tracts,
+                                  adj_tracts,
                                   df_hhsc_ccl,
                                   df_acf,
-                                  qtrs) {
+                                  grouping_vars = NULL,
+                                  qtrs = c("1","2","4")) {
 
   xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
+                                adj_tracts = adj_tracts,
                                 county = county,
                                 tract_radius = tract_radius)
 
@@ -102,22 +113,23 @@ calc.subsidy_capacity <- function(county,
     dplyr::inner_join(xwalk_tract_provider)
 
   n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
-  
+
   mkt_ratios <- dm.agg_ratio_mkt(n_kids = n_kids %>% 
-                                   dplyr::inner_join(df_hhsc_ccl))
+                                   dplyr::inner_join(df_hhsc_ccl),
+                                 grouping_vars = grouping_vars)
 
   m1_param <- mkt_ratios %>%
-    tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, center_prvdr)) %>% 
-    dplyr::group_by(anchor_county, year, center_prvdr) %>%
+    tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, grouping_vars)) %>% 
+    dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
     dplyr::summarise(m1 = mean(value))
 
   tri_params <- mkt_ratios %>%
-    dplyr::group_by(anchor_county, year, center_prvdr) %>%
+    dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
     dplyr::summarise(a=mean(min_ratio),
                      b=mean(max_ratio)) %>% 
     dplyr::inner_join(m1_param) %>% 
     dplyr::mutate(c=3*m1 - a - b) %>%
-    dplyr::select(anchor_county, year, center_prvdr, b) %>% 
+    dplyr::select(dplyr::one_of("anchor_county", "year", "b", grouping_vars)) %>% 
     tidyr::pivot_wider(names_from = "anchor_county", values_from = b)
 
   return(tri_params)
