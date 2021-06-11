@@ -15,7 +15,7 @@ get_geo <- function(lu_code, county, key, value, geo_type) {
   f <- function(name) {
 
     fips <- class(name)
-    
+
     osmdata::getbb(name$name) %>%
       osmdata::opq() %>%
       osmdata::add_osm_feature(key = key, value = c(value)) %>%
@@ -27,9 +27,9 @@ get_geo <- function(lu_code, county, key, value, geo_type) {
   name <- lapply(county, county_name, lu_code = lu_code)
 
   if (length(name) > 1) {
-    z <- lapply(name, f) %>% dplyr::bind_rows()
+    lapply(name, f) %>% dplyr::bind_rows()
   } else {
-    z <- f(name)
+    f(name[[1]])
   }
 }
 
@@ -51,7 +51,7 @@ get_geo.waterway <- function(lu_code, county, key = "waterway", value = "river",
 
 #' @title Get Geo park
 get_geo.park <- function(lu_code, county, key = "leisure", value = "park",
-                          geo_type = "osm_polygons") {
+                         geo_type = "osm_polygons") {
   get_geo(lu_code = lu_code, county = county, key = key, value = value, 
           geo_type = geo_type) %>% 
     dplyr::select(geometry, county_code)
@@ -59,9 +59,11 @@ get_geo.park <- function(lu_code, county, key = "leisure", value = "park",
 
 #' @title Get cities
 get_geo.city <- function(lu_code, county, key = "place", value = "city",
-                             geo_type = "osm_points") {
+                         geo_type = "osm_points") {
+
   get_geo(lu_code = lu_code, county = county, key = key, value = value,
           geo_type = geo_type) %>%
     dplyr::filter(!is.na(name)) %>% 
-    dplyr::select(name, geometry, county_code)
+    dplyr::select(name, population, geometry, county_code) %>% 
+    dplyr::arrange(dplyr::desc(population))
 }
