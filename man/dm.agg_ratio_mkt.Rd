@@ -4,7 +4,7 @@
 \alias{dm.agg_ratio_mkt}
 \title{Calculate enrollment ratios aggregated to market level}
 \usage{
-\method{dm}{agg_ratio_mkt}(n_kids)
+\method{dm}{agg_ratio_mkt}(n_kids, grouping_vars)
 }
 \arguments{
 \item{n_kids}{data.frame. Result of dm.agg_kids_prvdr.}
