@@ -198,9 +198,9 @@ col.assign_deserts <- function(df, trs_pth) {
   df <- df %>%
     dplyr::left_join(trs) %>%
     dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
-                  sub_provider = ifelse(all_provider & subsidy, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & subsidy_provider, TRUE, FALSE),
+                  sub_provider = ifelse(trs_provider, TRUE, sub_provider),
                   sub_trs_provider = ifelse(sub_provider & trs_provider, TRUE, FALSE),
-                  sub_trs_provider = ifelse(is.na(trs_provider) & !subsidy, FALSE, sub_trs_provider),
                   sub_trs4_provider = ifelse(sub_trs_provider & trs_star_level == 4, TRUE, FALSE))
 
 }
