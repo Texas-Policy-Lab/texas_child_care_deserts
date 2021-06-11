@@ -49,6 +49,14 @@ get_geo.waterway <- function(lu_code, county, key = "waterway", value = "river",
     dplyr::select(geometry, county_code)
 }
 
+#' @title Get Geo park
+get_geo.park <- function(lu_code, county, key = "leisure", value = "park",
+                          geo_type = "osm_polygons") {
+  get_geo(lu_code = lu_code, county = county, key = key, value = value, 
+          geo_type = geo_type) %>% 
+    dplyr::select(geometry, county_code)
+}
+
 #' @title Get cities
 get_geo.city <- function(lu_code, county, key = "place", value = "city",
                              geo_type = "osm_points") {

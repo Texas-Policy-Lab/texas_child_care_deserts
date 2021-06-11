@@ -157,6 +157,8 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     
     env$GEO_CITY <- get_geo.city(lu_code = LU_COUNTY_CODE, county = county)
 
+    env$GEO_PARK <- get_geo.park(lu_code = LU_COUNTY_CODE, county = county)
+    
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% surround_tracts))
 
