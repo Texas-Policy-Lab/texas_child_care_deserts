@@ -11,6 +11,8 @@ Authors@R: c(person("Joli", "Holmes", email = "jh111@rice.edu",
                    role = c("aut")))
 Description: Contains a set of functions to process Texas child care licensing data and other data relevant to the child care analytic landscape.
 Depends: R (>= 3.6.0)
+Imports:
+    sf
 License: What license is it under?
 LazyData: true
 RoxygenNote: 7.1.1
