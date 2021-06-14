@@ -8,7 +8,15 @@ API to create data for any count on child care deserts in Texas
 
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
-child_care_db(root = root)
+trs_pth <- file.path(root, "data/raw/04052021_TWC_attrs.csv")
+naeyc_pth1 <- file.path(root, "data/raw/BP4K - NAEYC List - 5.26.21.xlsx")
+naeyc_pth2 <- file.path(root, "data/raw/NAEYC Providers - NAEYC - 5.26.21.xlsx")
+
+child_care_db(root = root, 
+              naeyc_pth1 = naeyc_pth1, 
+              naeyc_pth2 = naeyc_pth2,
+              trs_pth = trs_pth)
+
 ```
 
 2. Load an child care deserts database or a subset of the database with clean and processed data for use
