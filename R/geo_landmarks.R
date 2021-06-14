@@ -65,6 +65,5 @@ get_geo.city <- function(lu_code, county, key = "place", value = "city",
           geo_type = geo_type) %>%
     dplyr::filter(!is.na(name)) %>% 
     dplyr::select(name, population, geometry, county_code) %>% 
-    dplyr::mutate(population = as.numeric(population)) %>%
     dplyr::arrange(dplyr::desc(population))
 }
