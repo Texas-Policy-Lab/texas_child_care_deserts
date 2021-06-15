@@ -61,9 +61,16 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
     df <- df_hhsc_ccl %>% 
       dplyr::mutate(prek_prvdr = FALSE)
   }
+
   df %>%
-    dplyr::filter(tract %in% surround_tracts)
-} 
+    dplyr::filter(tract %in% surround_tracts) %>%
+    dplyr::mutate(prvdr_type_desc = dplyr::case_when(home_prvdr ~"Home",
+                                                     center_prvdr ~ "Center",
+                                                     prek_prvdr ~ "Pre-K"),
+                  prvdr_type_desc = as.factor(prvdr_type_desc),
+                  subsidy_desc = ifelse(sub_provider, "Yes", "No"),
+                  trs_desc = ifelse(sub_trs_provider, "Yes", "No")) 
+}
 
 #' @title Test config
 #' @description Test to make sure configuration is set-up correctly
