@@ -76,6 +76,8 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
+  env$DF_PREK <- process.prek(raw_path = raw_path)
+
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -117,7 +119,7 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     env <- new.env()
 
     env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
-    
+
     env$XWALK_TRACTS <- XWALK_TRACTS %>%
       dplyr::filter(anchor_county %in% county) %>%
       dplyr::filter(mi_to_tract <= tract_radius) %>% 
@@ -156,6 +158,9 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
 
     env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
       dplyr::filter(tract %in% surround_tracts)
+
+    env$DF_PREK <- DF_PREK %>%
+      dplyr::filter(county_code %in% surround_county)
 
     env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
                                    home_prvdr_capacity = home_prvdr_capacity, 
