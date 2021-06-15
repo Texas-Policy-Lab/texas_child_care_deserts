@@ -81,7 +81,7 @@ child_care_db <- function(root,
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
-
+  
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
   env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
@@ -120,7 +120,7 @@ save_subset_child_care_db <- function(pth, config) {
     env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS,
                                       config = config)
-
+  
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
     surround_tracts <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
@@ -130,12 +130,29 @@ save_subset_child_care_db <- function(pth, config) {
       dplyr::pull(surround_county)
 
     env$GEO_TRACTS <- GEO_TRACTS %>%
-      dplyr::filter(tract %in% surround_tracts) %>% 
-      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
+      dplyr::inner_join(env$XWALK_TRACTS, by = c("tract" = "surround_tract"))
+
+    env$BB_COUNTY <- env$GEO_TRACTS %>% 
+      dplyr::group_by(anchor_county) %>% 
+      dplyr::summarise(minx = min(X), maxx = max(X), 
+                       miny = min(Y), maxy = max(Y))
+    
+    env$BB_TRACT <- env$GEO_TRACTS %>% 
+      dplyr::group_by(anchor_tract, anchor_county) %>% 
+      dplyr::summarise(minx = min(X), maxx = max(X), 
+                       miny = min(Y), maxy = max(Y))
 
     env$GEO_COUNTY <- GEO_COUNTY %>%
       dplyr::filter(county_code %in% surround_county)
 
+    env$GEO_WATERWAY <- get_geo.waterway(lu_code = LU_COUNTY_CODE, county = county)
+
+    env$GEO_HIGHWAY <- get_geo.highway(lu_code = LU_COUNTY_CODE, county = county)
+    
+    env$GEO_CITY <- get_geo.city(lu_code = LU_COUNTY_CODE, county = county)
+
+    env$GEO_PARK <- get_geo.park(lu_code = LU_COUNTY_CODE, county = county)
+    
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% surround_tracts))
 
