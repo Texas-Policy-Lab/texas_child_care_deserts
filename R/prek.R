@@ -73,6 +73,7 @@ dwnld.isd <- function(raw_pth,
 process.prek <- function(raw_path) {
 
   dwnld.isd(raw_pth = raw_pth) %>%
-    dplyr::inner_join(dwnld.prek(raw_pth = raw_pth))
+    dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>%
+    dm.geocode_lat_long()
 
 }
