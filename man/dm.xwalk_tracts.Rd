@@ -6,9 +6,9 @@
 \usage{
 \method{dm}{xwalk_tracts}(
   x,
-  tract_side = "right",
+  tract_side = "left",
   county_side = "left",
-  tract_width = 11,
+  tract_width = 6,
   county_width = 5,
   pad = "0"
 )

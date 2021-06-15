@@ -102,35 +102,26 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
-save_subset_child_care_db <- function(pth, county, tract_radius, 
-                                      home_prvdr_capacity, center_prvdr_capacity) {
-
-  check_type.character(county)
-
-  assertthat::assert_that(all(nchar(county) == 5),
-                          msg = "Please enter a string 5-digit FIPS code")
+save_subset_child_care_db <- function(pth, config) {
 
   if(file.exists(pth)) {
 
+    config <- config %>%
+      dplyr::bind_rows(.id = "county_code")
+    
     load_env(file.path(pth))
 
     env <- new.env()
 
     env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
-    
-    env$XWALK_TRACTS <- XWALK_TRACTS %>%
-      dplyr::filter(anchor_county %in% county) %>%
-      dplyr::filter(mi_to_tract <= tract_radius) %>% 
-      dplyr::select(-mi_to_tract) %>% 
-      dplyr::bind_rows(ADJ_TRACTS %>%
-                         dplyr::filter(anchor_county %in% county)) %>% 
-      dplyr::distinct()
+
+    env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+                                      adj_tracts = ADJ_TRACTS,
+                                      config = config)
 
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
-    surround_tracts <- env$XWALK_TRACTS %>% 
-      dplyr::distinct(surround_tract) %>% 
-      dplyr::pull(surround_tract)
+    surround_tracts <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
 
     surround_county <- env$XWALK_TRACTS %>% 
       dplyr::distinct(surround_county) %>% 
@@ -138,11 +129,11 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
 
     env$GEO_TRACTS <- GEO_TRACTS %>%
       dplyr::filter(tract %in% surround_tracts) %>% 
-      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
 
     env$GEO_COUNTY <- GEO_COUNTY %>%
       dplyr::filter(county_code %in% surround_county) %>%
-      dplyr::mutate(anchor_county = ifelse(county_code %in% county, TRUE, FALSE))
+      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
 
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% surround_tracts))
@@ -154,12 +145,11 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
 
-    env$DF_HHSC_CCL <- DF_HHSC_CCL %>%
-      dplyr::filter(tract %in% surround_tracts)
+    env$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       surround_tracts = surround_tracts)
 
     env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
-                                   home_prvdr_capacity = home_prvdr_capacity, 
-                                   center_prvdr_capacity = center_prvdr_capacity)
+                                   config = config)
 
     env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
 
@@ -170,7 +160,7 @@ save_subset_child_care_db <- function(pth, county, tract_radius,
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
     
-    save(env, file = file.path(dirname(pth), paste(paste(county, collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {
