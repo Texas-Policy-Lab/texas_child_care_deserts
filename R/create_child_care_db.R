@@ -35,8 +35,6 @@ acs_tables <- function(acs_year,
 #' }
 child_care_db <- function(root,
                           trs_pth,
-                          naeyc_pth1,
-                          naeyc_pth2,
                           state_code = 48,
                           acf_qtr_years = NULL,
                           acs_year = 2019,
@@ -59,8 +57,6 @@ child_care_db <- function(root,
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
                                                  trs_pth = trs_pth,
-                                                 naeyc_pth1 = naeyc_pth1,
-                                                 naeyc_pth2 = naeyc_pth2,
                                                  name = "HHSC_CCL",
                                                  state_fips = state_code))
 
@@ -82,6 +78,8 @@ child_care_db <- function(root,
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
+  env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
+  
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
   env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)

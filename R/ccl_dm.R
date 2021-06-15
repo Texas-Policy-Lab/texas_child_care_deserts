@@ -186,53 +186,23 @@ col.total_capacity <- function(df) {
 }
 
 #' @title Assign deserts
-#' @description Assign deserts based on provider types. Note Head Start is 
-#' included as a subsidy provider, a TRS and TRS 4 star provider.
-col.assign_deserts <- function(df, trs_pth, naeyc_pth1, naeyc_pth2) {
+col.assign_deserts <- function(df, trs_pth) {
 
-  naeyc <- readxl::read_excel(naeyc_pth1) %>%
-    dplyr::filter(`32566_NAEYC` == "Yes") %>%
-    dplyr::select(operation_number = `OP Number`) %>% 
-    dplyr::bind_rows(readxl::read_excel(naeyc_pth2) %>%
-                       dplyr::select(operation_number = `Program ID`) %>% 
-                       dplyr::mutate(operation_number = as.character(operation_number))) %>% 
-    dplyr::distinct() %>% 
-    col.operation_number() %>% 
-    dplyr::mutate(naeyc = TRUE)
-  
   trs <- readr::read_csv(trs_pth) %>% 
     dplyr::select(operation_number, trs_provider, subsidy_provider, trs_star_level) %>% 
     dplyr::mutate(operation_number = stringr::str_pad(operation_number, 
                                                       side = "left",
                                                       width = 15,
                                                       pad = "0"))
+
   df <- df %>%
     dplyr::left_join(trs) %>%
-    dplyr::left_join(naeyc) %>%
-    dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
-                  all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
-                  sub_provider = ifelse(all_provider & (subsidy_provider | head_start), TRUE, FALSE),
+    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & subsidy_provider, TRUE, FALSE),
                   sub_provider = ifelse(trs_provider, TRUE, sub_provider),
-                  sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
-                  sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start, TRUE, FALSE),
-                  sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start, TRUE, FALSE))
+                  sub_trs_provider = ifelse(sub_provider & trs_provider, TRUE, FALSE),
+                  sub_trs4_provider = ifelse(sub_trs_provider & trs_star_level == 4, TRUE, FALSE))
 
-  qual_type <- df %>%
-    dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
-    tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
-                        -operation_number) %>% 
-    tidyr::drop_na() %>%
-    dplyr::filter(quality) %>%
-    dplyr::select(-quality) %>%
-    dplyr::mutate(quality_desc = dplyr::case_when(quality_type == "head_start" ~ "Head Start",
-                                                  quality_type == "trs_provider" ~ "TRS",
-                                                  quality_type == "naeyc" ~ "NAEYC")) %>%
-    dplyr::group_by(operation_number) %>% 
-    dplyr::summarise(quality_desc = paste(quality_desc, collapse = ", "))
-
-  df %>%
-    dplyr::left_join(qual_type) %>%
-    dplyr::mutate(quality = ifelse(is.na(quality_desc), FALSE, TRUE))
 }
 
 #' @title HHSC CCL data management
@@ -260,8 +230,6 @@ dm.hhsc_ccl <- function(df,
                         name,
                         state_fips,
                         trs_pth,
-                        naeyc_pth1,
-                        naeyc_pth2,
                         ...) {
 
   df <- df %>%
@@ -276,9 +244,7 @@ dm.hhsc_ccl <- function(df,
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.total_capacity() %>% 
-    col.assign_deserts(trs_pth = trs_pth, 
-                       naeyc_pth1 = naeyc_pth1, 
-                       naeyc_pth2 = naeyc_pth2) %>%
+    col.assign_deserts(trs_pth) %>%
     dplyr::mutate(download_date = Sys.Date())
 
   return(df)
