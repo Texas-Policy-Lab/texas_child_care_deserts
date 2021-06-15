@@ -12,7 +12,19 @@ Authors@R: c(person("Joli", "Holmes", email = "jh111@rice.edu",
 Description: Contains a set of functions to process Texas child care licensing data and other data relevant to the child care analytic landscape.
 Depends: R (>= 3.6.0)
 Imports:
-    sf
+    assertthat,
+    dplyr,
+    geosphere,
+    ggplot2,
+    httr,
+    readr,
+    readxl,
+    rvest,
+    sf,
+    stringr,
+    tidycensus,
+    tidyr,
+    tigris
 License: What license is it under?
 LazyData: true
 RoxygenNote: 7.1.1
