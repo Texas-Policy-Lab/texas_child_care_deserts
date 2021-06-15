@@ -4,14 +4,7 @@
 \alias{save_subset_child_care_db}
 \title{Save a subset of the child care database}
 \usage{
-save_subset_child_care_db(
-  pth,
-  county,
-  tract_radius,
-  home_prvdr_capacity,
-  center_prvdr_capacity,
-  subsidy_prvdr_capacity
-)
+save_subset_child_care_db(pth, config)
 }
 \arguments{
 \item{pth}{string. Path to the root directory to create the DB.}

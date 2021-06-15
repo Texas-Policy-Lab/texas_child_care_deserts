@@ -5,14 +5,31 @@
 \title{Create subsidy capacity estimate}
 \usage{
 calc.subsidy_capacity(
-  county,
-  tract_radius,
+  config,
   xwalk_tracts,
   adj_tracts,
   df_hhsc_ccl,
   df_acf,
-  qtrs
+  grouping_vars = NULL,
+  qtrs = c("1", "2", "4")
 )
+}
+\arguments{
+\item{config}{list. Vector of county FIPS codes with names attributes}
+
+\item{xwalk_tracts}{data.frame.}
+
+\item{adj_tracts}{data.frame.}
+
+\item{df_hhsc_ccl}{data.frame.}
+
+\item{df_acf}{data.frame.}
+
+\item{grouping_vars}{string. The results to be grouped by. Default is NULL.}
+
+\item{qtrs}{vector of strings. Default is c("1","2","4").}
+
+\item{tract_radius}{numeric. A number indicating the tract radius in miles.}
 }
 \description{
 Create subsidy capacity estimate
