@@ -117,13 +117,9 @@ save_subset_child_care_db <- function(pth, config) {
 
     env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
 
-    env$XWALK_TRACTS <- XWALK_TRACTS %>%
-      dplyr::filter(anchor_county %in% county) %>%
-      dplyr::filter(mi_to_tract <= tract_radius) %>% 
-      dplyr::select(-mi_to_tract) %>% 
-      dplyr::bind_rows(ADJ_TRACTS %>%
-                         dplyr::filter(anchor_county %in% county)) %>% 
-      dplyr::distinct()
+    env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+                                      adj_tracts = ADJ_TRACTS,
+                                      config = config)
 
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
@@ -147,8 +143,7 @@ save_subset_child_care_db <- function(pth, config) {
                        miny = min(Y), maxy = max(Y))
 
     env$GEO_COUNTY <- GEO_COUNTY %>%
-      dplyr::filter(county_code %in% surround_county) %>%
-      dplyr::mutate(anchor_county = ifelse(county_code %in% names(config), TRUE, FALSE))
+      dplyr::filter(county_code %in% surround_county)
 
     env$GEO_WATERWAY <- get_geo.waterway(lu_code = LU_COUNTY_CODE, county = county)
 
