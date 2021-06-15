@@ -21,12 +21,14 @@ dwnld.isd <- function(raw_pth,
                       name = "Current_Schools2020to2021.csv") {
 
   df <- readr::read_csv(file.path(raw_pth, name)) %>%
-    dplyr::select(Organiza_2, Organiza_1, X, Y, Zip5, County_Num) %>% 
-    dplyr::rename(zip = Zip5,
-                  campus_id = Organiza_2,
+    dplyr::select(Organiza_2, Organiza_1, X, Y, Phone, Email_Addr, Match_addr) %>% 
+    dplyr::rename(campus_id = Organiza_2,
                   campus_name = Organiza_1,
-                  county_code = County_Num) %>% 
-    dplyr::mutate(county_code = paste0("48", county_code))
+                  phone_number = Phone,
+                  email_address = Email_Addr,
+                  address = Match_addr,
+                  long = X,
+                  lat = Y)
 
   split_names <- stringr::str_split(df$campus_name, " ")
   
@@ -74,6 +76,7 @@ process.prek <- function(raw_path) {
 
   dwnld.isd(raw_pth = raw_pth) %>%
     dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>%
-    dm.geocode_lat_long()
+    dm.geocode_lat_long() %>% 
+    dplyr::mutate(county_code = substr(tract, 1, 5))
 
 }
