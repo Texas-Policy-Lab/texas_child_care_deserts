@@ -1,5 +1,5 @@
 #' @title Create Supply
-create_supply <- function(df_hhsc_ccl, 
+create_supply <- function(df_hhsc_ccl,
                           config) {
 
   test_config(config = config, str = "home_prvdr_non_sub_capacity")
@@ -12,21 +12,23 @@ create_supply <- function(df_hhsc_ccl,
   test_config_pct(config = config, str = "home_prvdr_sub_capacity")
   test_config_pct(config = config, str = "center_prvdr_sub_capacity")
 
-  df_hhsc_ccl %>%
+  df <- df_hhsc_ccl %>%
     dplyr::filter(!is.na(tract)) %>%
-    dplyr::filter(home_prvdr | center_prvdr) %>%
-    dplyr::inner_join(config) %>%
+    dplyr::filter(home_prvdr | center_prvdr | prek_prvdr) %>%
+    dplyr::inner_join(config %>% 
+                        dplyr::select(-county_code), by = c("county_code" = "surround_county")) %>%
     dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*home_prvdr_non_sub_capacity,
                                                   center_prvdr & !sub_provider ~ licensed_capacity*center_prvdr_non_sub_capacity,
                                                   home_prvdr & sub_provider ~ licensed_capacity*home_prvdr_sub_capacity,
                                                   center_prvdr & sub_provider ~ licensed_capacity*center_prvdr_sub_capacity,
+                                                  prek_prvdr ~ licensed_capacity,
                                                   TRUE ~ NA_real_)) %>%
     dplyr::select(operation_number, tract, county_code, adj_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
                         cols = -c(operation_number, tract, county_code,
                                   adj_capacity)) %>%
-    dplyr::filter(supply) %>% 
+    dplyr::filter(supply) %>%
     dplyr::select(-supply)
 }
 
