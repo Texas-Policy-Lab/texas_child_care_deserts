@@ -10,9 +10,12 @@ dwnld.prek <- function(raw_pth,
 
   df <- readr::read_csv(file.path(raw_pth, name), skip = 4) %>%
     dplyr::rename_all(tolower) %>%
-    dplyr::filter(grade == "Pre-kindergarten") %>%
-    dplyr::mutate(prek_enrollment = as.numeric(gsub("<", "", enrollment))) %>% 
-    dplyr::select(campus_id = campus, prek_enrollment)
+    dplyr::filter(grade %in% c("Pre-kindergarten", "Early Education")) %>%
+    dplyr::mutate(earlyed_prek_enrollment = as.numeric(gsub("<", "", enrollment))) %>% 
+    dplyr::group_by(year, region, `county name`, district, `district name`, campus, `campus name`, `grade group name`) %>% 
+    dplyr::summarise(earlyed_prek_enrollment = sum(earlyed_prek_enrollment)) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::select(campus_id = campus, earlyed_prek_enrollment)
 }
 
 #' @title Download ISD characteristics
