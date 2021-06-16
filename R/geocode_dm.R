@@ -203,11 +203,11 @@ dm.geocode_lat_long <- function(df,
 
     x <- df %>%
       dplyr::slice(i) %>% 
-      dplyr::pull(X)
+      dplyr::pull(long)
     
     y <- df %>% 
       dplyr::slice(i) %>% 
-      dplyr::pull(Y)
+      dplyr::pull(lat)
     
     r <- httr::GET(httr::modify_url(url = url, 
                                     path = glue::glue(path,
