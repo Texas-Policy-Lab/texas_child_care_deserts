@@ -3,6 +3,9 @@ subset_tracts <- function(xwalk_tracts,
                           adj_tracts,
                           config) {
 
+  config <- config %>%
+    dplyr::bind_rows(.id = "county_code")
+
   test_config(config = config, str = "tract_radius")
 
   xwalk_tracts %>%
