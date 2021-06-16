@@ -109,7 +109,9 @@ create_market_ratio <- function(mkt_supply, mkt_demand) {
     dplyr::mutate(
                   label = ordered(label,
                                   levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert",
-                                             "Not enough children to estimate"))
+                                             "Not enough children to estimate")),
+                  desert_desc = dplyr::case_when(!desert ~ "Not a desert",
+                                                  desert ~ "Desert")
     )
 }
 
