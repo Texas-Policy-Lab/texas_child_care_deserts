@@ -179,6 +179,15 @@ save_subset_child_care_db <- function(pth, config) {
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
     
+    env$AVG_CHILD_MKT <- avg_children_mkt(env$DF_MKT_RATIO)
+    env$AVG_SEATS_MKT <- avg_seats_mkt(env$DF_MKT_RATIO)
+    env$AVG_PRVDR_MKT <- avg_provider_mkt(env$XWALK_TRACT_PRVDR)
+
+    env$TTL_CHILD <- total_children(env$DF_TRACT_DEMAND)
+    env$TTL_SEATS <- total_seats(env$DF_TRACT_SUPPLY)
+    env$TTL_CHILD_DSRT <- total_children_desert(df_ratio = env$DF_MKT_RATIO,
+                                                df_demand = env$DF_TRACT_DEMAND)
+
     save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
