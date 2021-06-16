@@ -130,6 +130,9 @@ save_subset_child_care_db <- function(pth, config) {
     env$GEO_TRACTS <- GEO_TRACTS %>%
       dplyr::inner_join(env$XWALK_TRACTS, by = c("tract" = "surround_tract"))
 
+    env$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
+      dplyr::filter(county_code %in% surround_county)
+    
     env$BB_COUNTY <- env$GEO_TRACTS %>% 
       dplyr::group_by(anchor_county) %>% 
       dplyr::summarise(minx = min(X), maxx = max(X), 
@@ -176,7 +179,7 @@ save_subset_child_care_db <- function(pth, config) {
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
     
-    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {
