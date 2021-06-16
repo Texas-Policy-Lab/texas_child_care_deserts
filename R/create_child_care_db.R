@@ -118,7 +118,7 @@ save_subset_child_care_db <- function(pth, config) {
     env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS,
                                       config = config)
-  
+
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
 
     surround_tracts <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
