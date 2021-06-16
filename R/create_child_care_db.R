@@ -189,17 +189,18 @@ save_subset_child_care_db <- function(pth, config) {
       l$AVG_CHILD_MKT <- avg_children_mkt(l$DF_MKT_RATIO)
       l$AVG_SEATS_MKT <- avg_seats_mkt(l$DF_MKT_RATIO)
       l$AVG_PRVDR_MKT <- avg_provider_mkt(l$XWALK_TRACT_PRVDR)
-  
+
       l$TTL_CHILD <- total_children(l$DF_TRACT_DEMAND)
       l$TTL_SEATS <- total_seats(l$DF_TRACT_SUPPLY)
       l$TTL_CHILD_DSRT <- total_children_desert(df_ratio = l$DF_MKT_RATIO,
                                                 df_demand = l$DF_TRACT_DEMAND)
   
+      l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
+
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
-    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
-                                                   basename(pth), sep = "_")))
+    save(env, file = file.path(dirname(pth), "new_env.Rdata"))
   } else {
     assertthat::assert_that(FALSE, 
                            msg = "Please run child_care_db() function to create
