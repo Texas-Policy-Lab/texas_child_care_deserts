@@ -108,20 +108,24 @@ save_subset_child_care_db <- function(pth, config) {
 
     load_env(file.path(pth))
 
-    env <- sapply(config, function(county_fips) {
+    env <- sapply(names(config), function(county_fips) {
 
       l <- list()
+
+      config <- config[[county_fips]]
 
       l$COUNTY_NAME <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% county_fips) %>% 
         dplyr::pull(county)
+
+      l$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER %>% 
+        dplyr::filter(county_code == county_fips)
       
-      l$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
-
       l$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
-                                      adj_tracts = ADJ_TRACTS,
-                                      config = config)
-
+                                      adj_tracts = ADJ_TRACTS ,
+                                      tract_radius = config$tract_radius,
+                                      county_fips = county_fips)
+      
       l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
 
       l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
@@ -147,19 +151,19 @@ save_subset_child_care_db <- function(pth, config) {
                          miny = min(Y), maxy = max(Y))
 
       l$GEO_COUNTY <- GEO_COUNTY %>%
-        dplyr::filter(county_code %in% l$SURROUND_COUNTY)
+        dplyr::filter(county_code %in% county_fips)
 
-      l$GEO_WATERWAY <- get_geo.waterway(lu_code = LU_COUNTY_CODE, county = county)
+      l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
-      l$GEO_HIGHWAY <- get_geo.highway(lu_code = LU_COUNTY_CODE, county = county)
+      l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
 
-      l$GEO_CITY <- get_geo.city(lu_code = LU_COUNTY_CODE, county = county)
+      l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
   
-      l$GEO_PARK <- get_geo.park(lu_code = LU_COUNTY_CODE, county = county)
+      l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
       
       l$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                    dplyr::filter(tract %in% l$SURROUND_TRACTS))
-  
+
       l$DF_MKT_DEMAND <- create_market_demand(tract_demand = l$DF_TRACT_DEMAND, 
                                               tracts = l$XWALK_TRACTS,
                                               xwalk_tract_desert = l$XWALK_TRACT_DESERT)
