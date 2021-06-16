@@ -2,6 +2,9 @@
 create_supply <- function(df_hhsc_ccl, 
                           config) {
 
+  config <- config %>%
+    dplyr::bind_rows(.id = "county_code")
+  
   test_config(config = config, str = "home_prvdr_non_sub_capacity")
   test_config(config = config, str = "center_prvdr_non_sub_capacity")
   test_config(config = config, str = "home_prvdr_sub_capacity")
