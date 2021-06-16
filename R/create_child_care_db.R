@@ -106,91 +106,96 @@ save_subset_child_care_db <- function(pth, config) {
 
   if(file.exists(pth)) {
 
-    config <- config %>%
-      dplyr::bind_rows(.id = "county_code")
-    
     load_env(file.path(pth))
 
-    env <- new.env()
+    env <- sapply(config, function(county_fips) {
 
-    env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
+      l <- list()
 
-    env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+      l$COUNTY_NAME <- LU_COUNTY_CODE %>% 
+        dplyr::filter(county_code %in% county_fips) %>% 
+        dplyr::pull(county)
+      
+      l$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER
+
+      l$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS,
                                       config = config)
+
+      l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
+
+      l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
+
+      l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
+        dplyr::distinct(surround_county) %>% 
+        dplyr::pull(surround_county)
+
+      l$GEO_TRACTS <- GEO_TRACTS %>%
+        dplyr::inner_join(l$XWALK_TRACTS, by = c("tract" = "surround_tract"))
+
+      l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
+        dplyr::filter(county_code %in% l$SURROUND_COUNTY)
+
+      l$BB_COUNTY <- l$GEO_TRACTS %>% 
+        dplyr::group_by(anchor_county) %>% 
+        dplyr::summarise(minx = min(X), maxx = max(X), 
+                         miny = min(Y), maxy = max(Y))
+
+      l$BB_TRACT <- l$GEO_TRACTS %>% 
+        dplyr::group_by(anchor_tract, anchor_county) %>% 
+        dplyr::summarise(minx = min(X), maxx = max(X), 
+                         miny = min(Y), maxy = max(Y))
+
+      l$GEO_COUNTY <- GEO_COUNTY %>%
+        dplyr::filter(county_code %in% l$SURROUND_COUNTY)
+
+      l$GEO_WATERWAY <- get_geo.waterway(lu_code = LU_COUNTY_CODE, county = county)
+
+      l$GEO_HIGHWAY <- get_geo.highway(lu_code = LU_COUNTY_CODE, county = county)
+
+      l$GEO_CITY <- get_geo.city(lu_code = LU_COUNTY_CODE, county = county)
   
-    env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
-
-    surround_tracts <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
-
-    surround_county <- env$XWALK_TRACTS %>% 
-      dplyr::distinct(surround_county) %>% 
-      dplyr::pull(surround_county)
-
-    env$GEO_TRACTS <- GEO_TRACTS %>%
-      dplyr::inner_join(env$XWALK_TRACTS, by = c("tract" = "surround_tract"))
-
-    env$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
-      dplyr::filter(county_code %in% surround_county)
-    
-    env$BB_COUNTY <- env$GEO_TRACTS %>% 
-      dplyr::group_by(anchor_county) %>% 
-      dplyr::summarise(minx = min(X), maxx = max(X), 
-                       miny = min(Y), maxy = max(Y))
-    
-    env$BB_TRACT <- env$GEO_TRACTS %>% 
-      dplyr::group_by(anchor_tract, anchor_county) %>% 
-      dplyr::summarise(minx = min(X), maxx = max(X), 
-                       miny = min(Y), maxy = max(Y))
-
-    env$GEO_COUNTY <- GEO_COUNTY %>%
-      dplyr::filter(county_code %in% surround_county)
-
-    env$GEO_WATERWAY <- get_geo.waterway(lu_code = LU_COUNTY_CODE, county = county)
-
-    env$GEO_HIGHWAY <- get_geo.highway(lu_code = LU_COUNTY_CODE, county = county)
-    
-    env$GEO_CITY <- get_geo.city(lu_code = LU_COUNTY_CODE, county = county)
-
-    env$GEO_PARK <- get_geo.park(lu_code = LU_COUNTY_CODE, county = county)
-    
-    env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
-                                                 dplyr::filter(tract %in% surround_tracts))
-
-    env$DF_MKT_DEMAND <- create_market_demand(tract_demand = env$DF_TRACT_DEMAND, 
-                                              tracts = env$XWALK_TRACTS,
-                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
-
-    env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
+      l$GEO_PARK <- get_geo.park(lu_code = LU_COUNTY_CODE, county = county)
+      
+      l$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
+                                                   dplyr::filter(tract %in% l$SURROUND_TRACTS))
+  
+      l$DF_MKT_DEMAND <- create_market_demand(tract_demand = l$DF_TRACT_DEMAND, 
+                                              tracts = l$XWALK_TRACTS,
+                                              xwalk_tract_desert = l$XWALK_TRACT_DESERT)
+  
+      l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
+  
+      l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       surround_tracts = l$SURROUND_TRACTS)
+  
+      l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
+                                     config = config)
+  
+      l$DF_TRACT_SUPPLY <- create_tract_supply(supply = l$DF_SUPPLY)
+  
+      l$DF_MKT_SUPPLY <- create_market_supply(tract_supply = l$DF_TRACT_SUPPLY,
+                                              tracts = l$XWALK_TRACTS,
+                                              xwalk_tract_desert = l$XWALK_TRACT_DESERT)
+  
+      l$DF_MKT_RATIO <- create_market_ratio(mkt_supply = l$DF_MKT_SUPPLY,
+                                            mkt_demand = l$DF_MKT_DEMAND)
+      
+      l$AVG_CHILD_MKT <- avg_children_mkt(l$DF_MKT_RATIO)
+      l$AVG_SEATS_MKT <- avg_seats_mkt(l$DF_MKT_RATIO)
+      l$AVG_PRVDR_MKT <- avg_provider_mkt(l$XWALK_TRACT_PRVDR)
+  
+      l$TTL_CHILD <- total_children(l$DF_TRACT_DEMAND)
+      l$TTL_SEATS <- total_seats(l$DF_TRACT_SUPPLY)
+      l$TTL_CHILD_DSRT <- total_children_desert(df_ratio = l$DF_MKT_RATIO,
+                                                df_demand = l$DF_TRACT_DEMAND)
+  
+      return(l)
+    }, USE.NAMES = TRUE, simplify = FALSE)
 
-    env$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
-                                       surround_tracts = surround_tracts)
-
-    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
-                                   config = config)
-
-    env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
-
-    env$DF_MKT_SUPPLY <- create_market_supply(tract_supply = env$DF_TRACT_SUPPLY,
-                                              tracts = env$XWALK_TRACTS,
-                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
-
-    env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
-                                            mkt_demand = env$DF_MKT_DEMAND)
-    
-    env$AVG_CHILD_MKT <- avg_children_mkt(env$DF_MKT_RATIO)
-    env$AVG_SEATS_MKT <- avg_seats_mkt(env$DF_MKT_RATIO)
-    env$AVG_PRVDR_MKT <- avg_provider_mkt(env$XWALK_TRACT_PRVDR)
-
-    env$TTL_CHILD <- total_children(env$DF_TRACT_DEMAND)
-    env$TTL_SEATS <- total_seats(env$DF_TRACT_SUPPLY)
-    env$TTL_CHILD_DSRT <- total_children_desert(df_ratio = env$DF_MKT_RATIO,
-                                                df_demand = env$DF_TRACT_DEMAND)
-
-    save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
-
   } else {
     assertthat::assert_that(FALSE, 
                            msg = "Please run child_care_db() function to create
