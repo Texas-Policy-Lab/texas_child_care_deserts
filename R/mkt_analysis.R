@@ -1,14 +1,12 @@
 #' @title Find percent of markets that are a desert for a specific type of desert
 #' @export
-pct_desert <- function(df,
-                       type) {
-  
-  df %>% 
-    dplyr::filter(desert_type %in% type) %>% 
-    dplyr::group_by(desert) %>% 
+pct_desert <- function(df) {
+
+  df %>%
+    dplyr::group_by(desert_type, desert) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::mutate(pct = round((n/sum(n))*100,1)) %>% 
-    dplyr::filter(desert == T) %>% 
+    dplyr::filter(desert) %>% 
     dplyr::pull(pct)
 }
 
@@ -53,8 +51,9 @@ avg_seats_mkt <- function(df){
 avg_provider_mkt <- function(xwalk_tract_provider) {
 
   xwalk_tract_provider %>%
-    dplyr::group_by(anchor_tract) %>% 
-    dplyr::summarise(n_provider = dplyr::n_distinct(operation_number))
+    dplyr::group_by(anchor_tract) %>%
+    dplyr::summarise(n_provider = dplyr::n_distinct(operation_number)) %>%
+    dplyr::summarise(n_prvdr = mean(n_provider))
 }
 
 #' @title Find number of children per desert type
