@@ -118,9 +118,9 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::filter(county_code %in% county_fips) %>% 
         dplyr::pull(county)
 
-      l$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER %>% 
+      l$DF_NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER %>% 
         dplyr::filter(county_code == county_fips)
-      
+
       l$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS ,
                                       tract_radius = config$tract_radius,
@@ -196,7 +196,7 @@ save_subset_child_care_db <- function(pth, config) {
                                                 df_demand = l$DF_TRACT_DEMAND)
   
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
-
+      
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
