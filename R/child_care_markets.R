@@ -2,25 +2,31 @@
 create_supply <- function(df_hhsc_ccl,
                           config) {
 
-  test_config(config = config, str = "home_prvdr_non_sub_capacity")
-  test_config(config = config, str = "center_prvdr_non_sub_capacity")
-  test_config(config = config, str = "home_prvdr_sub_capacity")
-  test_config(config = config, str = "center_prvdr_sub_capacity")
+  test_config(x = config$home_prvdr_non_sub_capacity, 
+              str = "home_prvdr_non_sub_capacity")
+  test_config(x = config$center_prvdr_non_sub_capacity,
+              str = "center_prvdr_non_sub_capacity")
+  test_config(x = config$home_prvdr_sub_capacity,
+              str = "home_prvdr_sub_capacity")
+  test_config(x = config$center_prvdr_sub_capacity,
+              str = "center_prvdr_sub_capacity")
   
-  test_config_pct(config = config, str = "home_prvdr_non_sub_capacity")
-  test_config_pct(config = config, str = "center_prvdr_non_sub_capacity")
-  test_config_pct(config = config, str = "home_prvdr_sub_capacity")
-  test_config_pct(config = config, str = "center_prvdr_sub_capacity")
+  test_config_pct(x = config$home_prvdr_non_sub_capacity,
+                  str = "home_prvdr_non_sub_capacity")
+  test_config_pct(x = config$center_prvdr_non_sub_capacity,
+                  str = "center_prvdr_non_sub_capacity")
+  test_config_pct(x = config$home_prvdr_sub_capacity,
+                  str = "home_prvdr_sub_capacity")
+  test_config_pct(x = config$center_prvdr_sub_capacity,
+                  str = "center_prvdr_sub_capacity")
 
   df <- df_hhsc_ccl %>%
     dplyr::filter(!is.na(tract)) %>%
     dplyr::filter(home_prvdr | center_prvdr | prek_prvdr) %>%
-    dplyr::inner_join(config %>% 
-                        dplyr::select(-county_code), by = c("county_code" = "surround_county")) %>%
-    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*home_prvdr_non_sub_capacity,
-                                                  center_prvdr & !sub_provider ~ licensed_capacity*center_prvdr_non_sub_capacity,
-                                                  home_prvdr & sub_provider ~ licensed_capacity*home_prvdr_sub_capacity,
-                                                  center_prvdr & sub_provider ~ licensed_capacity*center_prvdr_sub_capacity,
+    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*config$home_prvdr_non_sub_capacity,
+                                                  center_prvdr & !sub_provider ~ licensed_capacity*config$center_prvdr_non_sub_capacity,
+                                                  home_prvdr & sub_provider ~ licensed_capacity*config$home_prvdr_sub_capacity,
+                                                  center_prvdr & sub_provider ~ licensed_capacity*config$center_prvdr_sub_capacity,
                                                   prek_prvdr ~ licensed_capacity,
                                                   TRUE ~ NA_real_)) %>%
     dplyr::select(operation_number, tract, county_code, adj_capacity,
@@ -111,7 +117,9 @@ create_market_ratio <- function(mkt_supply, mkt_demand) {
     dplyr::mutate(
                   label = ordered(label,
                                   levels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33", "Not a desert",
-                                             "Not enough children to estimate"))
+                                             "Not enough children to estimate")),
+                  desert_desc = dplyr::case_when(!desert ~ "Not a desert",
+                                                  desert ~ "Desert")
     )
 }
 

@@ -1,17 +1,17 @@
 #' @title Subset the tract crosswalk crosswalk
 subset_tracts <- function(xwalk_tracts,
                           adj_tracts,
-                          config) {
+                          tract_radius,
+                          county_fips) {
 
-  test_config(config = config, str = "tract_radius")
-
+  test_config(x = tract_radius, str = "tract_radius")
+  
   xwalk_tracts %>%
-    dplyr::inner_join(config, by = c("anchor_county" = "county_code")) %>%
-    dplyr::filter(mi_to_tract <= tract_radius) %>% 
-    dplyr::select(-mi_to_tract) %>% 
-    dplyr::bind_rows(adj_tracts %>%
-                       dplyr::inner_join(config, by = c("anchor_county" = "county_code"))) %>% 
-    dplyr::distinct()
+    dplyr::filter(mi_to_tract <= tract_radius) %>%
+    dplyr::select(-mi_to_tract) %>%
+    dplyr::bind_rows(adj_tracts) %>%
+    dplyr::filter(anchor_county %in% county_fips) %>%
+    dplyr::distinct() 
 }
 
 #' @title Subset surround tracts
@@ -74,20 +74,20 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
 
 #' @title Test config
 #' @description Test to make sure configuration is set-up correctly
-test_config <- function(config,
+test_config <- function(x,
                         str,
                         msg = "Parameter '{str}' is missing from {n} county in the list") {
-  assertthat::assert_that(all(!is.na(config[[str]])),
-                          msg = glue::glue(msg, str = str, n = sum(is.na(config[[str]]))))
+  assertthat::assert_that(all(!is.na(x)),
+                          msg = glue::glue(msg, str = str, n = sum(is.na(x))))
 }
 
 #' @title Test config pct
 #' @description Test percent parameters are between 0 and 1
-test_config_pct <- function(config,
+test_config_pct <- function(x,
                             str,
                             msg = "Parameter '{str}' should be between 0 and 1") {
 
-  assertthat::assert_that(all(config[[str]] <= 1) & all(config[[str]] >= 0),
+  assertthat::assert_that(all(x <= 1) & all(x >= 0),
                           msg = glue::glue(msg, str = str))
 }
 
@@ -157,12 +157,9 @@ calc.subsidy_capacity <- function(config,
                                   grouping_vars = NULL,
                                   qtrs = c("1","2","4")) {
 
-  config <- config %>%
-    dplyr::bind_rows(.id = "county_code")
-
   xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
                                 adj_tracts = adj_tracts,
-                                config = config)
+                                tract_radius = config$tract_radius)
 
   surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
 

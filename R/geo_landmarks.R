@@ -1,70 +1,45 @@
-#' @title Create County Name
-county_name <- function(cnty, lu_code) {
-
-  structure(
-    list(name = lu_code %>%
-           dplyr::filter(county_code %in% cnty) %>% 
-           dplyr::pull(county) %>% 
-           paste("United States")),
-    class = cnty)
-}
-
 #' @title Get geo landmark
-get_geo <- function(lu_code, county, key, value, geo_type) {
+get_geo <- function(county_name, key, value, geo_type) {
 
-  f <- function(name) {
-
-    fips <- class(name)
-
-    osmdata::getbb(name$name) %>%
-      osmdata::opq() %>%
-      osmdata::add_osm_feature(key = key, value = c(value)) %>%
-      osmdata::osmdata_sf() %>% 
-      purrr::pluck(geo_type) %>% 
-      dplyr::mutate(county_code = fips)
-  }
-
-  name <- lapply(county, county_name, lu_code = lu_code)
-
-  if (length(name) > 1) {
-    lapply(name, f) %>% dplyr::bind_rows()
-  } else {
-    f(name[[1]])
-  }
+  osmdata::getbb(county_name) %>%
+    osmdata::opq() %>%
+    osmdata::add_osm_feature(key = key, value = c(value)) %>%
+    osmdata::osmdata_sf() %>% 
+    purrr::pluck(geo_type)
 }
 
 #' @title Get Geo highways
-get_geo.highway <- function(lu_code, county, key = "highway", value = "motorway",
+get_geo.highway <- function(county_name, key = "highway", value = "motorway",
                             geo_type = "osm_lines") {
-  get_geo(lu_code = lu_code, county = county, key = key, value = value, 
+  get_geo(county_name = county_name, key = key, value = value, 
           geo_type = geo_type) %>%
-    dplyr::select(name, geometry, county_code)
+    dplyr::select(name, geometry)
 }
 
 #' @title Get Geo waterways
-get_geo.waterway <- function(lu_code, county, key = "waterway", value = "river",
+get_geo.waterway <- function(county_name, key = "waterway", value = "river",
                              geo_type = "osm_lines") {
-  get_geo(lu_code = lu_code, county = county, key = key, value = value, 
+  get_geo(county_name = county_name, key = key, value = value, 
           geo_type = geo_type) %>% 
-    dplyr::select(geometry, county_code)
+    dplyr::select(geometry)
 }
 
 #' @title Get Geo park
-get_geo.park <- function(lu_code, county, key = "leisure", value = "park",
+get_geo.park <- function(county_name, key = "leisure", value = "park",
                          geo_type = "osm_polygons") {
-  get_geo(lu_code = lu_code, county = county, key = key, value = value, 
+  get_geo(county_name = county_name, key = key, value = value, 
           geo_type = geo_type) %>% 
-    dplyr::select(geometry, county_code)
+    dplyr::select(geometry)
 }
 
 #' @title Get cities
-get_geo.city <- function(lu_code, county, key = "place", value = "city",
+get_geo.city <- function(county_name, key = "place", value = "city",
                          geo_type = "osm_points") {
 
-  get_geo(lu_code = lu_code, county = county, key = key, value = value,
+  get_geo(county_name = county_name, key = key, value = value,
           geo_type = geo_type) %>%
-    dplyr::filter(!is.na(name)) %>% 
-    dplyr::select(name, population, geometry, county_code) %>% 
+    dplyr::filter(!is.na(name)) %>%
+    dplyr::select(name, population, geometry) %>% 
     dplyr::mutate(population = as.numeric(population)) %>%
     dplyr::arrange(dplyr::desc(population))
 }
