@@ -200,7 +200,10 @@ save_subset_child_care_db <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
-    save(env, file = file.path(dirname(pth), "new_env.Rdata"))
+    save(env, file = file.path(dirname(pth), paste(paste(names(config), 
+                                                         collapse = "_"), 
+                                                   basename(pth), sep = "_")))
+
   } else {
     assertthat::assert_that(FALSE, 
                            msg = "Please run child_care_db() function to create
