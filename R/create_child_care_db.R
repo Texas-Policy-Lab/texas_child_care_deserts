@@ -76,6 +76,8 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
+  env$DF_PREK <- process.prek(raw_path = raw_path)
+
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -162,10 +164,14 @@ save_subset_child_care_db <- function(pth, config) {
                                                        df_hhsc_ccl = DF_HHSC_CCL)
 
     env$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       df_prek = DF_PREK,
                                        surround_tracts = surround_tracts)
 
     env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
-                                   config = config)
+                                   config = config %>% 
+                                     dplyr::inner_join(env$XWALK_TRACTS %>% 
+                                                         dplyr::distinct(anchor_county, surround_county),
+                                                       by = c("county_code" = "anchor_county")))
 
     env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
 
@@ -175,8 +181,8 @@ save_subset_child_care_db <- function(pth, config) {
 
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
-    
-    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
+
+    save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {
