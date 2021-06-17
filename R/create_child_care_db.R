@@ -76,6 +76,8 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
+  env$DF_PREK <- process.prek(raw_path = raw_path)
+
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -153,6 +155,7 @@ save_subset_child_care_db <- function(pth, config) {
       l$GEO_COUNTY <- GEO_COUNTY %>%
         dplyr::filter(county_code %in% county_fips)
 
+
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
       l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
@@ -172,10 +175,11 @@ save_subset_child_care_db <- function(pth, config) {
                                                        df_hhsc_ccl = DF_HHSC_CCL)
   
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS)
-  
+      
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
-                                     config = config)
+                                   config = config)
   
       l$DF_TRACT_SUPPLY <- create_tract_supply(supply = l$DF_SUPPLY)
   
@@ -200,8 +204,7 @@ save_subset_child_care_db <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
-    save(env, file = file.path(dirname(pth), paste(paste(names(config), 
-                                                         collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {

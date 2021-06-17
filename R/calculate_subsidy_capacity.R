@@ -23,10 +23,54 @@ subset_surround_tracts <- function(xwalk_tracts) {
 
 #' @title Subset HHSC
 subset_hhsc_ccl <- function(df_hhsc_ccl,
+                            df_prek = NULL,
                             surround_tracts) {
-  df_hhsc_ccl %>%
-    dplyr::filter(tract %in% surround_tracts)
-} 
+
+  if (!is.null(df_prek)) {
+    df <- df_prek %>% 
+      dplyr::rename(licensed_capacity = prek_enrollment,
+                    operation_number = campus_id,
+                    operation_name = campus_name) %>%
+      dplyr::mutate(infant = FALSE,
+                    toddler = FALSE,
+                    prek = TRUE,
+                    school = FALSE,
+                    home_prvdr = FALSE,
+                    center_prvdr = FALSE,                   
+                    prek_prvdr = TRUE,
+                    head_start = FALSE,
+                    after_school = FALSE,
+                    after_school_only = FALSE,
+                    school_age_only = FALSE,
+                    after_school_school_age_only = FALSE,
+                    subsidy = FALSE,
+                    trs_provider = FALSE,
+                    subsidy_provider = FALSE,
+                    trs_star_level = NA,
+                    naeyc = FALSE,
+                    all_provider = TRUE,
+                    sub_provider = TRUE,
+                    sub_trs_provider = FALSE,
+                    sub_trs4_rovider = FALSE,
+                    quality_desc = NA,
+                    quality = FALSE,
+                    download_date = NA) %>% 
+      dplyr::bind_rows(df_hhsc_ccl %>% 
+                         dplyr::mutate(phone_number = as.character(phone_number)))
+  } else {
+    df <- df_hhsc_ccl %>% 
+      dplyr::mutate(prek_prvdr = FALSE)
+  }
+
+  df %>%
+    dplyr::filter(tract %in% surround_tracts) %>%
+    dplyr::mutate(prvdr_type_desc = dplyr::case_when(home_prvdr ~"Home",
+                                                     center_prvdr ~ "Center",
+                                                     prek_prvdr ~ "Pre-K"),
+                  prvdr_type_desc = as.factor(prvdr_type_desc),
+                  subsidy_desc = ifelse(sub_provider, "Yes", "No"),
+                  trs_desc = ifelse(sub_trs_provider, "Yes", "No")) 
+}
 
 #' @title Test config
 #' @description Test to make sure configuration is set-up correctly
