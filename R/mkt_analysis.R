@@ -65,13 +65,11 @@ avg_provider_mkt <- function(xwalk_tract_provider) {
 #' @export
 total_children_desert <- function(df_ratio,
                                   df_demand) {
-  
-  df_ratio %>% 
+
+  df_ratio %>%
     dplyr::filter(desert) %>%
     dplyr::select(anchor_tract, desert_type) %>%
-    dplyr::left_join(XWALK_TRACTS) %>%
-    dplyr::distinct(surround_tract, desert_type) %>%
-    dplyr::inner_join(df_demand, by = c("surround_tract" = "tract",
+    dplyr::inner_join(df_demand, by = c("anchor_tract" = "tract",
                                         "desert_type" = "desert")) %>%
     dplyr::group_by(desert_type) %>%
     dplyr::summarise(n_kids = round(sum(tract_demand, na.rm = T))) %>%
