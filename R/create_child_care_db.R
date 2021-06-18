@@ -177,7 +177,7 @@ save_subset_child_care_db <- function(pth, config) {
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS)
-      
+
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    config = config)
   
@@ -204,7 +204,7 @@ save_subset_child_care_db <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
-    save(env, file = file.path(dirname(pth), paste(paste(config$county_code, collapse = "_"), 
+    save(env, file = file.path(dirname(pth), paste(paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
 
   } else {
