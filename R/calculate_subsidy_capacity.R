@@ -157,43 +157,47 @@ calc.subsidy_capacity <- function(config,
                                   grouping_vars = NULL,
                                   qtrs = c("1","2","4")) {
 
-  xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
-                                adj_tracts = adj_tracts,
-                                tract_radius = config$tract_radius)
+  lapply(names(config), function(county_fips) {
 
-  surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
-
-  df_hhsc_ccl <- subset_hhsc_ccl(df_hhsc_ccl = df_hhsc_ccl,
-                                 surround_tracts = surround_tracts) %>% 
-    dplyr::filter(subsidy)
-
-  xwalk_tract_provider <- process.xwalk_tract_prvdr(xwalk_tracts = xwalk_tracts,
-                                                    df_hhsc_ccl = df_hhsc_ccl)
-
-  df_acf <- df_acf %>%
-    dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
-    dplyr::filter(quarter %in% qtrs) %>%
-    dplyr::inner_join(xwalk_tract_provider)
-
-  n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
-
-  mkt_ratios <- dm.agg_ratio_mkt(n_kids = n_kids %>% 
-                                   dplyr::inner_join(df_hhsc_ccl),
-                                 grouping_vars = grouping_vars)
-
-  m1_param <- mkt_ratios %>%
-    tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, grouping_vars)) %>% 
-    dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
-    dplyr::summarise(m1 = mean(value))
-
-  tri_params <- mkt_ratios %>%
-    dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
-    dplyr::summarise(a=mean(min_ratio),
-                     b=mean(max_ratio)) %>% 
-    dplyr::inner_join(m1_param) %>% 
-    dplyr::mutate(c=3*m1 - a - b) %>%
-    dplyr::select(dplyr::one_of("anchor_county", "year", "b", grouping_vars)) %>% 
+    xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
+                                  adj_tracts = adj_tracts,
+                                  tract_radius = config[[county_fips]]$tract_radius,
+                                  county_fips = county_fips)
+    
+    surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
+    
+    df_hhsc_ccl <- subset_hhsc_ccl(df_hhsc_ccl = df_hhsc_ccl,
+                                   surround_tracts = surround_tracts) %>% 
+      dplyr::filter(subsidy)
+    
+    xwalk_tract_provider <- process.xwalk_tract_prvdr(xwalk_tracts = xwalk_tracts,
+                                                      df_hhsc_ccl = df_hhsc_ccl)
+    
+    df_acf <- df_acf %>%
+      dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
+      dplyr::filter(quarter %in% qtrs) %>%
+      dplyr::inner_join(xwalk_tract_provider)
+    
+    n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
+    
+    mkt_ratios <- dm.agg_ratio_mkt(n_kids = n_kids %>% 
+                                     dplyr::inner_join(df_hhsc_ccl),
+                                   grouping_vars = grouping_vars)
+    
+    m1_param <- mkt_ratios %>%
+      tidyr::pivot_longer(-c(anchor_tract, anchor_county, year, grouping_vars)) %>% 
+      dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
+      dplyr::summarise(m1 = mean(value))
+    
+    tri_params <- mkt_ratios %>%
+      dplyr::group_by_at(dplyr::vars(anchor_county, year, grouping_vars)) %>%
+      dplyr::summarise(a=mean(min_ratio),
+                       b=mean(max_ratio)) %>% 
+      dplyr::inner_join(m1_param) %>% 
+      dplyr::mutate(c=3*m1 - a - b) %>%
+      dplyr::select(dplyr::one_of("anchor_county", "year", "b", grouping_vars))
+    
+    return(tri_params)
+  }) %>% dplyr::bind_rows() %>% 
     tidyr::pivot_wider(names_from = "anchor_county", values_from = b)
-
-  return(tri_params)
 }
