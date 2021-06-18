@@ -104,6 +104,7 @@ child_care_db <- function(root,
 #' county <- "48439"
 #' save_subset_child_care_db(pth = pth, county = county)
 #' }
+#' @export
 save_subset_child_care_db <- function(pth, config) {
 
   if(file.exists(pth)) {
