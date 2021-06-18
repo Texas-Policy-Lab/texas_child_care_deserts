@@ -137,13 +137,14 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::pull(surround_county)
 
       l$GEO_TRACTS <- GEO_TRACTS %>%
-        dplyr::inner_join(l$XWALK_TRACTS, by = c("tract" = "surround_tract"))
+        dplyr::inner_join(l$XWALK_TRACTS, by = c("tract" = "surround_tract")) %>% 
+        dplyr::mutate(anchor_county = ifelse(surround_county == county_fips, TRUE, FALSE))
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
 
       l$BB_COUNTY <- l$GEO_TRACTS %>% 
-        dplyr::group_by(anchor_county) %>% 
+        dplyr::filter(anchor_county) %>% 
         dplyr::summarise(minx = min(X), maxx = max(X), 
                          miny = min(Y), maxy = max(Y))
 
@@ -154,7 +155,6 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$GEO_COUNTY <- GEO_COUNTY %>%
         dplyr::filter(county_code %in% county_fips)
-
 
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
@@ -186,10 +186,10 @@ save_subset_child_care_db <- function(pth, config) {
       l$DF_MKT_SUPPLY <- create_market_supply(tract_supply = l$DF_TRACT_SUPPLY,
                                               tracts = l$XWALK_TRACTS,
                                               xwalk_tract_desert = l$XWALK_TRACT_DESERT)
-  
+
       l$DF_MKT_RATIO <- create_market_ratio(mkt_supply = l$DF_MKT_SUPPLY,
                                             mkt_demand = l$DF_MKT_DEMAND)
-      
+
       l$AVG_CHILD_MKT <- avg_children_mkt(l$DF_MKT_RATIO)
       l$AVG_SEATS_MKT <- avg_seats_mkt(l$DF_MKT_RATIO)
       l$AVG_PRVDR_MKT <- avg_provider_mkt(l$XWALK_TRACT_PRVDR)
@@ -198,7 +198,7 @@ save_subset_child_care_db <- function(pth, config) {
       l$TTL_SEATS <- total_seats(l$DF_TRACT_SUPPLY)
       l$TTL_CHILD_DSRT <- total_children_desert(df_ratio = l$DF_MKT_RATIO,
                                                 df_demand = l$DF_TRACT_DEMAND)
-  
+
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
       
       return(l)
