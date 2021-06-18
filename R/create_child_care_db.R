@@ -144,7 +144,6 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
 
       l$BB_COUNTY <- l$GEO_TRACTS %>% 
-        dplyr::filter(anchor_county) %>% 
         dplyr::summarise(minx = min(X), maxx = max(X), 
                          miny = min(Y), maxy = max(Y))
 
