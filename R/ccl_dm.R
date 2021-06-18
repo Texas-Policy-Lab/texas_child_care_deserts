@@ -229,7 +229,7 @@ col.assign_deserts <- function(df, trs_pth, naeyc_pth1, naeyc_pth2) {
                                                   quality_type == "naeyc" ~ "NAEYC")) %>%
     dplyr::group_by(operation_number) %>%
     dplyr::summarise(quality_desc = paste(quality_desc, collapse = ", "))
-
+  
   df %>%
     dplyr::left_join(qual_type) %>%
     dplyr::mutate(quality = ifelse(is.na(quality_desc), FALSE, TRUE))
@@ -274,8 +274,8 @@ dm.hhsc_ccl <- function(df,
     col.operation_type() %>%
     col.operation_name() %>%
     col.programs_provided() %>%
-    # col.accepts_child_care_subsidies() %>%
-    # col.total_capacity() %>% 
+    col.accepts_child_care_subsidies() %>%
+    col.total_capacity() %>%
     col.assign_deserts(trs_pth = trs_pth, 
                        naeyc_pth1 = naeyc_pth1, 
                        naeyc_pth2 = naeyc_pth2) %>%
