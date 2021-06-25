@@ -76,3 +76,30 @@ total_children_desert <- function(df_ratio,
     tidyr::pivot_wider(names_from = desert_type, values_from = n_kids)
 }
 
+#' @title Percent of deserts each provider serves in
+#' @export
+create_pct_dsrt_prvdr <- function(mkt_ratio,
+                                  df_supply,
+                                  xwalk_tracts) {
+  df <- df_supply %>%
+    dplyr::select(-c(adj_capacity, county_code)) %>%
+    dplyr::inner_join(xwalk_tracts, by = c("tract" = "surround_tract")) 
+
+  desert_ttl <- df %>%
+    dplyr::inner_join(mkt_ratio %>%
+                        dplyr::filter(desert) %>%
+                        dplyr::select(-desert) %>%
+                        dplyr::rename(desert = desert_type)) %>% 
+    dplyr::group_by(operation_number, desert) %>% 
+    dplyr::summarise(n_desert = dplyr::n_distinct(anchor_tract))
+
+  mkt_ttl <- df %>%
+    dplyr::group_by(operation_number, desert) %>% 
+    dplyr::summarise(n_mkt = dplyr::n_distinct(anchor_tract))
+
+  desert_ttl %>%
+    dplyr::right_join(mkt_ttl) %>%
+    dplyr::mutate(n_desert = ifelse(is.na(n_desert), 0, n_desert),
+                  pct_desert = round(n_desert/n_mkt*100, 1)) %>%
+    dplyr::select(-n_desert)
+}
