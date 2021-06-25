@@ -51,7 +51,7 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
                     all_provider = TRUE,
                     sub_provider = TRUE,
                     sub_trs_provider = FALSE,
-                    sub_trs4_rovider = FALSE,
+                    sub_trs4_provider = FALSE,
                     quality_desc = NA,
                     quality = FALSE,
                     download_date = NA) %>% 
