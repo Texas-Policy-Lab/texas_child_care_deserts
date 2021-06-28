@@ -88,7 +88,7 @@ dwnld.rating <- function(raw_pth,
 }
 
 #' @title Process Pre-K data
-process.prek <- function(raw_path) {
+process.prek <- function(raw_pth) {
 
   dwnld.isd(raw_pth = raw_pth) %>%
     dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>% 

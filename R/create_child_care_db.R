@@ -47,6 +47,9 @@ child_care_db <- function(root,
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
+  trs_pth <- file.path(raw_pth, trs_pth)
+  naeyc_pth1 <- file.path(raw_pth, naeyc_pth1)
+  naeyc_pth2 <- file.path(raw_pth, naeyc_pth2)
   pths <- c(data_pth, raw_pth, processed_pth)
   create_folder_str(pths = pths)
 
@@ -80,7 +83,7 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
-  env$DF_PREK <- process.prek(raw_path = raw_path)
+  env$DF_PREK <- process.prek(raw_pth = raw_pth)
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
@@ -88,7 +91,7 @@ child_care_db <- function(root,
   
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
-  env$GEO_ZIP <- dwnld.geo_zip(state_fips = state_code)
+  env$GEO_ZIP <- dwnld.geo_zip()
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 

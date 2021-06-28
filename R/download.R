@@ -135,9 +135,9 @@ dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-
 #' @description Downloads the crosswalk between zip codes and latitude longitude
 #' coordinates of the center for Texas
 #' @export
-dwnld.geo_zip <- function(state_fips) {
+dwnld.geo_zip <- function() {
 
-  tigris::zctas(state = state_fips) %>% 
+  tigris::zctas() %>% 
     dplyr::mutate(zip = as.character(ZCTA5CE10),
                   lat = as.numeric(INTPTLAT10),
                   lon = as.numeric(INTPTLON10)) %>% 

@@ -28,7 +28,7 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
 
   if (!is.null(df_prek)) {
     df <- df_prek %>% 
-      dplyr::rename(licensed_capacity = prek_enrollment,
+      dplyr::rename(licensed_capacity = earlyed_prek_enrollment,
                     operation_number = campus_id,
                     operation_name = campus_name) %>%
       dplyr::mutate(infant = FALSE,
