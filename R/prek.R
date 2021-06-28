@@ -74,11 +74,25 @@ dwnld.isd <- function(raw_pth,
     dplyr::select(-type)
 }
 
+#' @title Download school ratings
+#' @description data downloaded from
+#' https://rptsvr1.tea.texas.gov/perfreport/account/index.html
+#' @note Schools were not rated in 2020 - use rating from 2019
+dwnld.rating <- function(raw_pth, 
+                         name = "Multi-year Rating List 2020.xlsx") {
+
+  df <- readxl::read_excel(file.path(raw_pth, name), sheet = "Campus Rating Label") %>%
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(campus_id = `campus\r\nnumber`,
+                  campus_rating = `campus 2019 rating`)
+}
+
 #' @title Process Pre-K data
 process.prek <- function(raw_path) {
 
   dwnld.isd(raw_pth = raw_pth) %>%
-    dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>%
+    dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>% 
+    dplyr::left_join(dwnld.rating(raw_pth = raw_pth)) %>% 
     dm.geocode_lat_long() %>% 
     dplyr::mutate(county_code = substr(tract, 1, 5))
 

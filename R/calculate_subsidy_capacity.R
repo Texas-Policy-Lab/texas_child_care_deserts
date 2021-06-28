@@ -50,10 +50,10 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
                     naeyc = FALSE,
                     all_provider = TRUE,
                     sub_provider = TRUE,
-                    sub_trs_provider = FALSE,
-                    sub_trs4_provider = FALSE,
-                    quality_desc = NA,
-                    quality = FALSE,
+                    quality = ifelse(campus_rating %in% c("A", "B"), TRUE, FALSE),
+                    quality_desc = dplyr::case_when(quality == TRUE ~ "TEA Accountability Rating"),
+                    sub_trs_provider = ifelse(quality == TRUE, TRUE, FALSE),
+                    sub_trs4_provider = ifelse(quality == TRUE, TRUE, FALSE),
                     download_date = NA) %>% 
       dplyr::bind_rows(df_hhsc_ccl %>% 
                          dplyr::mutate(phone_number = as.character(phone_number)))
