@@ -28,7 +28,7 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
 
   if (!is.null(df_prek)) {
     df <- df_prek %>% 
-      dplyr::rename(licensed_capacity = prek_enrollment,
+      dplyr::rename(licensed_capacity = earlyed_prek_enrollment,
                     operation_number = campus_id,
                     operation_name = campus_name) %>%
       dplyr::mutate(infant = FALSE,
@@ -64,7 +64,8 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
 
   df %>%
     dplyr::filter(tract %in% surround_tracts) %>%
-    dplyr::mutate(prvdr_type_desc = dplyr::case_when(home_prvdr ~"Home",
+    dplyr::mutate(prvdr_type_desc = dplyr::case_when(head_start ~ "Head Start",
+                                                     home_prvdr ~"Home",
                                                      center_prvdr ~ "Center",
                                                      prek_prvdr ~ "Pre-K"),
                   prvdr_type_desc = as.factor(prvdr_type_desc),
