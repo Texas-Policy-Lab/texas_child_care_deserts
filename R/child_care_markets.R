@@ -21,8 +21,6 @@ create_supply <- function(df_hhsc_ccl,
                   str = "center_prvdr_sub_capacity")
 
   df <- df_hhsc_ccl %>%
-    dplyr::filter(!is.na(tract)) %>%
-    dplyr::filter(home_prvdr | center_prvdr | prek_prvdr) %>%
     dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*config$home_prvdr_non_sub_capacity,
                                                   center_prvdr & !sub_provider ~ licensed_capacity*config$center_prvdr_non_sub_capacity,
                                                   home_prvdr & sub_provider ~ licensed_capacity*config$home_prvdr_sub_capacity,

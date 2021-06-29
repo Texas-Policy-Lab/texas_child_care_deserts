@@ -58,18 +58,34 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
       dplyr::bind_rows(df_hhsc_ccl %>% 
                          dplyr::mutate(phone_number = as.character(phone_number)))
   } else {
-    df <- df_hhsc_ccl %>% 
-      dplyr::mutate(prek_prvdr = FALSE)
+    df <- df_hhsc_ccl
   }
 
-  df %>%
-    dplyr::filter(tract %in% surround_tracts) %>%
-    dplyr::mutate(prvdr_type_desc = dplyr::case_when(home_prvdr ~"Home",
-                                                     center_prvdr ~ "Center",
-                                                     prek_prvdr ~ "Pre-K"),
-                  prvdr_type_desc = as.factor(prvdr_type_desc),
+  df <- df %>%
+    dplyr::mutate(prek_prvdr = ifelse(is.na(prek_prvdr), FALSE, prek_prvdr)) %>%
+    dplyr::filter(!is.na(tract)) %>%
+    dplyr::filter(tract %in% surround_tracts) %>% 
+    dplyr::filter(head_start | home_prvdr | center_prvdr | prek_prvdr) %>% 
+    dplyr::filter(!after_school_school_age_only)
+
+  prvdr_type <- df %>%
+    dplyr::select(operation_number, head_start, home_prvdr, center_prvdr, 
+                  prek_prvdr) %>%
+    tidyr::pivot_longer(names_to = "prvdr_type", values_to = "prvdr_type_values",
+                        -c(operation_number)) %>% 
+    dplyr::filter(prvdr_type_values) %>%
+    dplyr::mutate(prvdr_type_desc = dplyr::case_when(grepl("head_start", prvdr_type) ~ "Head Start",
+                                                     grepl("home_prvdr", prvdr_type) ~ "Home",
+                                                     grepl("center_prvdr", prvdr_type) ~ "Center",
+                                                     grepl("prek_prvdr", prvdr_type) ~ "Pre-K")) %>%
+    dplyr::group_by(operation_number) %>%
+    dplyr::summarise(prvdr_type_desc = paste(prvdr_type_desc, collapse = ", "))
+
+  df <- df %>%
+    dplyr::left_join(prvdr_type) %>% 
+    dplyr::mutate(prvdr_type_desc = as.factor(prvdr_type_desc),
                   subsidy_desc = ifelse(sub_provider, "Yes", "No"),
-                  trs_desc = ifelse(sub_trs_provider, "Yes", "No")) 
+                  trs_desc = ifelse(sub_trs_provider, "Yes", "No"))
 }
 
 #' @title Test config
