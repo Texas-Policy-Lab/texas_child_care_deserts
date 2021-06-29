@@ -55,7 +55,8 @@ process.neighborhood_center <- function(cls) {
 process.xwalk_neighborhood_tract <- function(raw_pth) {
   
   dwnld.harris_neighborhood(raw_pth = raw_pth) %>% 
-    dplyr::select(tract = GEOID10,
+    dplyr::mutate(tract = as.character(GEOID10)) %>% 
+    dplyr::select(tract,
                   neighborhood = KCTA_NAME)
 }
 

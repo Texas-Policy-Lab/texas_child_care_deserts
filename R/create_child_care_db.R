@@ -207,6 +207,9 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
       
+      l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
+                                                   df_ratio = DF_MKT_RATIO)
+      
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
