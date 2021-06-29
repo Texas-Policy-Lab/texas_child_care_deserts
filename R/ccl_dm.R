@@ -2,23 +2,23 @@
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.operation_number <- function(df) {
-
+  
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
   assertthat::assert_that(sum(is.na(df$operation_number)) == 0,
                           msg = "NAs in the operation_number")
-
+  
   df <- df %>%
     dplyr::mutate(operation_number = gsub("-.*", "", operation_number),
                   operation_number = stringr::str_pad(operation_number,
                                                       side = "left", 
                                                       width = 15,
                                                       pad = "0"))
-
+  
   assertthat::assert_that(all(!grepl("-", df$operation_number)))
   assertthat::assert_that(length(unique(df$operation_number)) == nrow(df),
                           msg = "Data frame is not unique on operation number")
-
+  
   return(df)
 }
 
@@ -26,7 +26,7 @@ col.operation_number <- function(df) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.county <- function(df, state_fips) {
-
+  
   df <- df %>%
     dplyr::mutate(county = tolower(gsub("[^[:alnum:]]", "", county))) %>% 
     dplyr::inner_join(tigris::fips_codes %>% 
@@ -36,7 +36,7 @@ col.county <- function(df, state_fips) {
                                       county_code = paste0(state_code, county_code)) %>% 
                         dplyr::select(county, county_code)) %>% 
     dplyr::select(-county)
-
+  
   return(df)
 }
 
@@ -44,7 +44,7 @@ col.county <- function(df, state_fips) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.licensed_to_serve_ages <- function(df) {
-
+  
   df <- df %>%
     dplyr::mutate(infant = ifelse(grepl("infant",
                                         tolower(licensed_to_serve_ages)),
@@ -60,7 +60,7 @@ col.licensed_to_serve_ages <- function(df) {
                                   TRUE, FALSE),
     ) %>%
     dplyr::select(-licensed_to_serve_ages)
-
+  
   assertthat::assert_that(all(c(df$infant, df$toddler, df$prek, df$school) 
                               %in% c(TRUE, FALSE)),
                           msg = "Licensed to serve age not binary")
@@ -86,9 +86,9 @@ col.location_address_geo <- function(df, state_fips) {
     check_tx_bounds(bb = bb) %>%
     dplyr::left_join(DF_HHSC_CCL %>%
                        dplyr::select(operation_number, lat, long, tract
-                                     ) %>%
+                       ) %>%
                        dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
-                                   )) %>%
+                       )) %>%
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long),
                   tract = ifelse(is.na(tract), tract2, tract),
@@ -97,7 +97,7 @@ col.location_address_geo <- function(df, state_fips) {
     dm.geocode_address(bb = bb) %>%
     dm.reverse_geocode() %>%
     check_tx_bounds(bb = bb)
-
+  
   return(df)
 }
 
@@ -105,7 +105,7 @@ col.location_address_geo <- function(df, state_fips) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.operation_type <- function(df) {
-
+  
   df <- df %>% 
     dplyr::mutate(home_prvdr = ifelse(grepl("home", 
                                             tolower(operation_type)), TRUE, FALSE),
@@ -113,10 +113,10 @@ col.operation_type <- function(df) {
                                               tolower(operation_type)), TRUE, FALSE)
     ) %>% 
     dplyr::select(-operation_type)
-
+  
   assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(TRUE, FALSE)),
                           msg = "Operation type not binary")
-
+  
   return(df)
 }
 
@@ -124,7 +124,7 @@ col.operation_type <- function(df) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.operation_name <- function(df) {
-
+  
   df <- df %>% 
     dplyr::mutate(head_start = ifelse(grepl("head start",
                                             tolower(operation_name)), TRUE, FALSE))
@@ -138,7 +138,7 @@ col.operation_name <- function(df) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.programs_provided <- function(df) {
-
+  
   df <- df %>%
     dplyr::mutate(after_school = ifelse(grepl("after school care", 
                                               tolower(programs_provided)), TRUE, FALSE),
@@ -146,7 +146,7 @@ col.programs_provided <- function(df) {
                   school_age_only = ifelse(!infant & !toddler & !prek & school, TRUE, FALSE),
                   after_school_school_age_only = ifelse(after_school_only | school_age_only, TRUE, FALSE)) %>%
     dplyr::select(-programs_provided)
-
+  
   assertthat::assert_that(all(c(df$after_school) %in% c(TRUE, FALSE)),
                           msg = "Operation characteristics not binary") 
   return(df)
@@ -156,17 +156,17 @@ col.programs_provided <- function(df) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.accepts_child_care_subsidies <- function(df) {
-
+  
   if (all(unique(df$accepts_child_care_subsidies) %in% c("Y", "N")) == F) {
     cat("Additional values besides 'Y' and 'N' in 'Accepts child care subsidies' column")
   }
-
+  
   df <- df %>%
     dplyr::mutate(subsidy = dplyr::case_when(accepts_child_care_subsidies == "Y" ~ TRUE,
                                              accepts_child_care_subsidies == "N" ~ FALSE,
                                              TRUE ~ NA)) %>% 
     dplyr::select(-accepts_child_care_subsidies)
-
+  
   assertthat::assert_that(all(c(df$subsidy) %in% c(TRUE, FALSE, NA)),
                           msg = "Operation characteristics not binary")
   return(df)
@@ -176,33 +176,63 @@ col.accepts_child_care_subsidies <- function(df) {
 #' @inheritParams dm.hhsc_ccl
 #' @return data.frame
 col.total_capacity <- function(df) {
-
+  
   df <- df %>%
     dplyr::rename(licensed_capacity = total_capacity)
-
+  
   assertthat::assert_that(is.numeric(df$licensed_capacity),
                           msg = "Capacity not numeric")
   return(df)
 }
 
 #' @title Assign deserts
-col.assign_deserts <- function(df, trs_pth) {
-
+#' @description Assign deserts based on provider types. Note Head Start is 
+#' included as a subsidy provider, a TRS and TRS 4 star provider.
+col.assign_deserts <- function(df, trs_pth, naeyc_pth1, naeyc_pth2) {
+  
+  naeyc <- readxl::read_excel(naeyc_pth1) %>%
+    dplyr::filter(`32566_NAEYC` == "Yes") %>%
+    dplyr::select(operation_number = `OP Number`) %>% 
+    dplyr::bind_rows(readxl::read_excel(naeyc_pth2) %>%
+                       dplyr::select(operation_number = `Program ID`) %>% 
+                       dplyr::mutate(operation_number = as.character(operation_number))) %>% 
+    dplyr::distinct() %>% 
+    col.operation_number() %>% 
+    dplyr::mutate(naeyc = TRUE)
+  
   trs <- readr::read_csv(trs_pth) %>% 
     dplyr::select(operation_number, trs_provider, subsidy_provider, trs_star_level) %>% 
     dplyr::mutate(operation_number = stringr::str_pad(operation_number, 
                                                       side = "left",
                                                       width = 15,
                                                       pad = "0"))
-
   df <- df %>%
     dplyr::left_join(trs) %>%
-    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
-                  sub_provider = ifelse(all_provider & subsidy_provider, TRUE, FALSE),
+    dplyr::left_join(naeyc) %>%
+    dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
+                  all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
+                  sub_provider = ifelse(all_provider & (subsidy_provider | head_start | naeyc), TRUE, FALSE),
                   sub_provider = ifelse(trs_provider, TRUE, sub_provider),
-                  sub_trs_provider = ifelse(sub_provider & trs_provider, TRUE, FALSE),
-                  sub_trs4_provider = ifelse(sub_trs_provider & trs_star_level == 4, TRUE, FALSE))
-
+                  sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
+                  sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start | naeyc, TRUE, FALSE),
+                  sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start | naeyc, TRUE, FALSE))
+  
+  qual_type <- df %>%
+    dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
+    tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
+                        -operation_number) %>% 
+    tidyr::drop_na() %>%
+    dplyr::filter(quality) %>%
+    dplyr::select(-quality) %>%
+    dplyr::mutate(quality_desc = dplyr::case_when(quality_type == "head_start" ~ "Head Start",
+                                                  quality_type == "trs_provider" ~ "TRS",
+                                                  quality_type == "naeyc" ~ "NAEYC")) %>%
+    dplyr::group_by(operation_number) %>%
+    dplyr::summarise(quality_desc = paste(quality_desc, collapse = ", "))
+  
+  df %>%
+    dplyr::left_join(qual_type) %>%
+    dplyr::mutate(quality = ifelse(is.na(quality_desc), FALSE, TRUE))
 }
 
 #' @title HHSC CCL data management
@@ -230,8 +260,10 @@ dm.hhsc_ccl <- function(df,
                         name,
                         state_fips,
                         trs_pth,
+                        naeyc_pth1,
+                        naeyc_pth2,
                         ...) {
-
+  
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
@@ -243,10 +275,12 @@ dm.hhsc_ccl <- function(df,
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.total_capacity() %>% 
-    col.assign_deserts(trs_pth) %>%
+    col.total_capacity() %>%
+    col.assign_deserts(trs_pth = trs_pth, 
+                       naeyc_pth1 = naeyc_pth1, 
+                       naeyc_pth2 = naeyc_pth2) %>%
     dplyr::mutate(download_date = Sys.Date())
-
+  
   return(df)
 }
 
@@ -255,7 +289,7 @@ dm.hhsc_ccl <- function(df,
 #' to be able to track when child care providers enter and leave the CCL database
 #' @return data.frame
 pop.hhsc_ccl <- function(new, old) {
-
+  
   new %>%
     dplyr::bind_rows(old) %>%
     dplyr::distinct(operation_number, download_date)
@@ -266,7 +300,7 @@ pop.hhsc_ccl <- function(new, old) {
 #' date
 #' @return data.frame
 pop.hhsc_ccl_most_recent_attr <- function(new, old) {
-
+  
   new %>%
     dplyr::bind_rows(old) %>%
     dplyr::group_by(operation_number) %>%
@@ -275,8 +309,8 @@ pop.hhsc_ccl_most_recent_attr <- function(new, old) {
 
 #' @title Process the CCL data
 process.hhsc_ccl <- function(cls) {
-
+  
   cls$df <- do.call(dwnld.hhsc_ccl, cls)
   df <- do.call(dm.hhsc_ccl, cls)
-
+  
 }

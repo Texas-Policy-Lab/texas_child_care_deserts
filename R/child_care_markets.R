@@ -55,8 +55,7 @@ create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
     dplyr::summarise(mkt_supply = sum(tract_supply, na.rm = T)) %>%
     dplyr::ungroup() %>% 
     dplyr::right_join(xwalk_tract_desert) %>% 
-    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply),
-                  anchor_county = ifelse(is.na(anchor_county), substr(anchor_tract, 1, 5), anchor_county))
+    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply))
 }
 
 #' @title Create tract demand
@@ -88,7 +87,7 @@ drop_bottom_1pct <- function(df) {
 
 #' @title Create Market demand
 create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
-  
+
   tracts %>%
     dplyr::inner_join(tract_demand, by = c("surround_tract" = "tract")) %>% 
     dplyr::group_by(anchor_county, anchor_tract, desert) %>% 
@@ -101,7 +100,7 @@ create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
 
 #' @title Create market ratio
 create_market_ratio <- function(mkt_supply, mkt_demand) {
-  
+
   mkt_supply %>%
     dplyr::full_join(mkt_demand) %>%
     dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,
