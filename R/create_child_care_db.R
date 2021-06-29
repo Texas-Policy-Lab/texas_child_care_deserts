@@ -206,10 +206,13 @@ save_subset_child_care_db <- function(pth, config) {
                                                 df_demand = l$DF_TRACT_DEMAND)
 
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
-      
-      l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
-                                                   df_ratio = DF_MKT_RATIO)
-      
+
+      l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = l$XWALK_NEIGHBORHOOD_TRACT,
+                                                   df_ratio = l$DF_MKT_RATIO)
+
+      l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
+                                                  df_supply = l$DF_SUPPLY,
+                                                  xwalk_tracts = l$XWALK_TRACTS)
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
