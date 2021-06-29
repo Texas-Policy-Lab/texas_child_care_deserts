@@ -49,3 +49,13 @@ process.neighborhood_center <- function(cls) {
   harris %>%
     dplyr::bind_rows(tarrant)
 }
+
+#' @title Process Neighborhood Tract Xwalk 
+#' @note Harris County only because of data availability
+process.xwalk_neighborhood_tract <- function(raw_pth) {
+  
+  dwnld.harris_neighborhood(raw_pth = raw_pth) %>% 
+    dplyr::select(tract = GEOID10,
+                  neighborhood = KCTA_NAME)
+}
+

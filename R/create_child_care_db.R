@@ -95,6 +95,8 @@ child_care_db <- function(root,
   env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
 
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
+  
+  env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))
 }
