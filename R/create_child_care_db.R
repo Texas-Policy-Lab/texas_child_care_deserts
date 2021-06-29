@@ -95,6 +95,8 @@ child_care_db <- function(root,
   env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
 
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
+  
+  env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))
 }
@@ -177,7 +179,7 @@ save_subset_child_care_db <- function(pth, config) {
   
       l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-  
+
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS)
@@ -205,10 +207,12 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
 
+      l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
+                                                   df_ratio = l$DF_MKT_RATIO)
+
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)
-
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
