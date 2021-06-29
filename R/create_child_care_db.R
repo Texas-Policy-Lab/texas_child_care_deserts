@@ -207,7 +207,7 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
-                                                  xwalk_tracts = l$XWALKS_TRACTS)
+                                                  xwalk_tracts = l$XWALK_TRACTS)
 
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
