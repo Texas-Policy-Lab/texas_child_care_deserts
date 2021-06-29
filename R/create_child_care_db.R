@@ -198,9 +198,13 @@ save_subset_child_care_db <- function(pth, config) {
       l$TTL_SEATS <- total_seats(l$DF_TRACT_SUPPLY)
       l$TTL_CHILD_DSRT <- total_children_desert(df_ratio = l$DF_MKT_RATIO,
                                                 df_demand = l$DF_TRACT_DEMAND)
-  
+
       l$PCT_DESERT <- pct_desert(df = l$DF_MKT_RATIO)
-      
+
+      l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
+                                                  df_supply = l$DF_SUPPLY,
+                                                  xwalk_tracts = l$XWALKS_TRACTS)
+
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
