@@ -126,6 +126,8 @@ save_subset_child_care_db <- function(pth, config) {
 
       config <- config[[county_fips]]
 
+      l$COUNTY_FIPS <- county_fips
+
       l$COUNTY_NAME <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% county_fips) %>% 
         dplyr::pull(county)
