@@ -4,11 +4,7 @@
 \alias{test_config_pct}
 \title{Test config pct}
 \usage{
-test_config_pct(
-  config,
-  str,
-  msg = "Parameter '{str}' should be between 0 and 1"
-)
+test_config_pct(x, str, msg = "Parameter '{str}' should be between 0 and 1")
 }
 \description{
 Test percent parameters are between 0 and 1

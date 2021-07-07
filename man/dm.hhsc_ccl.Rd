@@ -15,6 +15,8 @@
   name,
   state_fips,
   trs_pth,
+  naeyc_pth1,
+  naeyc_pth2,
   ...
 )
 }

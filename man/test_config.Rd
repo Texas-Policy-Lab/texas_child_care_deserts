@@ -5,7 +5,7 @@
 \title{Test config}
 \usage{
 test_config(
-  config,
+  x,
   str,
   msg = "Parameter '{str}' is missing from {n} county in the list"
 )

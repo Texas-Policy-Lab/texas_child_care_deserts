@@ -4,7 +4,7 @@
 \alias{dwnld.geo_zip}
 \title{Get ZCTA (Zip Code) and Latitude/Longitude Coordinate Crosswalk}
 \usage{
-dwnld.geo_zip(state_fips)
+dwnld.geo_zip()
 }
 \description{
 Downloads the crosswalk between zip codes and latitude longitude
