@@ -4,8 +4,9 @@
 \alias{col.assign_deserts}
 \title{Assign deserts}
 \usage{
-col.assign_deserts(df, trs_pth)
+col.assign_deserts(df, trs_pth, naeyc_pth1, naeyc_pth2)
 }
 \description{
-Assign deserts
+Assign deserts based on provider types. Note Head Start is 
+included as a subsidy provider, a TRS and TRS 4 star provider.
 }

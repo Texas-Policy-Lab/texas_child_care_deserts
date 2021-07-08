@@ -4,7 +4,7 @@
 \alias{subset_tracts}
 \title{Subset the tract crosswalk crosswalk}
 \usage{
-subset_tracts(xwalk_tracts, adj_tracts, config)
+subset_tracts(xwalk_tracts, adj_tracts, tract_radius, county_fips)
 }
 \description{
 Subset the tract crosswalk crosswalk

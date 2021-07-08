@@ -58,7 +58,8 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
       dplyr::bind_rows(df_hhsc_ccl %>% 
                          dplyr::mutate(phone_number = as.character(phone_number)))
   } else {
-    df <- df_hhsc_ccl
+    df <- df_hhsc_ccl %>% 
+      dplyr::mutate(prek_prvdr = FALSE)
   }
 
   df <- df %>%
