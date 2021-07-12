@@ -91,11 +91,7 @@ child_care_db <- function(root,
   
   env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
 
-  env$GEO_ZIP <- dwnld.geo_zip()
-
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
-
-  env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
 
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
   
@@ -149,23 +145,11 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::pull(surround_county)
 
       l$GEO_TRACTS <- GEO_TRACTS %>%
-        dplyr::inner_join(l$XWALK_TRACTS, by = c("tract" = "surround_tract")) %>% 
-        dplyr::mutate(anchor_county = ifelse(surround_county == county_fips, TRUE, FALSE))
+        dplyr::filter(tract %in% 1$SURROUND_TRACTS) %>%
+        dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract))
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-
-      l$BB_COUNTY <- l$GEO_TRACTS %>% 
-        dplyr::summarise(minx = min(X), maxx = max(X), 
-                         miny = min(Y), maxy = max(Y))
-
-      l$BB_TRACT <- l$GEO_TRACTS %>% 
-        dplyr::group_by(anchor_tract, anchor_county) %>% 
-        dplyr::summarise(minx = min(X), maxx = max(X), 
-                         miny = min(Y), maxy = max(Y))
-
-      l$GEO_COUNTY <- GEO_COUNTY %>%
-        dplyr::filter(county_code %in% county_fips)
 
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
