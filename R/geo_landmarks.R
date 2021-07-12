@@ -1,5 +1,6 @@
 #' @title Get geo landmark
 get_geo <- function(county_name, key, value, geo_type) {
+  Sys.sleep(10)
 
   osmdata::getbb(county_name) %>%
     osmdata::opq() %>%
