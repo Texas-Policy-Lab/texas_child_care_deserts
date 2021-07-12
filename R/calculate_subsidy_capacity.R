@@ -86,7 +86,7 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
     dplyr::left_join(prvdr_type) %>% 
     dplyr::mutate(prvdr_type_desc = as.factor(prvdr_type_desc),
                   subsidy_desc = ifelse(sub_provider, "Yes", "No"),
-                  trs_desc = ifelse(sub_trs_provider, "Yes", "No"))
+                  trs_desc = ifelse(trs_provider, "Yes", "No"))
 }
 
 #' @title Test config
