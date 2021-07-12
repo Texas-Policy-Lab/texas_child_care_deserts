@@ -167,40 +167,11 @@ dwnld.lu_county_code <- function(state_fips) {
 #' @export
 dwnld.geo_tracts <- function(state_fips) {
 
-  geo <- tigris::tracts(state = state_fips, cb = TRUE) %>%
+  geo <- tigris::tracts(state = '48', cb = TRUE) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::rename(tract = geoid) %>%
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
-    dplyr::select(tract, county_code, geometry) %>% 
-    dplyr::mutate(id = seq(1, dplyr::n(), 1))
-
-  x <- geo %>%
-    sf::st_coordinates(geometry) %>% 
-    data.frame() %>%
-    dplyr::rename(id = L3) %>% 
-    dplyr::inner_join(geo) %>% 
-    dplyr::select(X, Y, tract, county_code)
-  
-}
-
-#' @title Get tract by latitude and longitude
-#' @description Downloads shape file for Texas (48) using the tigris package, 
-#' which pulls the most recent shape from the United States Census Bureau.
-#' @export
-dwnld.geo_county <- function(state_fips) {
-  
-  geo <- tigris::counties(state = "48", cb = TRUE) %>%
-    dplyr::rename_all(tolower) %>%
-    dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
-    dplyr::select(county_code, geometry) %>%
-    dplyr::mutate(id = seq(1, dplyr::n(), 1))
-  
-  x <- geo %>%
-    sf::st_coordinates(geometry) %>% 
-    data.frame() %>%
-    dplyr::rename(id = L3) %>% 
-    dplyr::inner_join(geo) %>% 
-    dplyr::select(X, Y, L2, county_code)
+    dplyr::select(tract, county_code, geometry)
 }
 
 #' @title Get the Harris County Neighborhood to census tract data
