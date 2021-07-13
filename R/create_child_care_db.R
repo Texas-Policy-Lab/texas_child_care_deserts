@@ -34,7 +34,6 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
-                          trs_pth,
                           naeyc_pth1,
                           naeyc_pth2,
                           state_code = 48,
@@ -47,7 +46,6 @@ child_care_db <- function(root,
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
-  trs_pth <- file.path(raw_pth, trs_pth)
   naeyc_pth1 <- file.path(raw_pth, naeyc_pth1)
   naeyc_pth2 <- file.path(raw_pth, naeyc_pth2)
   pths <- c(data_pth, raw_pth, processed_pth)
@@ -58,10 +56,12 @@ child_care_db <- function(root,
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
+  browser()
+  env$DF_TWC <- process.twc(raw_pth = raw_pth)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
-                                                 trs_pth = trs_pth,
+                                                 df_twc = env$DF_TWC,
                                                  naeyc_pth1 = naeyc_pth1,
                                                  naeyc_pth2 = naeyc_pth2,
                                                  name = "HHSC_CCL",
@@ -84,7 +84,7 @@ child_care_db <- function(root,
                                raw_pth = raw_pth)
 
   env$DF_PREK <- process.prek(raw_pth = raw_pth)
-
+  
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))

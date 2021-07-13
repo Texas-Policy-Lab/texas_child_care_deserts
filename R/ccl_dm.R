@@ -188,7 +188,7 @@ col.total_capacity <- function(df) {
 #' @title Assign deserts
 #' @description Assign deserts based on provider types. Note Head Start is 
 #' included as a subsidy provider, a TRS and TRS 4 star provider.
-col.assign_deserts <- function(df, trs_pth, naeyc_pth1, naeyc_pth2) {
+col.assign_deserts <- function(df, df_twc, naeyc_pth1, naeyc_pth2) {
   
   naeyc <- readxl::read_excel(naeyc_pth1) %>%
     dplyr::filter(`32566_NAEYC` == "Yes") %>%
@@ -199,15 +199,9 @@ col.assign_deserts <- function(df, trs_pth, naeyc_pth1, naeyc_pth2) {
     dplyr::distinct() %>% 
     col.operation_number() %>% 
     dplyr::mutate(naeyc = TRUE)
-  
-  trs <- readr::read_csv(trs_pth) %>% 
-    dplyr::select(operation_number, trs_provider, subsidy_provider, trs_star_level) %>% 
-    dplyr::mutate(operation_number = stringr::str_pad(operation_number, 
-                                                      side = "left",
-                                                      width = 15,
-                                                      pad = "0"))
+
   df <- df %>%
-    dplyr::left_join(trs) %>%
+    dplyr::left_join(df_twc) %>%
     dplyr::left_join(naeyc) %>%
     dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
                   all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
@@ -259,7 +253,7 @@ dm.hhsc_ccl <- function(df,
                         county_fips = NULL,
                         name,
                         state_fips,
-                        trs_pth,
+                        df_twc,
                         naeyc_pth1,
                         naeyc_pth2,
                         ...) {
@@ -276,7 +270,7 @@ dm.hhsc_ccl <- function(df,
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.total_capacity() %>%
-    col.assign_deserts(trs_pth = trs_pth, 
+    col.assign_deserts(df_twc = df_twc, 
                        naeyc_pth1 = naeyc_pth1, 
                        naeyc_pth2 = naeyc_pth2) %>%
     dplyr::mutate(download_date = Sys.Date())
