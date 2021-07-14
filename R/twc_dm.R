@@ -37,7 +37,7 @@ dwnld.twc <- function(raw_pth,
                       sheet = "All Provider Level") {
   
   df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>% 
-    dplyr::mutate(date = parse_date.twc(name))
+    dplyr::mutate(twc_date = parse_date.twc(name))
 }
 
 #' @title Data management for TWC provider data
@@ -48,7 +48,7 @@ dm.twc <- function(df,
                                         `TWC`= "character",
                                         `TRS Flag` = "character",
                                         `Number of Current Referrals` = "numeric",
-                                        date = "Date")){
+                                        twc_date = "Date")){
   
   df <- df %>% 
     test_input(input_columns) %>% 
