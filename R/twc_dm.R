@@ -52,12 +52,12 @@ dm.twc <- function(df,
   
   df <- df %>% 
     test_input(input_columns) %>% 
-    dplyr::select_all(~gsub(" ", "_", tolower(.))) %>%
+    dplyr::select_all(~gsub(" ", "_", tolower(.))) %>%    
+    dplyr::rename(operation_number = license_number,
+                  n_subsidy_kids = number_of_current_referrals) %>% 
+    col.operation_number() %>% 
     col.trs_provider() %>% 
-    col.subsidy_provider() %>% 
-    dplyr::mutate(operation_number = as.character(license_number)) %>% 
-    dplyr::select(-license_number) %>% 
-    dplyr::rename(n_subsidy_kids = number_of_current_referrals)
+    col.subsidy_provider()
   
 }
 
