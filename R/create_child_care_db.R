@@ -56,7 +56,7 @@ child_care_db <- function(root,
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
-  browser()
+  
   env$DF_TWC <- process.twc(raw_pth = raw_pth)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
