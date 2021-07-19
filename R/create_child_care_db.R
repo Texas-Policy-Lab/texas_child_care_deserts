@@ -140,6 +140,9 @@ save_subset_child_care_db <- function(pth, config) {
                                       tract_radius = config$tract_radius,
                                       county_fips = county_fips)
       
+      l$XWALK_NEIGHBORHOOD_TRACT <- XWALK_NEIGHBORHOOD_TRACT %>% 
+        dplyr::filter(tract %in% l$XWALK_TRACTS$anchor_tract)
+      
       l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
 
       l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
