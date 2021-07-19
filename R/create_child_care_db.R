@@ -84,7 +84,7 @@ child_care_db <- function(root,
                                raw_pth = raw_pth)
 
   env$DF_PREK <- process.prek(raw_pth = raw_pth)
-  
+
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -128,6 +128,8 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$DF_NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER %>% 
         dplyr::filter(county_code == county_fips)
+
+      l$XWALK_NEIGHBORHOOD_TRACT <- XWALK_NEIGHBORHOOD_TRACT
 
       l$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS ,
