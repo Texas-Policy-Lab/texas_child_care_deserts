@@ -32,7 +32,7 @@ dwnld.isd <- function(raw_pth,
                   address = Match_addr,
                   long = X,
                   lat = Y)
-
+  browser()
   split_names <- stringr::str_split(df$campus_name, " ")
   
   df$type <- sapply(split_names, function(x) {
@@ -51,15 +51,15 @@ dwnld.isd <- function(raw_pth,
   df <- df %>%
     dplyr::mutate(campus_name = dplyr::case_when(
       type %in% "MIDDLE" ~ gsub("MIDDLE", "Middle School", campus_name),
-      type %in% c("H S", "HS", "HIGH") ~ gsub("H S|HS|HIGH", "High School", campus_name),
-      type %in% c("EL", "ELEM") ~ gsub("EL|ELEM", "Elementary", campus_name),
+      type %in% c("H S", "HS", "HIGH") ~ gsub(" H S| HS| HIGH", " High School", campus_name),
+      type %in% c("EL", "ELEM") ~ gsub(" EL | ELEM", " Elementary", campus_name),
       type %in% "INT" ~ gsub("INT", "Intermediate School", campus_name),
-      type %in% c("JH", "J H") ~ gsub("JH|J H", "Junior High School", campus_name),
-      type %in% "PRI" ~ gsub("PRI", "Primary School", campus_name),
-      type %in% "CTR" ~ gsub("CTR", "Center", campus_name),
-      type %in% "SCH" ~ gsub("SCH", "School", campus_name),
-      type %in% "ED" ~ gsub("ED", "Education", campus_name),
-      type %in% "ACAD" ~ gsub("ACAD", "Academy", campus_name),
+      type %in% c("JH", "J H") ~ gsub(" JH| J H", " Junior High School", campus_name),
+      type %in% "PRI" ~ gsub(" PRI", " Primary School", campus_name),
+      type %in% "CTR" ~ gsub(" CTR", " Center", campus_name),
+      type %in% "SCH" ~ gsub(" SCH", " School", campus_name),
+      type %in% "ED" ~ gsub(" ED", " Education", campus_name),
+      type %in% "ACAD" ~ gsub(" ACAD", " Academy", campus_name),
       grepl("J J A E P", campus_name) ~ gsub("J J A E P", "JJAEP", campus_name),
       TRUE ~ campus_name
     ),
