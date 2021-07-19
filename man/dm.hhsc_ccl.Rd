@@ -14,7 +14,7 @@
   county_fips = NULL,
   name,
   state_fips,
-  trs_pth,
+  df_twc,
   naeyc_pth1,
   naeyc_pth2,
   ...

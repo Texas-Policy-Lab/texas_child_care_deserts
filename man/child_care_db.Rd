@@ -6,7 +6,6 @@
 \usage{
 child_care_db(
   root,
-  trs_pth,
   naeyc_pth1,
   naeyc_pth2,
   state_code = 48,
