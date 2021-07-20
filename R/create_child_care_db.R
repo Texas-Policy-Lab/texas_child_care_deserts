@@ -155,24 +155,6 @@ save_subset_child_care_db <- function(pth, config) {
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
 
-      BB <- l$GEO_TRACTS %>% 
-        dplyr::filter(!anchor_county) %>%
-        sf::st_bbox()
-
-      l$BB_COUNTY <- data.frame(xmin = BB[[1]],
-                                ymin = BB[[2]],
-                                xmax = BB[[3]],
-                                ymax = BB[[4]])
-
-      BB <- l$GEO_TRACTS %>% 
-        dplyr::filter(anchor_county) %>%
-        sf::st_bbox()
-
-      l$BB_TRACT <- data.frame(xmin = BB[[1]],
-                                ymin = BB[[2]],
-                                xmax = BB[[3]],
-                                ymax = BB[[4]])
-
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
       l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
