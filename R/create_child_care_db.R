@@ -143,6 +143,10 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
 
+      l$ANCHOR_TRACTS <- l$XWALK_TRACTS %>% 
+        dplyr::distinct(anchor_tract) %>% 
+        dplyr::pull(anchor_tract)
+      
       l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
         dplyr::distinct(surround_county) %>% 
         dplyr::pull(surround_county)
@@ -151,6 +155,28 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry)
+
+      l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
+
+        BB <- l$GEO_TRACTS %>% 
+          dplyr::filter(tract == t) %>%
+          sf::st_bbox()
+
+        data.frame(tract = t,
+                   xmin = BB[[1]],
+                   ymin = BB[[2]],
+                   xmax = BB[[3]],
+                   ymax = BB[[4]])
+      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
+
+      l$GEO_BUFFER <- sapply(l$ANCHOR_TRACTS, function (t) {
+        CNTR <- l$GEO_TRACTS %>%
+          dplyr::filter(tract == t) %>% 
+          sf::st_centroid()
+
+        BUFFER <- sf::st_buffer(CNTR, 
+                            dist = 5100)
+      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
