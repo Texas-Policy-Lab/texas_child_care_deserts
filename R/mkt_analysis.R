@@ -104,14 +104,4 @@ create_pct_dsrt_prvdr <- function(mkt_ratio,
     dplyr::select(-n_desert)
 }
 
-#' @title Find neighborhoods which are deserts
-#' @export
-neighborhood_desert <- function(xwalk_neighborhood_tract,
-                                df_ratio) {
-  
-  xwalk_neighborhood_tract %>% 
-    dplyr::inner_join(df_ratio %>% dplyr::select(anchor_tract,
-                                                 desert_type,
-                                                 label),
-                      by = c("tract" = "anchor_tract"))
-}
+

@@ -34,7 +34,6 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
-                          trs_pth,
                           naeyc_pth1,
                           naeyc_pth2,
                           state_code = 48,
@@ -47,7 +46,6 @@ child_care_db <- function(root,
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
-  trs_pth <- file.path(raw_pth, trs_pth)
   naeyc_pth1 <- file.path(raw_pth, naeyc_pth1)
   naeyc_pth2 <- file.path(raw_pth, naeyc_pth2)
   pths <- c(data_pth, raw_pth, processed_pth)
@@ -58,10 +56,12 @@ child_care_db <- function(root,
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
+  
+  env$DF_TWC <- process.twc(raw_pth = raw_pth)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
-                                                 trs_pth = trs_pth,
+                                                 df_twc = env$DF_TWC,
                                                  naeyc_pth1 = naeyc_pth1,
                                                  naeyc_pth2 = naeyc_pth2,
                                                  name = "HHSC_CCL",
@@ -88,17 +88,11 @@ child_care_db <- function(root,
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
-  
-  env$XWALK_ZIP_COUNTY <- dwnld.xwalk_zip_county(state_fips = state_code)
-
-  env$GEO_ZIP <- dwnld.geo_zip()
 
   env$GEO_TRACTS <- dwnld.geo_tracts(state_fips = state_code)
 
-  env$GEO_COUNTY <- dwnld.geo_county(state_fips = state_code)
-
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
-  
+
   env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))
@@ -135,10 +129,15 @@ save_subset_child_care_db <- function(pth, config) {
       l$DF_NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER %>% 
         dplyr::filter(county_code == county_fips)
 
+      l$XWALK_NEIGHBORHOOD_TRACT <- XWALK_NEIGHBORHOOD_TRACT
+
       l$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS ,
                                       tract_radius = config$tract_radius,
                                       county_fips = county_fips)
+      
+      l$XWALK_NEIGHBORHOOD_TRACT <- XWALK_NEIGHBORHOOD_TRACT %>% 
+        dplyr::filter(tract %in% l$XWALK_TRACTS$anchor_tract)
       
       l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
 
@@ -149,23 +148,30 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::pull(surround_county)
 
       l$GEO_TRACTS <- GEO_TRACTS %>%
-        dplyr::inner_join(l$XWALK_TRACTS, by = c("tract" = "surround_tract")) %>% 
-        dplyr::mutate(anchor_county = ifelse(surround_county == county_fips, TRUE, FALSE))
+        dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
+        dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
+        dplyr::select(tract, county_code, anchor_county, geometry)
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
 
-      l$BB_COUNTY <- l$GEO_TRACTS %>% 
-        dplyr::summarise(minx = min(X), maxx = max(X), 
-                         miny = min(Y), maxy = max(Y))
+      BB <- l$GEO_TRACTS %>% 
+        dplyr::filter(!anchor_county) %>%
+        sf::st_bbox()
 
-      l$BB_TRACT <- l$GEO_TRACTS %>% 
-        dplyr::group_by(anchor_tract, anchor_county) %>% 
-        dplyr::summarise(minx = min(X), maxx = max(X), 
-                         miny = min(Y), maxy = max(Y))
+      l$BB_COUNTY <- data.frame(xmin = BB[[1]],
+                                ymin = BB[[2]],
+                                xmax = BB[[3]],
+                                ymax = BB[[4]])
 
-      l$GEO_COUNTY <- GEO_COUNTY %>%
-        dplyr::filter(county_code %in% county_fips)
+      BB <- l$GEO_TRACTS %>% 
+        dplyr::filter(anchor_county) %>%
+        sf::st_bbox()
+
+      l$BB_TRACT <- data.frame(xmin = BB[[1]],
+                                ymin = BB[[2]],
+                                xmax = BB[[3]],
+                                ymax = BB[[4]])
 
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
@@ -215,6 +221,9 @@ save_subset_child_care_db <- function(pth, config) {
       l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    df_ratio = l$DF_MKT_RATIO)
 
+      l$NEIGHBORHOOD_DEMAND <- neighborhood_demand(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
+                                                   tract_demand = l$DF_TRACT_DEMAND)
+      
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)

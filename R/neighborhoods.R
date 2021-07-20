@@ -60,3 +60,26 @@ process.xwalk_neighborhood_tract <- function(raw_pth) {
                   neighborhood = KCTA_NAME)
 }
 
+#' @title Find neighborhoods which are deserts
+#' @export
+neighborhood_desert <- function(xwalk_neighborhood_tract,
+                                df_ratio) {
+  
+  xwalk_neighborhood_tract %>% 
+    dplyr::inner_join(df_ratio %>% dplyr::select(anchor_tract,
+                                                 desert_type,
+                                                 label),
+                      by = c("tract" = "anchor_tract"))
+}
+
+#' @title Find demand for each neighborhood
+#' @export
+neighborhood_demand <- function(xwalk_neighborhood_tract,
+                                tract_demand) {
+  
+  xwalk_neighborhood_tract %>% 
+    dplyr::inner_join(tract_demand) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::group_by(neighborhood, desert) %>% 
+    dplyr::summarise(neighborhood_demand = sum(tract_demand, na.rm = T))
+}
