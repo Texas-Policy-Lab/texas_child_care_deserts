@@ -218,6 +218,9 @@ save_subset_child_care_db <- function(pth, config) {
       l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    df_ratio = l$DF_MKT_RATIO)
 
+      l$NEIGHBORHOOD_DEMAND <- neighborhood_demand(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
+                                                   tract_demand = l$DF_TRACT_DEMAND)
+      
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)
