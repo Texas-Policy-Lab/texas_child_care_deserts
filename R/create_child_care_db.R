@@ -170,12 +170,12 @@ save_subset_child_care_db <- function(pth, config) {
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
 
       l$GEO_BUFFER <- sapply(l$ANCHOR_TRACTS, function (t) {
-        CNTR <- l$GEO_TRACTS %>%
+        l$GEO_TRACTS %>%
           dplyr::filter(tract == t) %>% 
-          sf::st_centroid()
-
-        BUFFER <- sf::st_buffer(CNTR, 
-                            dist = 5100)
+          dplyr::select(-anchor_county) %>%
+          sf::st_centroid() %>% 
+          sf::st_buffer(dist = 5100)
+      
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
@@ -205,9 +205,9 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    config = config)
-  
+
       l$DF_TRACT_SUPPLY <- create_tract_supply(supply = l$DF_SUPPLY)
-  
+
       l$DF_MKT_SUPPLY <- create_market_supply(tract_supply = l$DF_TRACT_SUPPLY,
                                               tracts = l$XWALK_TRACTS,
                                               xwalk_tract_desert = l$XWALK_TRACT_DESERT)
@@ -235,6 +235,31 @@ save_subset_child_care_db <- function(pth, config) {
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)
+
+      l$DF_MKT_DEMAND <- l$DF_MKT_DEMAND %>% 
+        dplyr::rename(desert_type = desert,
+                      value = mkt_demand)
+
+      l$DF_MKT_SUPPLY <- l$DF_MKT_SUPPLY %>% 
+        dplyr::rename(desert_type = desert,
+                      value = mkt_supply)
+
+      l$DF_TRACT_DEMAND <- l$DF_TRACT_DEMAND %>% 
+        dplyr::rename(desert_type = desert,
+                      value = tract_demand) %>%
+        dplyr::ungroup()
+
+      l$DF_TRACT_SUPPLY <- l$DF_TRACT_SUPPLY %>% 
+        dplyr::rename(desert_type = desert,
+                      value = tract_supply) %>%
+        dplyr::ungroup()
+
+      l$DF_SUPPLY <- l$DF_SUPPLY %>% 
+        dplyr::rename(desert_type = desert)
+
+      l$PCT_DESERT_PRVDR <- l$PCT_DESERT_PRVDR %>% 
+        dplyr::rename(desert_type = desert)
+
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
