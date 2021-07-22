@@ -196,7 +196,7 @@ dm.geocode_lat_long <- function(df,
                                 searchtype = "coordinates",
                                 returntype = "geographies",
                                 benchmark = "Public_AR_Current",
-                                vintage = "Current_Current",
+                                vintage = "Census2010_Current",
                                 query = "benchmark={benchmark}&vintage={vintage}&x={x}&y={y}") {
 
   lapply(1:nrow(df), function(i) {
