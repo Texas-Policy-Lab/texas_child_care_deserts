@@ -143,6 +143,10 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
 
+      l$ANCHOR_TRACTS <- l$XWALK_TRACTS %>% 
+        dplyr::distinct(anchor_tract) %>% 
+        dplyr::pull(anchor_tract)
+      
       l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
         dplyr::distinct(surround_county) %>% 
         dplyr::pull(surround_county)
@@ -152,26 +156,30 @@ save_subset_child_care_db <- function(pth, config) {
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry)
 
+      l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
+
+        BB <- l$GEO_TRACTS %>% 
+          dplyr::filter(tract == t) %>%
+          sf::st_bbox()
+
+        data.frame(tract = t,
+                   xmin = BB[[1]],
+                   ymin = BB[[2]],
+                   xmax = BB[[3]],
+                   ymax = BB[[4]])
+      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
+
+      l$GEO_BUFFER <- sapply(l$ANCHOR_TRACTS, function (t) {
+        l$GEO_TRACTS %>%
+          dplyr::filter(tract == t) %>% 
+          dplyr::select(-anchor_county) %>%
+          sf::st_centroid() %>% 
+          sf::st_buffer(dist = 5100)
+      
+      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
+
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-
-      BB <- l$GEO_TRACTS %>% 
-        dplyr::filter(!anchor_county) %>%
-        sf::st_bbox()
-
-      l$BB_COUNTY <- data.frame(xmin = BB[[1]],
-                                ymin = BB[[2]],
-                                xmax = BB[[3]],
-                                ymax = BB[[4]])
-
-      BB <- l$GEO_TRACTS %>% 
-        dplyr::filter(anchor_county) %>%
-        sf::st_bbox()
-
-      l$BB_TRACT <- data.frame(xmin = BB[[1]],
-                                ymin = BB[[2]],
-                                xmax = BB[[3]],
-                                ymax = BB[[4]])
 
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
@@ -197,9 +205,9 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    config = config)
-  
+
       l$DF_TRACT_SUPPLY <- create_tract_supply(supply = l$DF_SUPPLY)
-  
+
       l$DF_MKT_SUPPLY <- create_market_supply(tract_supply = l$DF_TRACT_SUPPLY,
                                               tracts = l$XWALK_TRACTS,
                                               xwalk_tract_desert = l$XWALK_TRACT_DESERT)
@@ -227,6 +235,31 @@ save_subset_child_care_db <- function(pth, config) {
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)
+
+      l$DF_MKT_DEMAND <- l$DF_MKT_DEMAND %>% 
+        dplyr::rename(desert_type = desert,
+                      value = mkt_demand)
+
+      l$DF_MKT_SUPPLY <- l$DF_MKT_SUPPLY %>% 
+        dplyr::rename(desert_type = desert,
+                      value = mkt_supply)
+
+      l$DF_TRACT_DEMAND <- l$DF_TRACT_DEMAND %>% 
+        dplyr::rename(desert_type = desert,
+                      value = tract_demand) %>%
+        dplyr::ungroup()
+
+      l$DF_TRACT_SUPPLY <- l$DF_TRACT_SUPPLY %>% 
+        dplyr::rename(desert_type = desert,
+                      value = tract_supply) %>%
+        dplyr::ungroup()
+
+      l$DF_SUPPLY <- l$DF_SUPPLY %>% 
+        dplyr::rename(desert_type = desert)
+
+      l$PCT_DESERT_PRVDR <- l$PCT_DESERT_PRVDR %>% 
+        dplyr::rename(desert_type = desert)
+
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
 
