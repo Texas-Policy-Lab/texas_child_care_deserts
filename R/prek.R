@@ -47,19 +47,19 @@ dwnld.isd <- function(raw_pth,
     
     return(type)
   }, simplify = TRUE)
-
+  
   df <- df %>%
     dplyr::mutate(campus_name = dplyr::case_when(
-      type %in% "MIDDLE" ~ gsub("MIDDLE", "Middle School", campus_name),
-      type %in% c("H S", "HS", "HIGH") ~ gsub("H S|HS|HIGH", "High School", campus_name),
-      type %in% c("EL", "ELEM") ~ gsub("EL|ELEM", "Elementary", campus_name),
-      type %in% "INT" ~ gsub("INT", "Intermediate School", campus_name),
-      type %in% c("JH", "J H") ~ gsub("JH|J H", "Junior High School", campus_name),
-      type %in% "PRI" ~ gsub("PRI", "Primary School", campus_name),
-      type %in% "CTR" ~ gsub("CTR", "Center", campus_name),
-      type %in% "SCH" ~ gsub("SCH", "School", campus_name),
-      type %in% "ED" ~ gsub("ED", "Education", campus_name),
-      type %in% "ACAD" ~ gsub("ACAD", "Academy", campus_name),
+      type %in% "MIDDLE" ~ gsub("\\bMIDDLE\\b", "Middle School", campus_name),
+      type %in% c("H S", "HS", "HIGH") ~ gsub("\\bH S\\b|\\bHS\\b|\\bHIGH\\b", "High School", campus_name),
+      type %in% c("EL", "ELEM") ~ gsub("\\bEL\\b|\\bELEM\\b", "Elementary", campus_name),
+      type %in% "INT" ~ gsub("\\bINT\\b", "Intermediate School", campus_name),
+      type %in% c("JH", "J H") ~ gsub("\\bJH\\b|\\bJ H\\b", "Junior High School", campus_name),
+      type %in% "PRI" ~ gsub("\\bPRI\\b", "Primary School", campus_name),
+      type %in% "CTR" ~ gsub("\\bCTR\\b", "Center", campus_name),
+      type %in% "SCH" ~ gsub("\\bSCH\\b", "School", campus_name),
+      type %in% "ED" ~ gsub("\\bED\\b", "Education", campus_name),
+      type %in% "ACAD" ~ gsub("\\bACAD\\b", "Academy", campus_name),
       grepl("J J A E P", campus_name) ~ gsub("J J A E P", "JJAEP", campus_name),
       TRUE ~ campus_name
     ),
