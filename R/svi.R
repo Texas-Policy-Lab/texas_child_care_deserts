@@ -6,7 +6,7 @@
 #' Geography type: Census tracts
 #' File type: CSV
 dwnld.svi <- function(raw_pth, 
-                       name = "Texas.csv") {
+                      name = "Texas.csv") {
   
   df <- readr::read_csv(file.path(raw_pth, name)) %>% 
     dplyr::na_if(-999)
