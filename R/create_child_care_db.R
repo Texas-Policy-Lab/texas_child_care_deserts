@@ -94,6 +94,8 @@ child_care_db <- function(root,
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
 
   env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
+  
+  env$DF_TRACT_SVI <- process.svi(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))
 }
@@ -231,6 +233,9 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$NEIGHBORHOOD_DEMAND <- neighborhood_demand(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    tract_demand = l$DF_TRACT_DEMAND)
+      
+      l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
+                                             tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
