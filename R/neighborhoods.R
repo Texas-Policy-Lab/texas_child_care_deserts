@@ -81,9 +81,21 @@ neighborhood_demand <- function(xwalk_neighborhood_tract,
     dplyr::inner_join(tract_demand) %>% 
     dplyr::ungroup() %>% 
     dplyr::group_by(neighborhood, desert) %>% 
-    dplyr::summarise(neighborhood_demand = sum(tract_demand, na.rm = T))
+    dplyr::summarise(neighborhood_demand = round(sum(tract_demand, na.rm = T)))
 }
 
+#' @title Find SVI stats for each neighborhood
+neighborhood_svi <- function(xwalk_neighborhood_tract,
+                             tract_svi) {
+  
+  xwalk_neighborhood_tract %>% 
+    dplyr::inner_join(tract_svi) %>% 
+    dplyr::group_by(neighborhood) %>% 
+    dplyr::summarise(min_svi = round(min(svi_pctl, na.rm = T), 2),
+                     med_svi = round(median(svi_pctl, na.rm = T), 2),
+                     max_svi = round(max(svi_pctl, na.rm = T), 2),
+                     avg_svi = round(mean(svi_pctl, na.rm = T), 2))
+}
 
 #' @title Find demand for each neighborhood
 #' @export
@@ -95,6 +107,5 @@ neighborhood_attributes <- function(neighborhood_desert,
     dplyr::left_join(neighborhood_demand, by = c("neighborhood", "desert_type" = "desert")) %>% 
     dplyr::group_by(neighborhood, desert_type) %>% 
     dplyr::slice(which.min(label)) %>% 
-    dplyr::mutate(neighborhood_demand = round(neighborhood_demand)) %>% 
     dplyr::left_join(neighborhood_svi) 
 }

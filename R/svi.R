@@ -24,16 +24,3 @@ process.svi <- function(raw_pth) {
                   svi_pctl = RPL_THEMES)
   
 }
-
-#' @title Find SVI stats for each neighborhood
-neighborhood_svi <- function(xwalk_neighborhood_tract,
-                             tract_svi) {
-  
-  xwalk_neighborhood_tract %>% 
-    dplyr::inner_join(tract_svi) %>% 
-    dplyr::group_by(neighborhood) %>% 
-    dplyr::summarise(min_svi = min(svi_pctl, na.rm = T),
-                     med_svi = median(svi_pctl, na.rm = T),
-                     max_svi = max(svi_pctl, na.rm = T),
-                     avg_svi = mean(svi_pctl, na.rm = T))
-}
