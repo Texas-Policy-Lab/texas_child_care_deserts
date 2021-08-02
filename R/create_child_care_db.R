@@ -237,6 +237,10 @@ save_subset_child_care_db <- function(pth, config) {
       l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                              tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
+      l$NEIGHBORHOOD_ATTRS <- neighborhood_attributes(neighborhood_desert = l$NEIGHBORHOOD_DESERT,
+                                                      neighborhood_demand = l$NEIGHBORHOOD_DEMAND,
+                                                      neighborhood_svi = l$NEIGHBORHOOD_SVI)
+      
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)

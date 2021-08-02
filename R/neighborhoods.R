@@ -83,3 +83,18 @@ neighborhood_demand <- function(xwalk_neighborhood_tract,
     dplyr::group_by(neighborhood, desert) %>% 
     dplyr::summarise(neighborhood_demand = sum(tract_demand, na.rm = T))
 }
+
+
+#' @title Find demand for each neighborhood
+#' @export
+neighborhood_attributes <- function(neighborhood_desert,
+                                    neighborhood_demand,
+                                    neighborhood_svi) {
+  
+  neighborhood_desert %>%
+    dplyr::left_join(neighborhood_demand, by = c("neighborhood", "desert_type" = "desert")) %>% 
+    dplyr::group_by(neighborhood, desert_type) %>% 
+    dplyr::slice(which.min(label)) %>% 
+    dplyr::mutate(neighborhood_demand = round(neighborhood_demand)) %>% 
+    dplyr::left_join(neighborhood_svi) 
+}
