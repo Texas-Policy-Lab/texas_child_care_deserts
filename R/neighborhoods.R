@@ -102,10 +102,11 @@ neighborhood_svi <- function(xwalk_neighborhood_tract,
 neighborhood_attributes <- function(neighborhood_desert,
                                     neighborhood_demand,
                                     neighborhood_svi) {
-  
+
   neighborhood_desert %>%
     dplyr::left_join(neighborhood_demand, by = c("neighborhood", "desert_type" = "desert")) %>% 
     dplyr::group_by(neighborhood, desert_type) %>% 
     dplyr::slice(which.min(label)) %>% 
-    dplyr::left_join(neighborhood_svi) 
+    dplyr::left_join(neighborhood_svi) %>%
+    dplyr::ungroup()
 }
