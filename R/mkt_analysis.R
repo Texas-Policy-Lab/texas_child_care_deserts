@@ -6,9 +6,12 @@ pct_desert <- function(df) {
     dplyr::group_by(desert_type, desert) %>%
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::mutate(pct = round((n/sum(n))*100,1)) %>%
-    dplyr::filter(desert) %>%
     dplyr::select(-n) %>%
-    tidyr::pivot_wider(names_from = desert_type, values_from = pct)
+    tidyr::pivot_wider(names_from = desert_type, values_from = pct) %>%
+    tidyr::pivot_longer(names_to = "desert_type", values_to = "pct", cols = -desert) %>%
+    dplyr::mutate(pct = ifelse(is.na(pct), 0, pct)) %>%
+    tidyr::pivot_wider(names_from = desert_type, values_from = pct) %>%
+    dplyr::filter(desert)
 }
 
 #' @title Find total number of children in need of care of each type
