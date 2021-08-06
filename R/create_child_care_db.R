@@ -171,15 +171,6 @@ save_subset_child_care_db <- function(pth, config) {
                    ymax = BB[[4]])
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
 
-      l$GEO_BUFFER <- sapply(l$ANCHOR_TRACTS, function (t) {
-        l$GEO_TRACTS %>%
-          dplyr::filter(tract == t) %>% 
-          dplyr::select(-anchor_county) %>%
-          sf::st_centroid() %>% 
-          sf::st_buffer(dist = 5100)
-      
-      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
-
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
 
