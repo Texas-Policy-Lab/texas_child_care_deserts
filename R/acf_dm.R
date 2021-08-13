@@ -5,7 +5,7 @@
 #' @return A vector of file paths associated with the given quarter year
 select_qtr_year <- function(pth,
                             acf_qtr_years) {
-
+  browser()
   pth <- file.path(pth, "acf")
   fls <- list.files(pth)
 
@@ -75,7 +75,8 @@ assign_acf_class <- function(pth,
                "Providers" = 
                  list(
                    operation_number = "Data.StateID",
-                   provider_zip = "Data.ZipCode")
+                   provider_zip = "Data.ZipCode",
+                   date = "Data.ReportingDate")
                )
              ), 
                        class = "cps")
@@ -85,14 +86,18 @@ assign_acf_class <- function(pth,
              sheet = list(
                "CCSettings" = list(operation_number = "ProviderStateID",
                                    family_id = "ParentsID",
-                                   child_id = "ChildrenID"),
+                                   child_id = "ChildrenID",
+                                   date = "ReportingDate"),
                "Parents"  = list(family_id = "ParentsID",
                                  family_zip = "FamilyZip",
-                                 family_fips_code = "FIPS"), 
+                                 family_fips_code = "FIPS",
+                                 date = "ReportingDate"), 
                "Children"  = list(child_id = "ChildrenID",
-                                  child_age = "Age"), 
+                                  child_age = "Age",
+                                  date = "ReportingDate"), 
                "Providers"  = list(operation_number = "Data.StateID",
-                                   provider_zip = "Data.ZipCode"))), 
+                                   provider_zip = "Data.ZipCode",
+                                   date = "Data.ReportingDate"))), 
                         class = "ccs")
     } else {
       cls <- NULL
@@ -142,9 +147,9 @@ dm_acf <- function(x) {
         dplyr::mutate(child_id = as.character(child_id))
     }
 
-    if ("parent_id" %in% names(df)) {
+    if ("family_id" %in% names(df)) {
       df <- df %>%
-        dplyr::mutate(parent_id = as.character(parent_id))
+        dplyr::mutate(family_id = as.character(family_id))
     }
 
      df %>% 
@@ -193,6 +198,7 @@ dm.acf <- function(raw_pth,
 }
 
 #' @title Process ACF data
+#' @export
 process.acf <- function(cls) {
 
   do.call(dwnld.acf, cls)
