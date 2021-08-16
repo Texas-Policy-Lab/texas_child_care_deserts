@@ -5,7 +5,7 @@
 #' @return A vector of file paths associated with the given quarter year
 select_qtr_year <- function(pth,
                             acf_qtr_years) {
-  browser()
+
   pth <- file.path(pth, "acf")
   fls <- list.files(pth)
 
