@@ -150,6 +150,7 @@ dm.demand <- function(B17024,
 
 #' @title Process acs data
 #' @description Process acs data and create demand dataframe
+#' @export
 process.acs <- function(acs_year,
                         acs_state_code,
                         acs_geography,
