@@ -30,24 +30,38 @@ dm.B23008 <- function(x) {
   lt6_working_parents <- paste(x$table, c("004", "005", "006", "010", "013"), sep = "_")
   
   assertthat::assert_that(all(lt6_working_parents %in% x$df$variable), msg = "Missing expected variables to create those with working parents")
-
+  
   df <- x$df %>%
-    dplyr::rename(tract = GEOID) %>%
-    dplyr::select(tract, variable, estimate) %>%
+    dplyr::select(GEOID, variable, estimate) %>%
     dplyr::mutate(n_kids_lt6 = ifelse(variable %in% lt6, TRUE, FALSE),
                   n_kids_working_parents_lt6 = ifelse(variable %in% lt6_working_parents, TRUE, FALSE)
     ) %>%
-    tidyr::gather(variable2, value2, -c(tract, variable, estimate)) %>%
+    tidyr::gather(variable2, value2, -c(GEOID, variable, estimate)) %>%
     dplyr::filter(value2) %>%
-    dplyr::group_by(tract, variable2) %>%
+    dplyr::group_by(GEOID, variable2) %>%
     dplyr::summarise(estimate = sum(estimate)) %>%
     tidyr::spread(variable2, estimate) %>%
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
-                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
-                  county_code = substr(tract, 1, 5))
-
-  assertthat::assert_that(all(nchar(df$county_code) == 5))
-  assertthat::assert_that(length(unique(df$tract)) == nrow(df))
+                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6)
+                  
+  if (x$geography == "tract"){
+    
+    df <- df %>% 
+      dplyr::rename(tract = GEOID) %>% 
+      dplyr::mutate(county_code = substr(tract, 1, 5))
+    
+    assertthat::assert_that(all(nchar(df$county_code) == 5))
+    assertthat::assert_that(length(unique(df$tract)) == nrow(df))
+    
+  } else if (x$geography == "zcta"){
+    
+    df <- df %>% 
+      dplyr::rename(zip = GEOID)
+    
+    assertthat::assert_that(length(unique(df$zip)) == nrow(df))
+    
+  }
+  
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt6 <= df$n_kids_lt6))
@@ -58,7 +72,7 @@ dm.B23008 <- function(x) {
 #' @title Demand using table B17024
 #' @inheritParams dm
 dm.B17024 <- function(x) {
-  
+
   lt6 <- paste(x$table, "002", sep = "_")
   lt6_under200_pct <- paste(x$table, c("003", "004", "005", "006",
                                        "007", "008", "009", "010"), sep = "_")
@@ -66,23 +80,35 @@ dm.B17024 <- function(x) {
   assertthat::assert_that(all(lt6_under200_pct %in% x$df$variable), msg = "Missing expected variables to create less than 200 pct")
 
   df <- x$df %>%
-    dplyr::rename(tract = GEOID) %>%
-    dplyr::select(tract, variable, estimate) %>%
+    dplyr::select(GEOID, variable, estimate) %>%
     dplyr::mutate(n_kids_lt6 = ifelse(variable %in% lt6, TRUE, FALSE),
                   n_kids_lt6_under200pct = ifelse(variable %in% lt6_under200_pct, TRUE, FALSE)
     ) %>%
-    tidyr::gather(variable2, value2, -c(tract, variable, estimate)) %>%
+    tidyr::gather(variable2, value2, -c(GEOID, variable, estimate)) %>%
     dplyr::filter(value2) %>%
-    dplyr::group_by(tract, variable2) %>%
+    dplyr::group_by(GEOID, variable2) %>%
     dplyr::summarise(estimate = sum(estimate)) %>% 
     tidyr::spread(variable2, estimate) %>%
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
                   n_kids_lt5_under200pct = 5/6*n_kids_lt6_under200pct,
                   pct_kids_lt6_under200_pct = (n_kids_lt6_under200pct/n_kids_lt6)*100,
-                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100,
-                  county_code = substr(tract, 1, 5))
-
-  assertthat::assert_that(all(nchar(df$county_code) == 5))
+                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100)
+                  
+  if (x$geography == "tract") {
+    
+    df <- df %>% 
+      dplyr::rename(tract = GEOID) %>% 
+      dplyr::mutate(county_code = substr(tract, 1, 5))
+    
+    assertthat::assert_that(all(nchar(df$county_code) == 5))
+    
+  } else if (x$geography == "zcta"){
+    
+    df <- df %>% 
+      dplyr::rename(zip = GEOID)
+    
+  } 
+  
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
@@ -105,7 +131,7 @@ dm.demand <- function(B17024,
                       name = "demand",
                       pov_rate = .85,
                       ...) {
- 
+
    assertthat::assert_that(pov_rate <= 1, 
                            msg = "Poverty rate should be less than or equal to 1")
 
