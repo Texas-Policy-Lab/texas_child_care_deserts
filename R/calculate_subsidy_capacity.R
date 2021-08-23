@@ -123,6 +123,37 @@ process.xwalk_tract_prvdr <- function(xwalk_tracts,
     dplyr::select(operation_number, anchor_county, anchor_tract)
 }
 
+#' @title Subset ACF to include only subsidy providers in a given county environment
+subset_acf <- function(config,
+                       county_fips,
+                       xwalk_tracts,
+                       adj_tracts,
+                       df_hhsc_ccl,
+                       df_acf,
+                       qtrs){
+
+  xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
+                                adj_tracts = adj_tracts,
+                                tract_radius = config[[county_fips]]$tract_radius,
+                                county_fips = county_fips)
+  
+  surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
+  
+  df_hhsc_ccl <- subset_hhsc_ccl(df_hhsc_ccl = df_hhsc_ccl,
+                                 surround_tracts = surround_tracts) %>% 
+    dplyr::filter(subsidy_provider)
+  
+  xwalk_tract_provider <- process.xwalk_tract_prvdr(xwalk_tracts = xwalk_tracts,
+                                                    df_hhsc_ccl = df_hhsc_ccl)
+  
+  df_acf <- df_acf %>%
+    dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
+    dplyr::filter(quarter %in% qtrs) %>%
+    dplyr::inner_join(xwalk_tract_provider)
+  
+  return(df_acf)
+}
+
 #' @title Aggregate number of kids per provider
 #' @param acf data.frame. The cleaned acf dataframe.
 #' @return Summarized data with the max, median, and minimum number of kids per
@@ -178,25 +209,14 @@ calc.subsidy_capacity <- function(config,
                                   qtrs = c("1","2","4")) {
 
   lapply(names(config), function(county_fips) {
-
-    xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
-                                  adj_tracts = adj_tracts,
-                                  tract_radius = config[[county_fips]]$tract_radius,
-                                  county_fips = county_fips)
     
-    surround_tracts <- subset_surround_tracts(xwalk_tracts = xwalk_tracts)
-    
-    df_hhsc_ccl <- subset_hhsc_ccl(df_hhsc_ccl = df_hhsc_ccl,
-                                   surround_tracts = surround_tracts) %>% 
-      dplyr::filter(subsidy)
-    
-    xwalk_tract_provider <- process.xwalk_tract_prvdr(xwalk_tracts = xwalk_tracts,
-                                                      df_hhsc_ccl = df_hhsc_ccl)
-    
-    df_acf <- df_acf %>%
-      dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
-      dplyr::filter(quarter %in% qtrs) %>%
-      dplyr::inner_join(xwalk_tract_provider)
+    df_acf <- subset_acf(config,
+                         county_fips,
+                         xwalk_tracts,
+                         adj_tracts,
+                         df_hhsc_ccl,
+                         df_acf,
+                         qtrs)
     
     n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
     
