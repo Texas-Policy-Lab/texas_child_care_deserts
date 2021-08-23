@@ -131,6 +131,24 @@ dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-
   return(df)
 }
 
+#' @title Get census tract and ZCTA (zip code) Crosswalk
+#' @description Downloads the crosswalk between census tract codes and ZCTA 
+#' for Texas.
+#' @param pth Link to data: 
+#' https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt
+#' @param data_in_name string. The name to of the data to read in.
+#' @param data_in_pth string. The path to read the data in from.
+#' @export
+dwnld.xwalk_zip_tract <- function(pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt",
+                                   state_fips) {
+  
+  df <- read.csv(url(pth)) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::filter(state == state_fips)
+  
+  return(df)
+}
+
 #' @title Get ZCTA (Zip Code) and Latitude/Longitude Coordinate Crosswalk
 #' @description Downloads the crosswalk between zip codes and latitude longitude
 #' coordinates of the center for Texas
