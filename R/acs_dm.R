@@ -42,7 +42,9 @@ dm.B23008 <- function(x) {
     dplyr::summarise(estimate = sum(estimate)) %>%
     tidyr::spread(variable2, estimate) %>%
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
-                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6)
+                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
+                  n_kids_lt4 = 4/6*n_kids_lt6,
+                  n_kids_working_parents_lt4 = 4/6*n_kids_working_parents_lt6)
                   
   if (x$geography == "tract"){
     
@@ -63,7 +65,9 @@ dm.B23008 <- function(x) {
   }
   
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
+  assertthat::assert_that(all(df$n_kids_lt4 <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
+  assertthat::assert_that(all(df$n_kids_working_parents_lt4 <= df$n_kids_working_parents_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt6 <= df$n_kids_lt6))
 
   return(df)
@@ -92,7 +96,10 @@ dm.B17024 <- function(x) {
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
                   n_kids_lt5_under200pct = 5/6*n_kids_lt6_under200pct,
                   pct_kids_lt6_under200_pct = (n_kids_lt6_under200pct/n_kids_lt6)*100,
-                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100)
+                  pct_kids_lt5_under200_pct = (n_kids_lt5_under200pct/n_kids_lt5)*100,
+                  n_kids_lt4 = 4/6*n_kids_lt6,
+                  n_kids_lt4_under200pct = 4/6*n_kids_lt6_under200pct,
+                  pct_kids_lt4_under200_pct = (n_kids_lt4_under200pct/n_kids_lt4)*100)
                   
   if (x$geography == "tract") {
     
@@ -110,9 +117,12 @@ dm.B17024 <- function(x) {
   } 
   
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
+  assertthat::assert_that(max(df$pct_kids_lt4_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
   assertthat::assert_that(all(df$n_kids_lt6_under200pct <= df$n_kids_lt6))
+  assertthat::assert_that(all(df$n_kids_lt4_under200pct <= df$n_kids_lt4))
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
+  assertthat::assert_that(all(df$n_kids_lt4 <= df$n_kids_lt6))
 
   return(df)
 }
@@ -140,11 +150,13 @@ dm.demand <- function(B17024,
                        dplyr::select(-c(n_kids_lt6, n_kids_lt5))) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
-    dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5)
+    dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5,
+                  n_kids_lt4_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt4)
 
   assertthat::assert_that(all(df$working_pov_rate <= 100, na.rm = TRUE))
   assertthat::assert_that(all(df$n_kids_lt5_working_under200_pct <= df$n_kids_lt6_working_under200_pct, na.rm = TRUE))
-
+  assertthat::assert_that(all(df$n_kids_lt4_working_under200_pct <= df$n_kids_lt6_working_under200_pct, na.rm = TRUE))
+  
   return(df)
 }
 

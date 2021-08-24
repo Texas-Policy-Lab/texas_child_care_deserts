@@ -57,13 +57,22 @@ create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
 }
 
 #' @title Create tract demand
-create_tract_demand <- function(demand) {
+create_tract_demand <- function(demand,
+                                lt_age = 5) {
+
+  if (lt_age == 4){
+    n_kids_working_parents <- "n_kids_working_parents_lt4"
+    n_kids_working_under200_pct <- "n_kids_lt4_working_under200_pct"
+  } else if (lt_age == 5) {
+    n_kids_working_parents <- "n_kids_working_parents_lt5"
+    n_kids_working_under200_pct <- "n_kids_lt5_working_under200_pct"
+  }
 
   demand %>%
-    dplyr::select(tract, county_code, n_kids_working_parents_lt5, 
-                  n_kids_lt5_working_under200_pct) %>%
-    dplyr::rename(all_provider = n_kids_working_parents_lt5,
-                  sub_provider = n_kids_lt5_working_under200_pct) %>%
+    dplyr::select(tract, county_code, n_kids_working_parents, 
+                  n_kids_working_under200_pct) %>%
+    dplyr::rename(all_provider = n_kids_working_parents,
+                  sub_provider = n_kids_working_under200_pct) %>%
     dplyr::mutate(sub_trs4_provider = sub_provider,
                   sub_trs_provider = sub_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "tract_demand", 
