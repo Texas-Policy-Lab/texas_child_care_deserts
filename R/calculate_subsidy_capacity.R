@@ -130,7 +130,8 @@ subset_acf <- function(config,
                        adj_tracts,
                        df_hhsc_ccl,
                        df_acf,
-                       qtrs){
+                       qtrs,
+                       tract_join = F){
 
   xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
                                 adj_tracts = adj_tracts,
@@ -148,8 +149,12 @@ subset_acf <- function(config,
   
   df_acf <- df_acf %>%
     dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
-    dplyr::filter(quarter %in% qtrs) %>%
-    dplyr::inner_join(xwalk_tract_provider)
+    dplyr::filter(quarter %in% qtrs)
+  
+  if (tract_join){
+    df_acf <- df_acf %>% 
+      dplyr::inner_join(xwalk_tract_provider)
+  }
   
   return(df_acf)
 }
@@ -216,7 +221,8 @@ calc.subsidy_capacity <- function(config,
                          adj_tracts,
                          df_hhsc_ccl,
                          df_acf,
-                         qtrs)
+                         qtrs,
+                         tract_join = T)
     
     n_kids <- dm.agg_kids_prvdr(df_acf = df_acf)
     
