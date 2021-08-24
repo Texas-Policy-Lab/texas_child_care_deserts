@@ -86,7 +86,12 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
     dplyr::left_join(prvdr_type) %>% 
     dplyr::mutate(prvdr_type_desc = as.factor(prvdr_type_desc),
                   subsidy_desc = ifelse(sub_provider, "Yes", "No"),
-                  trs_desc = ifelse(trs_provider, "Yes", "No")) %>%
+                  trs_desc = ifelse(trs_provider, "Yes", "No"),
+                  prvdr_size_desc = dplyr::case_when(home_prvdr & licensedhome_prvdr ~ "Licensed Home",
+                                                     home_prvdr & registeredhome_prvdr ~ "Registered Home",
+                                                     center_prvdr & licensed_capacity <= 50 ~ "Small Center (0-50)",
+                                                     center_prvdr & licensed_capacity > 50 & licensed_capacity <= 99 ~ "Medium Center (51-99)",
+                                                     center_prvdr & licensed_capacity > 99 ~ "Large Center (100+)")) %>%
     dplyr::left_join(tigris::fips_codes %>%
                        dplyr::mutate(county_code = paste(state_code, county_code, sep = "")) %>%
                        dplyr::select(county_code, county))
@@ -131,7 +136,8 @@ subset_acf <- function(config,
                        df_hhsc_ccl,
                        df_acf,
                        qtrs,
-                       tract_join = F){
+                       tract_join = F,
+                       ccl_join = F){
 
   xwalk_tracts <- subset_tracts(xwalk_tracts = xwalk_tracts,
                                 adj_tracts = adj_tracts,
@@ -154,6 +160,11 @@ subset_acf <- function(config,
   if (tract_join){
     df_acf <- df_acf %>% 
       dplyr::inner_join(xwalk_tract_provider)
+  }
+  
+  if (ccl_join){
+    df_acf <- df_acf %>%
+      dplyr::inner_join(df_hhsc_ccl)
   }
   
   return(df_acf)

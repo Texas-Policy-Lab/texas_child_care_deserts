@@ -2,10 +2,11 @@
 #' @param acf data.frame. The cleaned acf dataframe.
 #' @return Summarized data with the percent 0-3 for each provider
 #' @export
-dm.pct_enrolled_03 <- function(df_acf){
+dm.pct_enrolled_03 <- function(df_acf,
+                               grouping_vars){
   
   n_kids <- df_acf %>% 
-    dplyr::group_by(operation_number, quarter_year, date, anchor_county) %>% 
+    dplyr::group_by_at(dplyr::vars(operation_number, quarter_year, date, anchor_county, grouping_vars)) %>% 
     dplyr::summarise(n_kids_03 = dplyr::n_distinct(child_id[child_age < 4], na.rm = T),
                      n_kids_total = dplyr::n_distinct(child_id, na.rm = T)) %>% 
     dplyr::mutate(pct_enrolled_03 = n_kids_03/n_kids_total)
@@ -39,14 +40,15 @@ calc.capacity_adjustment_03 <- function(config,
                          adj_tracts,
                          df_hhsc_ccl,
                          df_acf,
-                         qtrs) %>% 
+                         qtrs,
+                         ccl_join = T) %>% 
       dplyr::filter(year == yr) %>% 
       dplyr::mutate(anchor_county = county_fips)
     
-    pct_03 <- dm.pct_enrolled_03(df_acf = df_acf)
+    pct_03 <- dm.pct_enrolled_03(df_acf = df_acf,
+                                 grouping_vars = grouping_vars)
     
     pct_03_by_group <- pct_03 %>% 
-      dplyr::left_join(df_hhsc_ccl) %>% 
       dplyr::group_by_at(dplyr::vars(anchor_county, grouping_vars)) %>% 
       dplyr::summarise(mean_pct_03 = mean(pct_enrolled_03, na.rm = T)) 
     
