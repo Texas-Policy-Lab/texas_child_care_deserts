@@ -42,7 +42,7 @@ child_care_db <- function(root,
                           acs_geography = "tract",
                           acs_county = NULL,
                           db_name = "child_care_env.Rdata") {
-  browser()
+  
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
@@ -284,7 +284,7 @@ save_subset_child_care_db <- function(pth, config) {
 #' }
 #' @export
 save_subset_child_care_db_03 <- function(pth, config) {
-  browser()
+
   if(file.exists(pth)) {
     
     load_env(file.path(pth))
@@ -347,13 +347,13 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
       
-      l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
+      #l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
       
-      l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
+      #l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
       
-      l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
+      #l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
       
-      l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
+      #l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
       
       l$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% l$SURROUND_TRACTS),
@@ -369,11 +369,11 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS)
-      
-      l$SUPPLY_ADJUSTMENT <- calc.capacity_adjustment_03(config = config,
-                                                         xwalk_tracts = XWALK_TRACTS,
+      browser()
+      l$SUPPLY_ADJUSTMENT <- calc.capacity_adjustment_03(county_fips = l$COUNTY_FIPS,
+                                                         xwalk_tracts = l$XWALK_TRACTS,
                                                          adj_tracts = ADJ_TRACTS,
-                                                         df_hhsc_ccl = DF_HHSC_CCL,
+                                                         df_hhsc_ccl = l$DF_HHSC_CCL,
                                                          df_acf = DF_ACF,
                                                          grouping_vars = c("subsidy_provider", "trs_star_level", "center_prvdr", "prvdr_size_desc"),
                                                          yr = "2019",
