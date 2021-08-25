@@ -368,17 +368,18 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = DF_PREK,
-                                       surround_tracts = l$SURROUND_TRACTS)
-      browser()
+                                       surround_tracts = l$SURROUND_TRACTS) %>% 
+        dplyr::filter(!prek_prvdr)
+      
       l$SUPPLY_ADJUSTMENT <- calc.capacity_adjustment_03(county_fips = l$COUNTY_FIPS,
                                                          xwalk_tracts = l$XWALK_TRACTS,
                                                          adj_tracts = ADJ_TRACTS,
                                                          df_hhsc_ccl = l$DF_HHSC_CCL,
                                                          df_acf = DF_ACF,
-                                                         grouping_vars = c("subsidy_provider", "trs_star_level", "center_prvdr", "prvdr_size_desc"),
+                                                         grouping_vars = c("trs_star_level", "center_prvdr", "prvdr_size_desc"),
                                                          yr = "2019",
                                                          qtrs = c("4"))
-      
+      browser()
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    config = config,
                                    supply_adjustment_03 = l$SUPPLY_ADJUSTMENT)

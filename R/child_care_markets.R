@@ -31,8 +31,7 @@ create_supply <- function(df_hhsc_ccl,
   
   if (!is.null(supply_adjustment_03)) {
     df <- df %>% 
-      dplyr::filter(!prek) %>% 
-      dplyr::left_join(supply_adjustment_03 %>% dplyr::select(-subsidy_provider)) %>% 
+      dplyr::left_join(supply_adjustment_03) %>% 
       dplyr::mutate(adj_capacity = adj_capacity * mean_pct_03)
     
   }
@@ -70,7 +69,6 @@ create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
 #' @title Create tract demand
 create_tract_demand <- function(demand,
                                 lt_age = 5) {
-
   if (lt_age == 4){
     n_kids_working_parents <- "n_kids_working_parents_lt4"
     n_kids_working_under200_pct <- "n_kids_lt4_working_under200_pct"
@@ -118,7 +116,7 @@ create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
 
 #' @title Create market ratio
 create_market_ratio <- function(mkt_supply, mkt_demand) {
-
+  browser()
   mkt_supply %>%
     dplyr::full_join(mkt_demand) %>%
     dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,
