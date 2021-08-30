@@ -365,11 +365,10 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-      
+
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
-                                       df_prek = DF_PREK,
-                                       surround_tracts = l$SURROUND_TRACTS) %>% 
-        dplyr::filter(!prek_prvdr)
+                                       df_prek = NULL,
+                                       surround_tracts = l$SURROUND_TRACTS) 
       
       l$SUPPLY_ADJUSTMENT <- calc.capacity_adjustment_03(county_fips = l$COUNTY_FIPS,
                                                          xwalk_tracts = l$XWALK_TRACTS,
@@ -379,7 +378,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
                                                          grouping_vars = c("trs_star_level", "center_prvdr", "prvdr_size_desc"),
                                                          yr = "2019",
                                                          qtrs = c("4"))
-      browser()
+      
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    config = config,
                                    supply_adjustment_03 = l$SUPPLY_ADJUSTMENT)

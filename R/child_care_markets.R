@@ -20,7 +20,7 @@ create_supply <- function(df_hhsc_ccl,
                   str = "home_prvdr_sub_capacity")
   test_config_pct(x = config$center_prvdr_sub_capacity,
                   str = "center_prvdr_sub_capacity")
-  browser()
+
   df <- df_hhsc_ccl %>%
     dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*config$home_prvdr_non_sub_capacity,
                                                   center_prvdr & !sub_provider ~ licensed_capacity*config$center_prvdr_non_sub_capacity,
@@ -63,7 +63,8 @@ create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
     dplyr::summarise(mkt_supply = sum(tract_supply, na.rm = T)) %>%
     dplyr::ungroup() %>% 
     dplyr::right_join(xwalk_tract_desert) %>% 
-    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply))
+    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply),
+                  anchor_county = ifelse(is.na(anchor_county), substr(anchor_tract, 1, 5), anchor_county))
 }
 
 #' @title Create tract demand
@@ -116,7 +117,7 @@ create_market_demand <- function(tract_demand, tracts, xwalk_tract_desert) {
 
 #' @title Create market ratio
 create_market_ratio <- function(mkt_supply, mkt_demand) {
-  browser()
+
   mkt_supply %>%
     dplyr::full_join(mkt_demand) %>%
     dplyr::mutate(seats_per_100 = (mkt_supply/mkt_demand)*100,

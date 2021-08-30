@@ -59,11 +59,13 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
                          dplyr::mutate(phone_number = as.character(phone_number)))
   } else {
     df <- df_hhsc_ccl %>% 
-      dplyr::mutate(prek_prvdr = FALSE)
+      dplyr::mutate(prek_prvdr = FALSE,
+                    campus_rating = NA)
   }
 
   df <- df %>%
-    dplyr::mutate(prek_prvdr = ifelse(is.na(prek_prvdr), FALSE, prek_prvdr)) %>%
+    dplyr::mutate(prek_prvdr = ifelse(is.na(prek_prvdr), FALSE, prek_prvdr),
+                  campus_rating = ifelse(is.na(campus_rating), NA, campus_rating)) %>%
     dplyr::filter(!is.na(tract)) %>%
     dplyr::filter(tract %in% surround_tracts) %>% 
     dplyr::filter(head_start | home_prvdr | center_prvdr | prek_prvdr) %>% 
