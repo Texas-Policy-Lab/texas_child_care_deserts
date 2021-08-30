@@ -32,7 +32,7 @@ calc.capacity_adjustment_03 <- function(county_fips,
                                         yr = "2019",
                                         qtrs = c("4")) {
   
-  browser()
+
   df_acf <- df_acf %>%
     dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
     dplyr::filter(quarter %in% qtrs) %>% 
