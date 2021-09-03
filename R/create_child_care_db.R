@@ -84,6 +84,8 @@ child_care_db <- function(root,
                                raw_pth = raw_pth)
 
   env$DF_PREK <- process.prek(raw_pth = raw_pth)
+  
+  env$DF_FRONTLINE <- process.frontline(raw_pth = raw_pth)
 
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
