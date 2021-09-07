@@ -4,7 +4,7 @@
 \alias{create_tract_demand}
 \title{Create tract demand}
 \usage{
-create_tract_demand(demand)
+create_tract_demand(demand, lt_age = 5)
 }
 \description{
 Create tract demand
