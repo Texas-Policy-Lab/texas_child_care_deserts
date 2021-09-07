@@ -52,7 +52,7 @@ col.mod_date <- function(df,
 col.availability <- function(df){
 
   df <- df %>%  
-    dplyr::mutate(dplyr::across(ends_with("capacity"), as.numeric, function(x) tidyr::replace_na(x, 0)),
+    dplyr::mutate(dplyr::across(ends_with("capacity"), function(x) tidyr::replace_na(as.numeric(x), 0)),
                   availability_03 = infant_capacity + toddler_capacity,
                   availability_05 = infant_capacity + toddler_capacity + prek_capacity,
                   availability_total = infant_capacity + toddler_capacity + prek_capacity + school_capacity) %>% 
@@ -70,7 +70,7 @@ col.availability <- function(df){
 col.enrollment <- function(df){
 
   df <- df %>%  
-    dplyr::mutate(dplyr::across(ends_with("enrollment"), as.numeric, function(x) tidyr::replace_na(x, 0)),
+    dplyr::mutate(dplyr::across(ends_with("enrollment"), function(x) tidyr::replace_na(as.numeric(x), 0)),
                   enrollment_03 = infant_enrollment + toddler_enrollment,
                   enrollment_05 = infant_enrollment + toddler_enrollment + prek_enrollment,
                   enrollment_total = infant_enrollment + toddler_enrollment + prek_enrollment + school_enrollment) %>% 
@@ -131,7 +131,7 @@ dm.frontline <- function(df,
     col.date() %>% 
     col.mod_date() %>% 
     col.operation_number() %>% 
-    col.availability()  %>% 
+    col.availability() %>% 
     col.enrollment() %>% 
     col.seats()
 
