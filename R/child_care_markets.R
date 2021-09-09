@@ -1,14 +1,15 @@
 #' @title Create Supply
 create_supply <- function(df_hhsc_ccl,
+                          supply_adjustment_sub = NULL,
                           supply_adjustment_03 = NULL) {
   browser()
   df <- df_hhsc_ccl %>%
-    dplyr::mutate(pct_subsidy = n_subsidy_kids/licensed_capacity) 
+    dplyr::left_join(supply_adjustment_sub)
   
   if (!is.null(supply_adjustment_03)) {
     df <- df %>% 
       dplyr::left_join(supply_adjustment_03) %>% 
-      dplyr::mutate(adj_capacity = licensed_capacity * mean_pct_03)
+      dplyr::mutate(adj_all_capacity = licensed_capacity * desired_pct_capacity)
     
   }
   
