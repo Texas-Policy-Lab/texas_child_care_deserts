@@ -4,25 +4,30 @@ create_supply <- function(df_hhsc_ccl,
                           supply_adjustment_03 = NULL) {
   browser()
   df <- df_hhsc_ccl %>%
-    dplyr::left_join(supply_adjustment_sub)
+    dplyr::left_join(supply_adjustment_sub) %>% 
+    dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
   
   if (!is.null(supply_adjustment_03)) {
     df <- df %>% 
       dplyr::left_join(supply_adjustment_03) %>% 
       dplyr::mutate(adj_all_capacity = licensed_capacity * desired_pct_capacity)
     
+  } else {
+    df <- df %>% 
+      dplyr::mutate(adj_all_capacity = licensed_capacity * .85)
   }
   
   df <- df %>%
-    dplyr::select(operation_number, tract, county_code, adj_capacity, pct_subsidy,
+    dplyr::select(operation_number, tract, county_code, adj_all_capacity, adj_sub_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
                         cols = -c(operation_number, tract, county_code,
-                                  adj_capacity, pct_subsidy)) %>%
+                                  adj_all_capacity, adj_sub_capacity)) %>%     
     dplyr::filter(supply) %>%
     dplyr::select(-supply) %>% 
-    dplyr::mutate(adj_capacity = ifelse(desert != "all_provider", adj_capacity * pct_subsidy, adj_capacity)) %>% 
-    dplyr::select(-pct_subsidy)
+    dplyr::mutate(adj_capacity = dplyr::case_when(desert == "all_provider" ~ adj_all_capacity,
+                                                  desert != "all_provider" ~ adj_sub_capacity)) %>% 
+    dplyr::select(-c(adj_all_capacity, adj_sub_capacity))
 }
 
 #' @title Create tract supply
