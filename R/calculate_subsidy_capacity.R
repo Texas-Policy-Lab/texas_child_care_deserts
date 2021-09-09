@@ -7,7 +7,7 @@ calc.capacity_adjustment_sub <- function(df_hhsc_ccl,
                                          df_frontline,
                                          df_supply_adjustment_03 = NULL,
                                          grouping_vars = NULL) {
-  
+  browser()
   if(is.null(df_supply_adjustment_03)){
     supply_adjustment <- df_hhsc_ccl %>% 
       dplyr::select(operation_number,
@@ -16,7 +16,7 @@ calc.capacity_adjustment_sub <- function(df_hhsc_ccl,
 
   df <- df_frontline %>% 
     dplyr::inner_join(df_hhsc_ccl) %>% 
-    dplyr::left_join(supply_adjustment) %>% 
+    dplyr::left_join(df_supply_adjustment_03) %>% 
     dplyr::filter(sub_provider) %>% 
     dplyr::mutate(med_param = (n_subsidy_kids/enrollment_total)*desired_pct_capacity,
                   med_param = ifelse(!is.finite(med_param), NA, med_param),
