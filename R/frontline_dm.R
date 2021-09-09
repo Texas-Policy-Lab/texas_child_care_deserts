@@ -40,7 +40,7 @@ col.mod_date <- function(df,
                                      origin = "1970-01-01"),
                   days_since_mod = export_date - mod_date) %>% 
     dplyr::select(-last_modified_at_a) %>% 
-    dplyr::filter(mod_date > start_date & days_since_mod <= 21) %>% 
+    dplyr::filter(mod_date > start_date) %>% 
     dplyr::group_by(operation_number) %>% 
     dplyr::slice(which.max(mod_date))
   
