@@ -30,18 +30,19 @@ col.date <- function(df){
 #' @return data.frame
 col.mod_date <- function(df, 
                          start_date = as.Date("07082021", "%m%d%Y")){
-
+  browser()
   df <- df %>% 
     dplyr::mutate(mod_date = as.Date(ifelse(grepl("-", last_modified_at_a),
                                             as.Date(last_modified_at_a,
                                                     format = "%Y-%m-%d"),
                                             as.Date(last_modified_at_a,
                                                     format = "%m/%d/%y")),
-                                     origin = "1970-01-01")) %>% 
+                                     origin = "1970-01-01"),
+                  days_since_mod = export_date - mod_date) %>% 
     dplyr::select(-last_modified_at_a) %>% 
+    dplyr::filter(mod_date > start_date & days_since_mod <= 21) %>% 
     dplyr::group_by(operation_number) %>% 
-    dplyr::slice(which.max(mod_date))  %>% 
-    dplyr::filter(mod_date > start_date)
+    dplyr::slice(which.max(mod_date))
   
 }
 
@@ -97,7 +98,7 @@ col.seats <- function(df){
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/export_translation_Daily_Vacancy_2021-08-30_04_43_51.csv") {
+                            name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv") {
 
   df <- readr::read_csv(file.path(raw_pth, name)) %>%
     dplyr::mutate(export_date = parse_date.frontline(name))
@@ -128,8 +129,12 @@ dm.frontline <- function(df,
                   prek_enrollment = "preschool_enrollment",
                   school_capacity = "school_aged_capacity",
                   school_enrollment = "schoolage_enrollment") %>% 
-    col.date() %>% 
-    col.mod_date() %>% 
+    col.date() 
+  
+  df <- df %>% 
+    col.mod_date() 
+  
+  df <- df %>% 
     col.operation_number() %>% 
     col.availability() %>% 
     col.enrollment() %>% 
