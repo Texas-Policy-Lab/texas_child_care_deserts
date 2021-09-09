@@ -52,20 +52,14 @@ child_care_db <- function(root,
   create_folder_str(pths = pths)
 
   load_env(file.path(processed_pth, db_name))
-
+  browser()
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER # temp because process.neighborhood_center function not working
-  
+
   env$DF_TWC <- process.twc(raw_pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 processed_pth = processed_pth,
-                                                 df_twc = env$DF_TWC,
-                                                 naeyc_pth1 = naeyc_pth1,
-                                                 naeyc_pth2 = naeyc_pth2,
-                                                 name = "HHSC_CCL",
-                                                 state_fips = state_code))
+  env$DF_HHSC_CCL <- DF_HHSC_CCL # temp because error
 
   env$POP_HHSC_CCL <- pop.hhsc_ccl(new = env$DF_HHSC_CCL, old = DF_HHSC_CCL)
 
@@ -289,10 +283,8 @@ save_subset_child_care_db_03 <- function(pth, config) {
     
     load_env(file.path(pth))
     
-    DF_FRONTLINE <-  process.frontline(raw_pth = "F:/Early_Childhood/04_Tarrant_County/data/raw") # temp until child_care_db is rerun
-    
     env <- sapply(names(config), function(county_fips) {
-      
+
       l <- list()
       
       config <- config[[county_fips]]
