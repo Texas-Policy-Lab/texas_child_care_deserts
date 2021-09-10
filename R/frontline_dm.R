@@ -27,10 +27,13 @@ col.date <- function(df){
 #' @param df
 #' @param start_date. If there is a date that Frontline/Bowtie tells us has a processing/data error, 
 #' set this as start_date, use only modification dates after this date
+#' @param max_date. For now, we are manually picking the two week period with highest response. This will 
+#' be updated to something more dynamic in the future.
 #' @return data.frame
 col.mod_date <- function(df, 
-                         start_date = as.Date("07082021", "%m%d%Y")){
-  browser()
+                         start_date = as.Date("07082021", "%m%d%Y"),
+                         max_date = as.Date("08042021", "%m%d%Y")){
+
   df <- df %>% 
     dplyr::mutate(mod_date = as.Date(ifelse(grepl("-", last_modified_at_a),
                                             as.Date(last_modified_at_a,
@@ -38,9 +41,9 @@ col.mod_date <- function(df,
                                             as.Date(last_modified_at_a,
                                                     format = "%m/%d/%y")),
                                      origin = "1970-01-01"),
-                  days_since_mod = export_date - mod_date) %>% 
+                  days_since_mod = max_date - mod_date) %>% 
     dplyr::select(-last_modified_at_a) %>% 
-    dplyr::filter(mod_date > start_date) %>% 
+    dplyr::filter(days_since_mod >= 0 & days_since_mod <= 14) %>% 
     dplyr::group_by(operation_number) %>% 
     dplyr::slice(which.max(mod_date))
   
