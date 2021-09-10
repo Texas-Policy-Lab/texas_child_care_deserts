@@ -42,7 +42,7 @@ child_care_db <- function(root,
                           acs_geography = "tract",
                           acs_county = NULL,
                           db_name = "child_care_env.Rdata") {
-  
+
   data_pth <- file.path(root, "data")
   raw_pth <- file.path(data_pth, "raw")
   processed_pth <- file.path(data_pth, "processed")
@@ -52,30 +52,23 @@ child_care_db <- function(root,
   create_folder_str(pths = pths)
 
   load_env(file.path(processed_pth, db_name))
-
+  browser()
   env <- new.env()
 
-  env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
-  
+  env$NEIGHBORHOOD_CENTER <- NEIGHBORHOOD_CENTER # temp because process.neighborhood_center function not working
+
   env$DF_TWC <- process.twc(raw_pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 processed_pth = processed_pth,
-                                                 df_twc = env$DF_TWC,
-                                                 naeyc_pth1 = naeyc_pth1,
-                                                 naeyc_pth2 = naeyc_pth2,
-                                                 name = "HHSC_CCL",
-                                                 state_fips = state_code))
+  env$DF_HHSC_CCL <- DF_HHSC_CCL # temp because error
 
   env$POP_HHSC_CCL <- pop.hhsc_ccl(new = env$DF_HHSC_CCL, old = DF_HHSC_CCL)
 
   env$POP_HHSC_CCL_ATTR <- pop.hhsc_ccl_most_recent_attr(new = env$DF_HHSC_CCL,
                                                          old = DF_HHSC_CCL)
+  
+  env$DF_FRONTLINE <- process.frontline(raw_pth = raw_pth)
 
-  env$DF_ACF <- process.acf(cls =
-                              list(raw_pth = raw_pth,
-                                   acf_qtr_years = acf_qtr_years)
-  )
+  env$DF_ACF <- DF_ACF # temp bc api gives error
 
   env$DF_DEMAND <- process.acs(acs_year = acs_year,
                                acs_state_code = state_code,
@@ -83,8 +76,8 @@ child_care_db <- function(root,
                                acs_county = acs_county,
                                raw_pth = raw_pth)
 
-  env$DF_PREK <- process.prek(raw_pth = raw_pth)
-
+  env$DF_PREK <- DF_PREK #temp for saving time
+  
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -173,15 +166,16 @@ save_subset_child_care_db <- function(pth, config) {
 
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-
-      l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
-
-      l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
-
-      l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
-  
-      l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
       
+      # temp for saving time
+      # l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
+      # 
+      # l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
+      # 
+      # l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
+      # 
+      # l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
+      # 
       l$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                    dplyr::filter(tract %in% l$SURROUND_TRACTS))
 
@@ -290,7 +284,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
     load_env(file.path(pth))
     
     env <- sapply(names(config), function(county_fips) {
-      
+
       l <- list()
       
       config <- config[[county_fips]]
@@ -365,23 +359,23 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-
+      browser()
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = NULL,
                                        surround_tracts = l$SURROUND_TRACTS) 
       
-      l$SUPPLY_ADJUSTMENT <- calc.capacity_adjustment_03(county_fips = l$COUNTY_FIPS,
-                                                         xwalk_tracts = l$XWALK_TRACTS,
-                                                         adj_tracts = ADJ_TRACTS,
-                                                         df_hhsc_ccl = l$DF_HHSC_CCL,
-                                                         df_acf = DF_ACF,
-                                                         grouping_vars = c("trs_star_level", "center_prvdr", "prvdr_size_desc"),
-                                                         yr = "2019",
-                                                         qtrs = c("4"))
+      l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
+                                                            df_frontline = DF_FRONTLINE,
+                                                            grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
+      
+      l$SUPPLY_ADJUSTMENT_SUB <- calc.capacity_adjustment_sub(df_hhsc_ccl = l$DF_HHSC_CCL,
+                                                              df_frontline = DF_FRONTLINE,
+                                                              df_supply_adjustment_03 = l$SUPPLY_ADJUSTMENT_03,
+                                                              grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
       
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
-                                   config = config,
-                                   supply_adjustment_03 = l$SUPPLY_ADJUSTMENT)
+                                   supply_adjustment_sub = l$SUPPLY_ADJUSTMENT_SUB,
+                                   supply_adjustment_03 = l$SUPPLY_ADJUSTMENT_03)
       
       l$DF_TRACT_SUPPLY <- create_tract_supply(supply = l$DF_SUPPLY)
       

@@ -1,54 +1,38 @@
 #' @title Create Supply
 create_supply <- function(df_hhsc_ccl,
-                          config,
+                          supply_adjustment_sub = NULL,
                           supply_adjustment_03 = NULL) {
-
-  test_config(x = config$home_prvdr_non_sub_capacity, 
-              str = "home_prvdr_non_sub_capacity")
-  test_config(x = config$center_prvdr_non_sub_capacity,
-              str = "center_prvdr_non_sub_capacity")
-  test_config(x = config$home_prvdr_sub_capacity,
-              str = "home_prvdr_sub_capacity")
-  test_config(x = config$center_prvdr_sub_capacity,
-              str = "center_prvdr_sub_capacity")
-  
-  test_config_pct(x = config$home_prvdr_non_sub_capacity,
-                  str = "home_prvdr_non_sub_capacity")
-  test_config_pct(x = config$center_prvdr_non_sub_capacity,
-                  str = "center_prvdr_non_sub_capacity")
-  test_config_pct(x = config$home_prvdr_sub_capacity,
-                  str = "home_prvdr_sub_capacity")
-  test_config_pct(x = config$center_prvdr_sub_capacity,
-                  str = "center_prvdr_sub_capacity")
-
+  browser()
   df <- df_hhsc_ccl %>%
-    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*config$home_prvdr_non_sub_capacity,
-                                                  center_prvdr & !sub_provider ~ licensed_capacity*config$center_prvdr_non_sub_capacity,
-                                                  home_prvdr & sub_provider ~ licensed_capacity*config$home_prvdr_sub_capacity,
-                                                  center_prvdr & sub_provider ~ licensed_capacity*config$center_prvdr_sub_capacity,
-                                                  prek_prvdr ~ licensed_capacity,
-                                                  TRUE ~ NA_real_)) 
+    dplyr::left_join(supply_adjustment_sub) %>% 
+    dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
   
   if (!is.null(supply_adjustment_03)) {
     df <- df %>% 
       dplyr::left_join(supply_adjustment_03) %>% 
-      dplyr::mutate(adj_capacity = adj_capacity * mean_pct_03)
+      dplyr::mutate(adj_all_capacity = licensed_capacity * desired_pct_capacity)
     
+  } else {
+    df <- df %>% 
+      dplyr::mutate(adj_all_capacity = licensed_capacity * .85)
   }
   
   df <- df %>%
-    dplyr::select(operation_number, tract, county_code, adj_capacity,
+    dplyr::select(operation_number, tract, county_code, adj_all_capacity, adj_sub_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
                         cols = -c(operation_number, tract, county_code,
-                                  adj_capacity)) %>%
+                                  adj_all_capacity, adj_sub_capacity)) %>%     
     dplyr::filter(supply) %>%
-    dplyr::select(-supply)
+    dplyr::select(-supply) %>% 
+    dplyr::mutate(adj_capacity = dplyr::case_when(desert == "all_provider" ~ adj_all_capacity,
+                                                  desert != "all_provider" ~ adj_sub_capacity)) %>% 
+    dplyr::select(-c(adj_all_capacity, adj_sub_capacity))
 }
 
 #' @title Create tract supply
 create_tract_supply <- function(supply) {
-
+  browser()
    supply %>%
     dplyr::group_by(tract, county_code, desert) %>%
     dplyr::summarise(tract_supply = sum(adj_capacity, na.rm = TRUE))
@@ -56,7 +40,7 @@ create_tract_supply <- function(supply) {
 
 #' @title Create market supply
 create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
-
+  browser()
   tracts %>%
     dplyr::left_join(tract_supply, by = c("surround_tract" = "tract")) %>%
     dplyr::group_by(anchor_county, anchor_tract, desert) %>%

@@ -1,18 +1,3 @@
-#' @title Calculate percent of kids 0-3 enrolled per provider
-#' @param acf data.frame. The cleaned acf dataframe.
-#' @return Summarized data with the percent 0-3 for each provider
-#' @export
-dm.pct_enrolled_03 <- function(df_acf,
-                               grouping_vars){
-  
-  n_kids <- df_acf %>% 
-    dplyr::group_by_at(dplyr::vars(operation_number, quarter_year, date, anchor_county, grouping_vars)) %>% 
-    dplyr::summarise(n_kids_03 = dplyr::n_distinct(child_id[child_age < 4], na.rm = T),
-                     n_kids_total = dplyr::n_distinct(child_id, na.rm = T)) %>% 
-    dplyr::mutate(pct_enrolled_03 = n_kids_03/n_kids_total)
-}
-
-
 #' @title Calculate 0-3 capacity estimate
 #' @param config list. Vector of county FIPS codes with names attributes
 #' @param tract_radius numeric. A number indicating the tract radius in miles.
@@ -23,30 +8,18 @@ dm.pct_enrolled_03 <- function(df_acf,
 #' @param grouping_vars string. The results to be grouped by. Default is NULL.
 #' @param qtrs vector of strings. Default is c("1","2","4").
 #' @export
-calc.capacity_adjustment_03 <- function(county_fips,
-                                        xwalk_tracts,
-                                        adj_tracts,
-                                        df_hhsc_ccl,
-                                        df_acf,
-                                        grouping_vars = NULL,
-                                        yr = "2019",
-                                        qtrs = c("4")) {
+calc.capacity_adjustment_03 <- function(df_hhsc_ccl,
+                                        df_frontline,
+                                        grouping_vars = NULL) {
   
 
-  df_acf <- df_acf %>%
-    dplyr::filter(operation_number %in% df_hhsc_ccl$operation_number) %>%
-    dplyr::filter(quarter %in% qtrs) %>% 
-    dplyr::inner_join(df_hhsc_ccl %>% 
-                        dplyr::filter(subsidy_provider))%>% 
-    dplyr::filter(year == yr) %>% 
-    dplyr::mutate(anchor_county = county_fips)
-  
-  pct_03 <- dm.pct_enrolled_03(df_acf = df_acf,
-                               grouping_vars = grouping_vars)
+  pct_03 <- df_frontline %>%
+    dplyr::inner_join(df_hhsc_ccl) %>% 
+    dplyr::mutate(pct_03_ofcapacity = seats_03/licensed_capacity)
   
   pct_03_by_group <- pct_03 %>% 
-    dplyr::group_by_at(dplyr::vars(anchor_county, grouping_vars)) %>% 
-    dplyr::summarise(mean_pct_03 = mean(pct_enrolled_03, na.rm = T)) 
+    dplyr::group_by_at(dplyr::vars(grouping_vars)) %>% 
+    dplyr::summarise(desired_pct_capacity = mean(pct_03_ofcapacity)) 
   
   return(pct_03_by_group)
 }
