@@ -366,12 +366,12 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
-                                                            grouping_vars = c("sub_provider", "trs_star_level", "center_prvdr", "prvdr_size_desc"))
+                                                            grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
       
       l$SUPPLY_ADJUSTMENT_SUB <- calc.capacity_adjustment_sub(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                               df_frontline = DF_FRONTLINE,
                                                               df_supply_adjustment_03 = l$SUPPLY_ADJUSTMENT_03,
-                                                              grouping_vars = c("sub_provider", "trs_star_level", "center_prvdr", "prvdr_size_desc"))
+                                                              grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
       
       l$DF_SUPPLY <- create_supply(df_hhsc_ccl = l$DF_HHSC_CCL,
                                    supply_adjustment_sub = l$SUPPLY_ADJUSTMENT_SUB,
