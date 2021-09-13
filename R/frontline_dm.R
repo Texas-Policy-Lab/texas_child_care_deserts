@@ -132,12 +132,8 @@ dm.frontline <- function(df,
                   prek_enrollment = "preschool_enrollment",
                   school_capacity = "school_aged_capacity",
                   school_enrollment = "schoolage_enrollment") %>% 
-    col.date() 
-  
-  df <- df %>% 
-    col.mod_date() 
-  
-  df <- df %>% 
+    col.date()  %>% 
+    col.mod_date() %>% 
     col.operation_number() %>% 
     col.availability() %>% 
     col.enrollment() %>% 
