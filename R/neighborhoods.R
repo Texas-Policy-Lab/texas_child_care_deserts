@@ -1,6 +1,6 @@
 #' @title Tarrant County Neighborhoods
 dm.tarrant_neighborhood_center <- function(df, ...) {
-  
+
   df %>%
     dplyr::distinct(NPA_NAME, LATITUDE, LONGITUDE) %>% 
     dplyr::group_by(NPA_NAME) %>% 
@@ -21,12 +21,14 @@ process.tarrant_neighborhood <- function(cls) {
 #' @title Tarrant County Neighborhoods
 dm.harris_neighborhood_center <- function(df, ...) {
 
- df %>%
+  df %>%
     dplyr::mutate(GEOID10 = as.character(GEOID10)) %>%
-    dplyr::inner_join(GEO_TRACTS, by = c("GEOID10" = "tract")) %>%
+    dplyr::inner_join(GEO_TRACTS, by = c("GEOID10" = "tract")) %>% 
+    dplyr::mutate(center_long = purrr::map_dbl(geometry, ~sf::st_centroid(.x)[[1]]),
+                  center_lat = purrr::map_dbl(geometry, ~sf::st_centroid(.x)[[2]])) %>%
     dplyr::group_by(KCTA_NAME) %>%
-    dplyr::summarise(mean_long = mean(X),
-                     mean_lat = mean(Y),
+    dplyr::summarise(mean_long = mean(center_long),
+                     mean_lat = mean(center_lat),
                      size = dplyr::n()) %>%
     dplyr::rename(neighborhood = KCTA_NAME) %>%
     dplyr::mutate(county_code = "48201")
