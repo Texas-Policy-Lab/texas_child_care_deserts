@@ -7,7 +7,7 @@ calc.capacity_adjustment_sub <- function(df_hhsc_ccl,
                                          df_frontline,
                                          df_supply_adjustment_03 = NULL,
                                          grouping_vars = NULL) {
-  browser()
+
   if(is.null(df_supply_adjustment_03)){
     supply_adjustment <- df_hhsc_ccl %>% 
       dplyr::select(operation_number,

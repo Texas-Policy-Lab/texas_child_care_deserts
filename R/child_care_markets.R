@@ -2,7 +2,7 @@
 create_supply <- function(df_hhsc_ccl,
                           supply_adjustment_sub = NULL,
                           supply_adjustment_03 = NULL) {
-  browser()
+
   df <- df_hhsc_ccl %>%
     dplyr::left_join(supply_adjustment_sub) %>% 
     dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
@@ -32,7 +32,7 @@ create_supply <- function(df_hhsc_ccl,
 
 #' @title Create tract supply
 create_tract_supply <- function(supply) {
-  browser()
+
    supply %>%
     dplyr::group_by(tract, county_code, desert) %>%
     dplyr::summarise(tract_supply = sum(adj_capacity, na.rm = TRUE))
@@ -40,7 +40,7 @@ create_tract_supply <- function(supply) {
 
 #' @title Create market supply
 create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
-  browser()
+
   tracts %>%
     dplyr::left_join(tract_supply, by = c("surround_tract" = "tract")) %>%
     dplyr::group_by(anchor_county, anchor_tract, desert) %>%
