@@ -147,7 +147,7 @@ dm.demand <- function(B17024,
 
   df <- B17024 %>%
     dplyr::left_join(B23008 %>% 
-                       dplyr::select(-c(n_kids_lt6, n_kids_lt5))) %>%
+                       dplyr::select(-c(n_kids_lt6, n_kids_lt5, n_kids_lt4))) %>%
     dplyr::mutate(working_pov_rate = pov_rate * pct_kids_lt6_under200_pct) %>%
     dplyr::mutate(n_kids_lt6_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt6) %>%
     dplyr::mutate(n_kids_lt5_working_under200_pct = (working_pov_rate/100) * n_kids_working_parents_lt5,
