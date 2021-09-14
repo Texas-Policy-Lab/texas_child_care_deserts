@@ -9,7 +9,7 @@ calc.capacity_adjustment_sub <- function(df_hhsc_ccl,
                                          grouping_vars = NULL) {
 
   if(is.null(df_supply_adjustment_03)){
-    supply_adjustment <- df_hhsc_ccl %>% 
+    df_supply_adjustment_03 <- df_hhsc_ccl %>% 
       dplyr::select(operation_number,
                     desired_pct_capacity = 1)
   }
