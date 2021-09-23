@@ -14,6 +14,39 @@ test_attr <- function(attr) {
   return(TRUE)
 }
 
+#' @title Choose geography
+#' @description Applied different data management steps depending on which 
+#' geography is selected
+geo_dm <- function() UseMethod("geo_dm")
+
+#' @title Data management steps for census tracts geos
+geo_dm.tracts <- function() {
+
+  assertthat::assert_that(all(nchar(df$GEOID) == 11))
+
+  df <- df %>%
+    dplyr::rename(tract = GEOID) %>%
+    dplyr::mutate(county_code = substr(tract, 1, 5))
+
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
+  assertthat::assert_that(length(unique(df$tract)) == nrow(df))
+
+  return(df)
+}
+
+#' @title Data management steps for ZCTA geos
+geo_dm.zcta <- function() {
+
+  assertthat::assert_that(all(nchar(df$GEOID)) == 5)
+
+  df <- df %>% 
+    dplyr::rename(zip = GEOID)
+
+  assertthat::assert_that(length(unique(df$zip)) == nrow(df))
+
+  return(df)  
+}
+
 #' @title Data management
 #' @description Data management steps for a specific data table
 #' @param x object. The data object
@@ -34,8 +67,7 @@ dm.B23008 <- function(x) {
   df <- x$df %>%
     dplyr::select(GEOID, variable, estimate) %>%
     dplyr::mutate(n_kids_lt6 = ifelse(variable %in% lt6, TRUE, FALSE),
-                  n_kids_working_parents_lt6 = ifelse(variable %in% lt6_working_parents, TRUE, FALSE)
-    ) %>%
+                  n_kids_working_parents_lt6 = ifelse(variable %in% lt6_working_parents, TRUE, FALSE)) %>%
     tidyr::gather(variable2, value2, -c(GEOID, variable, estimate)) %>%
     dplyr::filter(value2) %>%
     dplyr::group_by(GEOID, variable2) %>%
@@ -45,25 +77,9 @@ dm.B23008 <- function(x) {
                   n_kids_lt4 = 4/6*n_kids_lt6,
                   n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
                   n_kids_working_parents_lt4 = 4/6*n_kids_working_parents_lt6)
-                  
-  if (x$geography == "tract"){
-    
-    df <- df %>% 
-      dplyr::rename(tract = GEOID) %>% 
-      dplyr::mutate(county_code = substr(tract, 1, 5))
-    
-    assertthat::assert_that(all(nchar(df$county_code) == 5))
-    assertthat::assert_that(length(unique(df$tract)) == nrow(df))
-    
-  } else if (x$geography == "zcta"){
-    
-    df <- df %>% 
-      dplyr::rename(zip = GEOID)
-    
-    assertthat::assert_that(length(unique(df$zip)) == nrow(df))
-    
-  }
-  
+
+  df <- geo_dm(df)
+
   assertthat::assert_that(all(df$n_kids_lt5 <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_lt4 <= df$n_kids_lt6))
   assertthat::assert_that(all(df$n_kids_working_parents_lt5 <= df$n_kids_working_parents_lt6))
