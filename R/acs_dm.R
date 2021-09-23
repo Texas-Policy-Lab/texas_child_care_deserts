@@ -176,14 +176,14 @@ dm.demand <- function(B17024,
   return(df)
 }
 
-#' @title Add default parameters for ACS tables
+#' @title Add default attributes for ACS tables
 #' @inheritParams child_care_db
-acs_tables <- function(acs_year,
-                       acs_state_code,
-                       acs_geography,
-                       acs_county,
-                       lt6 = "002",
-                       pth) {
+acs_attr <- function(acs_year,
+                     acs_state_code,
+                     acs_geography,
+                     acs_county,
+                     lt6 = "002",
+                     pth) {
 
   cls <- function(table, geography, lt6, other_lt6, pth) {
     structure(
@@ -234,11 +234,11 @@ process.acs <- function(acs_year,
       dm_acs_geo() 
   }
   
-  tbls <- acs_tables(acs_year = acs_year,
-                     acs_state_code = acs_state_code,
-                     acs_geography = acs_geography,
-                     acs_county = acs_county,
-                     pth = raw_pth)
+  tbls <- acs_attr(acs_year = acs_year,
+                   acs_state_code = acs_state_code,
+                   acs_geography = acs_geography,
+                   acs_county = acs_county,
+                   pth = raw_pth)
 
   tbls <- sapply(tbls, f, USE.NAMES = TRUE, simplify = FALSE)
   do.call(dm.demand, tbls)
