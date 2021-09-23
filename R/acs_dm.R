@@ -42,8 +42,8 @@ dm.B23008 <- function(x) {
     dplyr::summarise(estimate = sum(estimate)) %>%
     tidyr::spread(variable2, estimate) %>%
     dplyr::mutate(n_kids_lt5 = 5/6*n_kids_lt6,
-                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
                   n_kids_lt4 = 4/6*n_kids_lt6,
+                  n_kids_working_parents_lt5 = 5/6*n_kids_working_parents_lt6,
                   n_kids_working_parents_lt4 = 4/6*n_kids_working_parents_lt6)
                   
   if (x$geography == "tract"){
