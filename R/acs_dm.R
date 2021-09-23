@@ -1,3 +1,46 @@
+#' @title Download ACS
+#' @description Passes in a list of parameters to download the ACS census
+#' data using functions from the tidycensus package
+#' @param tbls list. List of census tables with attributes to download
+#' @param raw_pth. Path to save the raw data.
+#' @details To find a list of parameters to pass see documentation for 
+#' tidycensus::get_acs
+#' @examples 
+#' \dontrun{
+#' tbls <- list(B23008 = list(year = 2019, state = 48, 
+#'                                geography = "tract", county = 439))
+#' raw_pth <- "C:/"
+#' dwnld.acs(tbls = tbls, raw_pth = raw_pth)
+#' }
+dwnld.acs <- function(tbls, raw_pth, ...) {
+  
+  get_key.census()
+  
+  f <- function(name, tbls, pth) {
+    
+    attr <- tbls[[name]]
+    attr$table <- name
+    
+    test_attr(attr)
+    
+    df <- do.call(tidycensus::get_acs, attr)
+    
+    if (!is.null(pth)) {
+      readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
+    }
+    
+    attr$df <- df
+    return(structure(attr, class = name))
+  }
+  
+  sapply(names(tbls),
+         f,
+         tbls = tbls,
+         pth = raw_pth,
+         USE.NAMES = TRUE,
+         simplify = FALSE)
+}
+
 #' @title Test attributes
 #' @description Test's that the attributes of the parameters passed in are 
 #' correct
@@ -59,8 +102,10 @@ dm <- function(x) UseMethod("dm")
 #' @inheritParams dm
 dm.B23008 <- function(x) {
 
-  lt6 <- paste(x$table, "002", sep = "_")
-  lt6_working_parents <- paste(x$table, c("004", "005", "006", "010", "013"), sep = "_")
+  browser()
+  
+  lt6 <- paste(x$table, x$lt6, sep = "_")
+  lt6_working_parents <- paste(x$table, x$vars, sep = "_")
   
   assertthat::assert_that(all(lt6_working_parents %in% x$df$variable), msg = "Missing expected variables to create those with working parents")
   
@@ -131,7 +176,7 @@ dm.B17024 <- function(x) {
       dplyr::rename(zip = GEOID)
     
   } 
-  
+
   assertthat::assert_that(max(df$pct_kids_lt5_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(max(df$pct_kids_lt4_under200_pct, na.rm = TRUE) <= 100)
   assertthat::assert_that(all(df$n_kids_lt5_under200pct <= df$n_kids_lt5))
@@ -182,18 +227,28 @@ acs_tables <- function(acs_year,
                        acs_state_code,
                        acs_geography,
                        acs_county,
+                       lt6 = "002",
                        raw_pth) {
+
+  f <- function() {
+    list(year = acs_year,
+         state = acs_state_code,
+         geography = acs_geography,
+         county = acs_county,
+         lt6 = lt6)
+  }
   
-  list(tbls = 
-         list(B23008 = list(year = acs_year,
-                            state = acs_state_code,
-                            geography = acs_geography,
-                            county = acs_county),
-              B17024 = list(year = acs_year,
-                            state = acs_state_code,
-                            geography = acs_geography,
-                            county = acs_county)
-         ),
+  B23008 <- structure(c(f(),
+                        lt6_working_parents = c("004", "005", "006", 
+                                                "010", "013")),
+                      class = c("B23008", acs_geography))
+
+  B17024 <-structure(f(),
+                     class = c("B17024", acs_geography)
+  )
+
+  list(tbls = list(B17024 = B17024, 
+                   B23008 = B23008),
        raw_pth = raw_pth)
 }
 
