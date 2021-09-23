@@ -177,6 +177,11 @@ dm_acf <- function(x) {
   return(df)
 }
 
+#' @title Data management
+#' @description Data management steps for a specific data table
+#' @param x object. The data object
+dm <- function(x) UseMethod("dm")
+
 #' @title Data management ACF
 #' @description Data are located: 
 #' https://www.twc.texas.gov/programs/childcare#dataAndReports
