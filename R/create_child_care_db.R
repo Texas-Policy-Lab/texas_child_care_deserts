@@ -411,6 +411,9 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$NEIGHBORHOOD_DEMAND <- neighborhood_demand(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    tract_demand = l$DF_TRACT_DEMAND)
       
+      l$TRACT_SVI <- DF_TRACT_SVI %>% 
+        dplyr::filter(county_code == county_fips)
+      
       l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                              tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
