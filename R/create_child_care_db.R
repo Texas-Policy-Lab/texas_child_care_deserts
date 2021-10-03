@@ -52,7 +52,7 @@ child_care_db <- function(root,
   create_folder_str(pths = pths)
 
   load_env(file.path(processed_pth, db_name))
-  browser()
+
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
