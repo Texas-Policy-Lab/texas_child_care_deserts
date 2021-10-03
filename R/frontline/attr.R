@@ -1,4 +1,4 @@
-attr.frontline <- function() {
+attr.frontline <- function(pth) {
   input_columns = list(`OP Number` = "character",
                        `Infant Capacity` = "numeric",
                        `Toddler Capacity` = "numeric",
@@ -21,5 +21,6 @@ attr.frontline <- function() {
   list(input_columns = input_columns,
        start_date = start_date,
        max_date = max_date,
-       name)
+       name,
+       pth = pth)
 }
