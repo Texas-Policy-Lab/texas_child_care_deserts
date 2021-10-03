@@ -143,10 +143,10 @@ dwnld.frontline <- function(x) {
   return(x)
 }
 
-#' @title Select and rename columns
+#' @title Select and rename Frontline columns
 #' @param x
 #' @return object
-col.select <- function(x) {
+col.frontline_select <- function(x) {
   
   x$df <- x$df %>%
     test_input(x$input_columns) %>%
@@ -165,7 +165,7 @@ col.select <- function(x) {
 dm.frontline <- function(x) {
 
   x <- x %>%
-    col.select() %>%
+    col.frontline_select() %>%
     col.date() %>%
     col.mod_date() %>%
     col.operation_number() %>%
