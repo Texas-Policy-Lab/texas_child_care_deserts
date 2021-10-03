@@ -13,26 +13,34 @@ parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}") {
 #' @return data.frame
 col.date <- function(df){
 
-  df <- df %>% 
-    dplyr::mutate(date = as.Date(date, format = "%m-%d-%Y")) %>% 
+  df <- df %>%
+    dplyr::mutate(date = as.Date(date, format = "%m-%d-%Y")) %>%
     dplyr::filter(date <= export_date)
-  
+
   assertthat::assert_that(all(df$date <= df$export_date))
-  
+
   return(df)
 }
 
 #' @title Data management for modification date column
-#' @description Manage modification date: pick most recent modification for each provider
+#' @description Manage modification date: pick most recent modification for each
+#' provider
 #' @param df
-#' @param start_date. If there is a date that Frontline/Bowtie tells us has a processing/data error, 
-#' set this as start_date, use only modification dates after this date
-#' @param max_date. For now, we are manually picking the two week period with highest response. This will 
-#' be updated to something more dynamic in the future.
+#' @param start_date. If there is a date that Frontline/Bowtie tells us has a
+#' processing/data error, set this as start_date, use only modification dates 
+#' after this date. Default is 07082021.
+#' @param max_date. Two week period with the highest reponse rate. Default is 08022021.
 #' @return data.frame
 col.mod_date <- function(df, 
-                         start_date = as.Date("07082021", "%m%d%Y"),
-                         max_date = as.Date("08042021", "%m%d%Y")){
+                         start_date = "07082021",
+                         max_date = "08042021",
+                         date_format = "%m%d%Y") {
+
+  start_date <- as.Date(start_date, date_format)
+  
+  # TODO: For now, we are manually picking the two week period with highest 
+  # response. This will be updated to something more dynamic in the future.
+  max_date <- as.Date(max_date, date_format)
 
   df <- df %>% 
     dplyr::mutate(mod_date = as.Date(ifelse(grepl("-", last_modified_at_a),
@@ -44,9 +52,9 @@ col.mod_date <- function(df,
                   days_since_mod = max_date - mod_date) %>% 
     dplyr::select(-last_modified_at_a) %>% 
     dplyr::filter(days_since_mod >= 0 & days_since_mod <= 14) %>% 
-    dplyr::group_by(operation_number) %>% 
+    dplyr::group_by(operation_number) %>%
     dplyr::slice(which.max(mod_date))
-  
+
 }
 
 #' @title Data management for availability data
