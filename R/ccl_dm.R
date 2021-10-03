@@ -276,7 +276,7 @@ col.ccl_select <- function(x) {
 #' select variables
 #' @return data.frame
 dm.hhsc_ccl <- function(x) {
-
+browser()
   x <- x %>%
     col.operation_number() %>%
     col.county() %>%
@@ -291,10 +291,33 @@ dm.hhsc_ccl <- function(x) {
   return(x$df)
 }
 
-#' @title Process the CCL data
-process.hhsc_ccl <- function(pth, state_code) {
+#' @title Get HHSC CCL data
+#' @description Returns the most recent HHSC CCL Daycare and Residential 
+#' Operations 
+#' Data. Link to data: https://data.texas.gov/resource/bc5r-88dy.csv
+#' @param name string. The name to write the raw data to.
+#' @param raw_pth string. The path to write the raw to.
+#' @param url string. The url to the data.
+#' @export
+dwnld.hhsc_ccl <- function(name,
+                           raw_pth,
+                           url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
+                           ext = "csv",
+                           ...) {
+  
+  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
+  
+  download.file(url, destfile = dwnld_pth, mode = "wb")
+  
+  df <- readr::read_csv(dwnld_pth)
+  
+  return(df)
+}
 
-  attr.ccl(pth, state_code) %>%
+#' @title Process the CCL data
+process.hhsc_ccl <- function(pth, state_code, df_twc) {
+
+  attr.ccl(pth, state_code, df_twc) %>%
     dwnld.hhsc_ccl() %>%
     dm.hhsc_ccl()
 }
