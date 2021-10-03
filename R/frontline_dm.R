@@ -1,3 +1,37 @@
+#' @title Frontline attributes
+#' @param input_columns. The columns to keep from the data.
+#' @param max_date. Two week period with the highest reponse rate. Default is 
+#' 08022021.
+#' @return object
+attr.frontline <- function(pth,
+                           name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv",
+                           max_date = "08042021") {
+  
+  # TODO: For now, we are manually picking the two week period with highest 
+  # response for the max_date. This will be updated to something more dynamic 
+  # in the future.
+  
+  input_columns = list(`OP Number` = "character",
+                       `Infant Capacity` = "numeric",
+                       `Toddler Capacity` = "numeric",
+                       `Pre- K Capacity` = "numeric",
+                       `School Aged Capacity` = "numeric",
+                       Infant_enrollment = "numeric",
+                       Toddler_enrollment = "numeric",
+                       Preschool_enrollment = "numeric",
+                       SchoolAge_enrollment = "numeric",
+                       last_modified_at_A = "character",
+                       Date = "character",
+                       export_date = "Date"
+  )
+  
+  list(input_columns = input_columns,
+       max_date = max_date,
+       name = name,
+       pth = pth)
+}
+
+
 #' @title Data management for date column
 #' @description Manage date
 #' @return object
@@ -42,7 +76,7 @@ col.mod_date <- function(x,
 #' @param x
 #' @return object
 col.availability <- function(x) {
-  browser()
+
   x$df <- x$df %>%
     dplyr::mutate(dplyr::across(ends_with("capacity"), 
                                 function(x) tidyr::replace_na(as.numeric(x), 0)),
@@ -60,7 +94,7 @@ col.availability <- function(x) {
 #' @param df
 #' @return object
 col.enrollment <- function(x) {
-  browser()
+
   x$df <- x$df %>%  
     dplyr::mutate(dplyr::across(ends_with("enrollment"), 
                                 function(x) tidyr::replace_na(as.numeric(x), 0)),
@@ -79,46 +113,12 @@ col.enrollment <- function(x) {
 #' @param df
 #' @return object
 col.seats <- function(x) {
-  browser()
+
   x$df <- x$df %>%
     dplyr::mutate(seats_03 = availability_03 + enrollment_03,
                   seats_05 = availability_05 + enrollment_05,
                   seats_total = availability_total + enrollment_total)
   return(x)
-}
-
-#' @title Frontline attributes
-#' @param input_columns. The columns to keep from the data.
-#' @param max_date. Two week period with the highest reponse rate. Default is 
-#' 08022021.
-#' @return object
-attr.frontline <- function(pth,
-                           max_date = "08042021") {
-
-  # TODO: For now, we are manually picking the two week period with highest 
-  # response for the max_date. This will be updated to something more dynamic 
-  # in the future.
-  
-  input_columns = list(`OP Number` = "character",
-                       `Infant Capacity` = "numeric",
-                       `Toddler Capacity` = "numeric",
-                       `Pre- K Capacity` = "numeric",
-                       `School Aged Capacity` = "numeric",
-                       Infant_enrollment = "numeric",
-                       Toddler_enrollment = "numeric",
-                       Preschool_enrollment = "numeric",
-                       SchoolAge_enrollment = "numeric",
-                       last_modified_at_A = "character",
-                       Date = "character",
-                       export_date = "Date"
-  )
-
-  name <- "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv"
-
-  list(input_columns = input_columns,
-       max_date = max_date,
-       name = name,
-       pth = pth)
 }
 
 #' @title Parse frontline date
