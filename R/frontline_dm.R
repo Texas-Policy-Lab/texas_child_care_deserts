@@ -1,5 +1,5 @@
 #' @title Frontline attributes
-#' @param input_columns. The columns to keep from the data.
+#' @param input_columns. The columns to expect and keep from the data.
 #' @param name. The name of the data.
 #' @param max_date. Two week period with the highest reponse rate. Default is 
 #' 08022021.

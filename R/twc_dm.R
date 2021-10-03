@@ -1,3 +1,9 @@
+#' @title Frontline attributes
+#' @param name string. Name of the data to use.
+#' @param sheet string. Name of the sheet in the excel file to use.
+#' @param na. string. Values to assign to NA when reading in data.
+#' @param input_columns. The columns to expect and keep from the data.
+#' @return object
 attr.twc <- function(pth, 
                      name = "Weekly Closure Report 9.7.21.xlsx",
                      sheet = "All Provider Level",
