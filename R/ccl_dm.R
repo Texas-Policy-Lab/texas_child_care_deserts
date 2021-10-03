@@ -213,17 +213,6 @@ col.accepts_child_care_subsidies <- function(x) {
 #' @title Data management steps to clean the total capacity column
 #' @param x object.
 #' @return object
-col.total_capacity <- function(x) {
-
-  x$df <- x$df %>%
-    dplyr::rename(licensed_capacity = total_capacity)
-
-  assertthat::assert_that(is.numeric(x$df$licensed_capacity),
-                          msg = "Capacity not numeric")
-
-  return(x)
-}
-
 #' @title Assign deserts
 #' @description Assign deserts based on provider types. Note Head Start is 
 #' included as a subsidy provider, a TRS and TRS 4 star provider.
@@ -279,6 +268,7 @@ dm.hhsc_ccl <- function(x) {
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
+    dplyr::rename(licensed_capacity = total_capacity) %>%
     col.operation_number() %>%
     col.county(state_fips = state_fips) %>%
     col.location_address_geo(state_fips = state_fips) %>%
@@ -287,7 +277,6 @@ dm.hhsc_ccl <- function(x) {
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.total_capacity() %>%
     col.assign_deserts(df_twc = df_twc, 
                        naeyc_pth1 = naeyc_pth1, 
                        naeyc_pth2 = naeyc_pth2) %>%
