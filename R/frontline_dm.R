@@ -1,29 +1,29 @@
 #' @title Frontline attributes
 #' @param input_columns. The columns to keep from the data.
+#' @param name. The name of the data.
 #' @param max_date. Two week period with the highest reponse rate. Default is 
 #' 08022021.
 #' @return object
 attr.frontline <- function(pth,
+                           input_columns = list(`OP Number` = "character",
+                                                `Infant Capacity` = "numeric",
+                                                `Toddler Capacity` = "numeric",
+                                                `Pre- K Capacity` = "numeric",
+                                                `School Aged Capacity` = "numeric",
+                                                Infant_enrollment = "numeric",
+                                                Toddler_enrollment = "numeric",
+                                                Preschool_enrollment = "numeric",
+                                                SchoolAge_enrollment = "numeric",
+                                                last_modified_at_A = "character",
+                                                Date = "character",
+                                                export_date = "Date"
+                           ),
                            name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv",
                            max_date = "08042021") {
   
   # TODO: For now, we are manually picking the two week period with highest 
   # response for the max_date. This will be updated to something more dynamic 
   # in the future.
-  
-  input_columns = list(`OP Number` = "character",
-                       `Infant Capacity` = "numeric",
-                       `Toddler Capacity` = "numeric",
-                       `Pre- K Capacity` = "numeric",
-                       `School Aged Capacity` = "numeric",
-                       Infant_enrollment = "numeric",
-                       Toddler_enrollment = "numeric",
-                       Preschool_enrollment = "numeric",
-                       SchoolAge_enrollment = "numeric",
-                       last_modified_at_A = "character",
-                       Date = "character",
-                       export_date = "Date"
-  )
   
   list(input_columns = input_columns,
        max_date = max_date,
