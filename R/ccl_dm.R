@@ -259,16 +259,25 @@ col.assign_deserts <- function(x) {
   return(x)
 }
 
+#' @title Select and rename CCLHHSC columns
+#' @param x
+#' @return object
+col.ccl_select <- function(x) {
+
+  x$df %>%
+    test_input(x$input_columns) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::rename(licensed_capacity = total_capacity) %>%
+    dplyr::mutate(download_date = Sys.Date())
+}
+
 #' @title HHSC CCL data management
 #' @description Clean CCL download data, convert key variables to binary and 
 #' select variables
 #' @return data.frame
 dm.hhsc_ccl <- function(x) {
-  
-  df <- df %>%
-    test_input(input_columns) %>%
-    dplyr::rename_all(tolower) %>%
-    dplyr::rename(licensed_capacity = total_capacity) %>%
+
+  x <- x %>%
     col.operation_number() %>%
     col.county() %>%
     col.location_address_geo() %>%
@@ -277,10 +286,9 @@ dm.hhsc_ccl <- function(x) {
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.assign_deserts() %>%
-    dplyr::mutate(download_date = Sys.Date())
-  
-  return(df)
+    col.assign_deserts()
+
+  return(x$df)
 }
 
 #' @title HHSC CCL Population
@@ -308,7 +316,7 @@ pop.hhsc_ccl_most_recent_attr <- function(new, old) {
 
 #' @title Process the CCL data
 process.hhsc_ccl <- function(pth, state_code) {
-  
+
   attr.ccl(pth, state_code) %>%
     dwnld.hhsc_ccl() %>%
     dm.hhsc_ccl()
