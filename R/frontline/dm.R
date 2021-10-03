@@ -2,19 +2,19 @@
 #' @param format string. The format to use to parse the string. Default is
 #' '%m.%d.%y'.
 #' @return date
-parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}") {
+parse_date.frontline <- function(x, date_format = "\\d{4}-\\d{2}-\\d{2}") {
 
-  lubridate::ymd(stringr::str_extract(x, format))
+  lubridate::ymd(stringr::str_extract(x, date_format))
 }
 
 #' @title Data management for date column
 #' @description Manage date
 #' @param df
 #' @return data.frame
-col.date <- function(df){
+col.date <- function(df, date_format = "%m-%d-%Y") {
 
   df <- df %>%
-    dplyr::mutate(date = as.Date(date, format = "%m-%d-%Y")) %>%
+    dplyr::mutate(date = as.Date(date, format = date_format)) %>%
     dplyr::filter(date <= export_date)
 
   assertthat::assert_that(all(df$date <= df$export_date))
@@ -32,12 +32,12 @@ col.date <- function(df){
 #' @param max_date. Two week period with the highest reponse rate. Default is 08022021.
 #' @return data.frame
 col.mod_date <- function(df, 
-                         start_date = "07082021",
-                         max_date = "08042021",
+                         start_date,
+                         max_date,
                          date_format = "%m%d%Y") {
 
   start_date <- as.Date(start_date, date_format)
-  
+
   # TODO: For now, we are manually picking the two week period with highest 
   # response. This will be updated to something more dynamic in the future.
   max_date <- as.Date(max_date, date_format)
@@ -109,7 +109,7 @@ col.seats <- function(df){
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv") {
+                            name) {
 
   df <- readr::read_csv(file.path(raw_pth, name)) %>%
     dplyr::mutate(export_date = parse_date.frontline(name))
@@ -118,19 +118,7 @@ dwnld.frontline <- function(raw_pth,
 #' @title Data management for frontline provider data
 #' @description Manage frontline data, specifically enrollment and attendance numbers
 dm.frontline <- function(df,
-                         input_columns = list(`OP Number` = "character",
-                                              `Infant Capacity` = "numeric",
-                                              `Toddler Capacity` = "numeric",
-                                              `Pre- K Capacity` = "numeric",
-                                              `School Aged Capacity` = "numeric",
-                                              Infant_enrollment = "numeric",
-                                              Toddler_enrollment = "numeric",
-                                              Preschool_enrollment = "numeric",
-                                              SchoolAge_enrollment = "numeric",
-                                              last_modified_at_A = "character",
-                                              Date = "character",
-                                              export_date = "Date"
-                                              )){
+                         input_columns) {
 
   df <- df %>%
     test_input(input_columns) %>%
