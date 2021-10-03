@@ -57,22 +57,11 @@ child_care_db <- function(root,
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
-  env$DF_TWC <- process.twc(raw_pth = raw_pth)
+  env$DF_TWC <- process.twc(pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
-                                                 processed_pth = processed_pth,
-                                                 df_twc = env$DF_TWC,
-                                                 naeyc_pth1 = naeyc_pth1,
-                                                 naeyc_pth2 = naeyc_pth2,
-                                                 name = "HHSC_CCL",
-                                                 state_fips = state_code))
+  env$DF_HHSC_CCL <- process.hhsc_ccl(pth = raw_pth)
 
-  env$POP_HHSC_CCL <- pop.hhsc_ccl(new = env$DF_HHSC_CCL, old = DF_HHSC_CCL)
-
-  env$POP_HHSC_CCL_ATTR <- pop.hhsc_ccl_most_recent_attr(new = env$DF_HHSC_CCL,
-                                                         old = DF_HHSC_CCL)
-  
-  env$DF_FRONTLINE <- process.frontline(raw_pth = raw_pth)
+  env$DF_FRONTLINE <- process.frontline(pth = raw_pth)
 
   env$DF_ACF <- process.acf(cls =
                               list(raw_pth = raw_pth,
@@ -86,7 +75,7 @@ child_care_db <- function(root,
                                raw_pth = raw_pth)
 
   env$DF_PREK <- process.prek(raw_pth = raw_pth)
-  
+
   env$XWALK_TRACTS <- process.tracts_xwalk(cls = list(raw_pth = raw_pth))
 
   env$ADJ_TRACTS <- process.adj_tracts(cls = list(raw_pth = raw_pth))
@@ -96,7 +85,7 @@ child_care_db <- function(root,
   env$LU_COUNTY_CODE <- dwnld.lu_county_code(state_fips = state_code)
 
   env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
-  
+
   env$DF_TRACT_SVI <- process.svi(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))

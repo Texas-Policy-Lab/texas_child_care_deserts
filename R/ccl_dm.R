@@ -291,29 +291,6 @@ dm.hhsc_ccl <- function(x) {
   return(x$df)
 }
 
-#' @title HHSC CCL Population
-#' @description Creates a dataframe unique on operation number and download date
-#' to be able to track when child care providers enter and leave the CCL database
-#' @return data.frame
-pop.hhsc_ccl <- function(new, old) {
-  
-  new %>%
-    dplyr::bind_rows(old) %>%
-    dplyr::distinct(operation_number, download_date)
-}
-
-#' @title HHSC CCL Population
-#' @description Keeps to most recent attributes for each provider by download
-#' date
-#' @return data.frame
-pop.hhsc_ccl_most_recent_attr <- function(new, old) {
-
-  new %>%
-    dplyr::bind_rows(old) %>%
-    dplyr::group_by(operation_number) %>%
-    dplyr::slice(which.max(download_date))
-}
-
 #' @title Process the CCL data
 process.hhsc_ccl <- function(pth, state_code) {
 
