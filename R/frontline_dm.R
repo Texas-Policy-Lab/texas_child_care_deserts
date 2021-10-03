@@ -2,9 +2,9 @@
 #' @param format string. The format to use to parse the string. Default is
 #' '%m.%d.%y'.
 #' @return date
-parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
+parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}") {
 
-  date <- lubridate::ymd(stringr::str_extract(x, format))
+  lubridate::ymd(stringr::str_extract(x, format))
 }
 
 #' @title Data management for date column
