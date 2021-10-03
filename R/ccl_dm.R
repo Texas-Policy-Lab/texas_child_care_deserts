@@ -270,16 +270,14 @@ dm.hhsc_ccl <- function(x) {
     dplyr::rename_all(tolower) %>%
     dplyr::rename(licensed_capacity = total_capacity) %>%
     col.operation_number() %>%
-    col.county(state_fips = state_fips) %>%
-    col.location_address_geo(state_fips = state_fips) %>%
+    col.county() %>%
+    col.location_address_geo() %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
-    col.assign_deserts(df_twc = df_twc, 
-                       naeyc_pth1 = naeyc_pth1, 
-                       naeyc_pth2 = naeyc_pth2) %>%
+    col.assign_deserts() %>%
     dplyr::mutate(download_date = Sys.Date())
   
   return(df)
