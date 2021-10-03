@@ -1,12 +1,3 @@
-#' @title Parse frontline date
-#' @param format string. The format to use to parse the string. Default is
-#' '%m.%d.%y'.
-#' @return date
-parse_date.frontline <- function(x, date_format = "\\d{4}-\\d{2}-\\d{2}") {
-
-  lubridate::ymd(stringr::str_extract(x, date_format))
-}
-
 #' @title Data management for date column
 #' @description Manage date
 #' @param df
@@ -131,28 +122,35 @@ attr.frontline <- function(pth) {
        pth = pth)
 }
 
+#' @title Parse frontline date
+#' @param format string. The format to use to parse the string. Default is
+#' '%m.%d.%y'.
+#' @return date
+parse_date.frontline <- function(x, date_format = "\\d{4}-\\d{2}-\\d{2}") {
+  
+  lubridate::ymd(stringr::str_extract(x, date_format))
+}
+
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com 
 #' portal (currently, only Sadie has login)
 #' @param pth
 #' @param name
-dwnld.frontline <- function(pth,
-                            name,
-                            ...) {
+dwnld.frontline <- function(x) {
 
-  readr::read_csv(file.path(pth, name)) %>%
-    dplyr::mutate(export_date = parse_date.frontline(name))
+  x$df <- readr::read_csv(file.path(x$pth, x$name)) %>%
+    dplyr::mutate(export_date = parse_date.frontline(x$name))
+
+  return(x)
 }
 
 #' @title Data management for frontline provider data
 #' @description Manage frontline data, specifically enrollment and attendance 
 #' numbers
-dm.frontline <- function(df,
-                         input_columns,
-                         ...) {
+dm.frontline <- function(x) {
 
-  df %>%
-    test_input(input_columns) %>%
+  x$df %>%
+    test_input(x$input_columns) %>%
     dplyr::select_all(~ gsub(" ", "_", tolower(.))) %>%
     dplyr::rename(operation_number = op_number,
                   prek_capacity = "pre-_k_capacity",
@@ -167,15 +165,10 @@ dm.frontline <- function(df,
     col.seats()
 }
 
-
-
 #' @title Process the frontline data
 process.frontline <- function(pth) {
 
-  attr <- attr.frontline(pth)
-browser()
-
-  df <- do.call(dwnld.frontline, attr)
-  dwnld.frontline() #%>%
-    #dm.frontline()
+  attr.frontline(pth) %>%
+    dwnld.frontline() %>%
+    dm.frontline()
 }
