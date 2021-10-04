@@ -1,29 +1,30 @@
 #' @title Pulls down bounding box parameters for Texas
 #' @export
-tx_bounding_box <- function(url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv",
-                            state_fips) {
+tx_bounding_box <- function(x) {
 
-  bb <- readr::read_csv(url) %>%
-    dplyr::filter(STATEFP == state_fips)
+  bb <- readr::read_csv(x$bb_url) %>%
+    dplyr::filter(STATEFP == x$state_fips)
 
-  return(list(ul = list(lng = bb$xmin, lat = bb$ymax),
-              lr = list(lng = bb$xmax, lat = bb$ymin))
-  )
+  x$bb <- list(ul = list(lng = bb$xmin, lat = bb$ymax),
+       lr = list(lng = bb$xmax, lat = bb$ymin))
+
+  return(x)
 }
 
 #' @title Check Texas Bounds
 #' @description Checks that non-missing lat and longitudes are within the Texas
 #' state boundaries and if they are not it assign an NA
 #' @return data.frame
-check_tx_bounds <- function(df,
-                            bb) {
+check_tx_bounds <- function(x) {
 
-  df %>%
+  x$df <- x$df %>%
     dplyr::mutate(lat = as.numeric(lat),
                   long = as.numeric(long),
-                  lat = ifelse(lat >= bb$lr$lat & lat <= bb$ul$lat & long >= bb$ul$lng & long <= bb$lr$lng, lat, NA),
-                  long = ifelse(long >= bb$ul$lng & long <= bb$lr$lng & lat >= bb$lr$lat & lat <= bb$ul$lat, long, NA)
-                  )
+                  lat = ifelse(lat >= x$bb$lr$lat & lat <= x$bb$ul$lat & 
+                                 long >= x$bb$ul$lng & long <= x$bb$lr$lng, lat, NA),
+                  long = ifelse(long >= x$bb$ul$lng & long <= x$bb$lr$lng & 
+                                  lat >= x$bb$lr$lat & lat <= x$bb$ul$lat, long, NA))
+  return(x)
 }
 
 #' @title Split calls
@@ -90,7 +91,6 @@ dm.drop_poor_quality <- function(df,
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @export
 dm.geocode_address <- function(df,
-                               bb,
                                version = "v1",
                                url = "http://www.mapquestapi.com",
                                path = "/geocoding/v1/batch",
