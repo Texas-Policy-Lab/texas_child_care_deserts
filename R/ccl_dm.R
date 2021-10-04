@@ -322,7 +322,7 @@ col.quality <- function(x) {
 
   x$df <- x$df %>%
     dplyr::left_join(qual_type) %>%
-    dplyr::mutate(quality = ifelse(is.na(quality_desc), FALSE, TRUE))
+    dplyr::mutate(quality = !is.na(quality_desc))
 
   return(x)  
 }
