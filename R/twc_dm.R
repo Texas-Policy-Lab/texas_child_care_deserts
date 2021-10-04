@@ -48,6 +48,23 @@ col.trs_provider <- function(x) {
   return(x)
 }
 
+#' @title Confirm subsidy provider if provider is TRS status
+#' @description Function replaces any provider who has a TRS status to also take
+#' subsidy. This step is done because of data quality issue from TWC. In order 
+#' to be a TRS provider, the provider must take the subsidy, so we know this is t
+#' true.
+col.confirm_sub <- function(x) {
+
+  x$df <- x$df %>%
+    dplyr::mutate(subsidy_provider = ifelse(trs_provider, TRUE, subsidy_provider))
+  
+  assertthat::assert_that(all(x$df %>%
+                                dplyr::filter(trs_provider) %>%
+                                dplyr::pull(subsidy_provider)))
+
+  return(x)
+}
+
 #' @title Select and rename TWC columns
 #' @param x
 #' @return object
@@ -71,7 +88,8 @@ dm.twc <- function(x) {
     col.twc_select() %>%
     col.operation_number() %>%
     col.trs_provider() %>%
-    col.subsidy_provider()
+    col.subsidy_provider() %>%
+    col.confirm_sub()
 
   return(x$df)
 }
