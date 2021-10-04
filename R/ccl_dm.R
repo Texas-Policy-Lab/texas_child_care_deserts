@@ -276,13 +276,13 @@ col.resolve_twc <- function(x) {
 }
 
 #' @title Assign provider designation
+#' @description Explicitly state which categories providers fall into
 col.prvdr_dsgntn <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::mutate(all_prvdr = !after_school_school_age_only,
-                  qual_prvdr = trs_prvdr | head_start | naeyc,
-                  high_qual_prvdr = trs_star_level == 4 | head_start | naeyc,
-                  low_inc_prvdr = subsidy_prvdr | head_start | naeyc)
+    dplyr::mutate(low_inc_prvdr = subsidy_prvdr | head_start | naeyc,
+                  low_inc_qual_prvdr = trs_prvdr | head_start | naeyc,
+                  low_inc_high_qual_prvdr = trs4_prvdr | head_start | naeyc)
 
   return(x)
 }
@@ -296,7 +296,8 @@ col.assign_deserts <- function(x) {
   x$df <- x$df %>%
     dplyr::mutate(sup_all_prvdr = !after_school_school_age_only,
                   sup_low_inc_prvdr = sup_all_prvdr & low_inc_prvdr,
-                  sup_qual_low_inc_prvdr = sup_low_inc_prvdr & qual_prvdr)
+                  sup_low_inc_qual_prvdr = sup_all_prvdr & low_inc_qual_prvdr,
+                  sup_low_inc_high_qual_prvdr = sup_all_prvdr & low_inc_high_qual_prvdr)
 
   return(x)
 }
