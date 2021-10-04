@@ -8,17 +8,23 @@ attr.twc <- function(pth,
                      name = "Weekly Closure Report 9.7.21.xlsx",
                      sheet = "All Provider Level",
                      na = "NA",
+                     data_name = "TWC",
                      input_columns = list(`License Number` = "numeric",
                                           `TWC`= "character",
                                           `TRS Flag` = "character",
                                           `Number of Current Referrals` = "numeric",
-                                          twc_date = "Date")) {
+                                          twc_date = "Date"),
+                     twc_val = c("Y", "N"),
+                     trs_flag_val = c("Regular", "TRS 2 Star", "TRS 4 Star", "TRS 3 Star")) {
 
   list(pth = pth,
        name = name,
        sheet = sheet,
        na = na,
-       input_columns = input_columns)
+       input_columns = input_columns,
+       twc_val = twc_val,
+       trs_flag_val = trs_flag_val,
+       data_name = data_name)
 }
 
 #' @title Data management for subsidy_provider column
@@ -26,7 +32,15 @@ attr.twc <- function(pth,
 #' @param x
 #' @return object
 col.subsidy_provider <- function(x) {
-  
+
+  var <- x$df$twc
+  values <- x$twc_val
+  var_name <- "twc"
+  data_name <- x$data_name
+
+  check.values(var, values, var_name, data_name)
+  check.no_na(var, var_name, data_name)
+
   x$df <- x$df %>% 
     dplyr::mutate(subsidy_prvdr = tolower(twc) == "y") %>% 
     dplyr::select(-twc)
@@ -40,8 +54,16 @@ col.subsidy_provider <- function(x) {
 #' @return object
 col.trs_provider <- function(x) {
 
+  var <- x$df$trs_flag
+  values <- x$trs_flag_val
+  var_name <- "trs_flag"
+  data_name <- x$data_name
+
+  check.values(var, values, var_name, data_name)
+  check.no_na(var, var_name, data_name)
+
   x$df <- x$df %>%
-    dplyr::mutate(trs_prvdr = ifelse(trs_flag == "Regular", F, T),
+    dplyr::mutate(trs_prvdr = trs_flag != "Regular",
                   trs_star_level = as.numeric(gsub("\\D", "", trs_flag)),
                   trs4_prvdr = trs_prvdr & trs_star_level == 4) %>%
     dplyr::select(-trs_flag)
