@@ -253,23 +253,27 @@ col.dm_naeyc <- function(x) {
 }
 
 #' @title Assign deserts
-#' @description Assign deserts based on provider types. Note Head Start is 
-#' included as a subsidy provider, a TRS and TRS 4 star provider.
+#' @description Assign deserts based on provider types.
 #' @param x object.
 #' @return object
 col.assign_deserts <- function(x) {
 
   x$df <- x$df %>%
     dplyr::left_join(x$df_twc) %>%
-    dplyr::left_join(naeyc) %>%
-    dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
-                  all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
+    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
                   sub_provider = ifelse(all_provider & (subsidy_provider | head_start | naeyc), TRUE, FALSE),
                   sub_provider = ifelse(trs_provider, TRUE, sub_provider),
                   sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
                   sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start | naeyc, TRUE, FALSE),
                   sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start | naeyc, TRUE, FALSE))
+  return(x)
+}
 
+#' @title Data management quality of the provider
+#' @description Assigns a quality for the provider. Note Head Start is 
+#' included as a subsidy provider, a TRS and TRS 4 star provider.
+col.quality <- function(x) {
+browser()
   qual_type <- x$df %>%
     dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
     tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
@@ -286,8 +290,8 @@ col.assign_deserts <- function(x) {
   x$df <- x$df %>%
     dplyr::left_join(qual_type) %>%
     dplyr::mutate(quality = ifelse(is.na(quality_desc), FALSE, TRUE))
-  
-  return(x)
+
+  return(x)  
 }
 
 #' @title Select and rename CCLHHSC columns
@@ -322,7 +326,8 @@ dm.hhsc_ccl <- function(x) {
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.dm_naeyc() %>%
-    col.assign_deserts()
+    col.assign_deserts() %>%
+    col.quality()
 
   return(x$df)
 }
