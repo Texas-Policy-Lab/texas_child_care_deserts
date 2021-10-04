@@ -1,15 +1,19 @@
 #' @title Frontline attributes
 #' @param input_columns list. The columns to expect and keep from the data.
-#' @param pth. string. Path to store the processed data.
-#' @param name. string. Name of the data.
+#' @param name string. The name to write the raw data to.
+#' @param pth string. The path to write the raw to.
+#' @param url string. The url to the data.
 #' @param state_code string. The state fips code
 #' @param df_twc data.frame. TWC data
 #' @param naeyc_pth1 string.
 #' @param naeyc_pth2 string.
+#' @param bb_url string. Bounding box url.
 #' @return object
 attr.ccl <- function(pth,
                      state_code,
                      df_twc,
+                     url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
+                     ext = "csv",
                      input_columns = list(OPERATION_NUMBER = "character",
                                           OPERATION_NAME = "character",
                                           OPERATION_TYPE = "character",
@@ -21,9 +25,10 @@ attr.ccl <- function(pth,
                                           ACCEPTS_CHILD_CARE_SUBSIDIES= "character",
                                           email_address = "character",
                                           PHONE_NUMBER = "character"),
-                     naeyc_pth1 = "data/raw/BP4K - NAEYC List - 5.26.21.xlsx",
-                     naeyc_pth2 = "data/raw/NAEYC Providers - NAEYC - 5.26.21.xlsx",
-                     name = "HHSC_CCL") {
+                     naeyc_pth1 = "BP4K - NAEYC List - 5.26.21.xlsx",
+                     naeyc_pth2 = "NAEYC Providers - NAEYC - 5.26.21.xlsx",
+                     name = "HHSC_CCL",
+                     bb_url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv") {
 
   list(pth = pth,
        input_columns = input_columns,
@@ -31,7 +36,10 @@ attr.ccl <- function(pth,
        naeyc_pth2 = naeyc_pth2,
        name = name,
        state_fips = state_code,
-       df_twc = df_twc)
+       df_twc = df_twc,
+       url = url,
+       ext = ext,
+       bb_url = bb_url)
 }
 
 #' @title Data management steps for the operation number column
@@ -108,8 +116,6 @@ col.licensed_to_serve_ages <- function(x) {
 #' @return object
 col.location_address_geo <- function(x) {
 
-  bb <- tx_bounding_box(state_fips = x$state_fips)
-
   x$df <- x$df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat", "long"),
@@ -118,22 +124,28 @@ col.location_address_geo <- function(x) {
                   lat = stringr::str_trim(lat, "both"),
                   long = stringr::str_trim(long, "both"),
                   tract = NA) %>%
-    dplyr::ungroup() %>% 
-    check_tx_bounds(bb = bb) %>%
-    dplyr::left_join(DF_HHSC_CCL %>%
-                       dplyr::select(operation_number, lat, long, tract) %>%
-                       dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
-                       )) %>%
-    dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
-                  long = ifelse(is.na(long), long2, long),
-                  tract = ifelse(is.na(tract), tract2, tract),
-                  address = stringr::str_to_title(address)) %>%
-    dplyr::select(-c(lat2, long2, tract2)) %>%
-    dm.geocode_address(bb = bb) %>%
-    dm.reverse_geocode() %>%
-    check_tx_bounds(bb = bb)
+    dplyr::ungroup()
 
-  return(x$df)
+  x <- x %>%
+    check_tx_bounds()
+
+  # x$df <- x$df %>%
+  #   dplyr::left_join(DF_HHSC_CCL %>%
+  #                      dplyr::select(operation_number, lat, long, tract) %>%
+  #                      dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
+  #                      )) %>%
+  #   dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
+  #                 long = ifelse(is.na(long), long2, long),
+  #                 tract = ifelse(is.na(tract), tract2, tract),
+  #                 address = stringr::str_to_title(address)) %>%
+  #   dplyr::select(-c(lat2, long2, tract2)) %>%
+  #   # dm.geocode_address() %>%
+  #   # dm.reverse_geocode() %>%
+  #   
+  # x <- x %>%
+  #   check_tx_bounds()
+
+  return(x)
 }
 
 #' @title Data management steps to clean the operation_type column
@@ -210,23 +222,42 @@ col.accepts_child_care_subsidies <- function(x) {
   return(x)
 }
 
-#' @title Data management steps to clean the total capacity column
+#' @title Data management steps to add the naeyc column
+#' @description Assigns NAEYC status to providers from different sources 
+#' provided by Tarrant County. Note: we are not sure how often these will be 
+#' updated and the code may have to change since there likely is not a 
+#' consistent file format for these files. 
 #' @param x object.
 #' @return object
+col.dm_naeyc <- function(x) {
+
+  naeyc1 <- readxl::read_excel(file.path(x$pth, x$naeyc_pth1)) %>%
+    dplyr::filter(`32566_NAEYC` == "Yes") %>%
+    dplyr::select(operation_number = `OP Number`)
+
+  naeyc2 <- readxl::read_excel(file.path(x$pth, x$naeyc_pth2)) %>%
+    dplyr::select(operation_number = `Program ID`) %>% 
+    dplyr::mutate(operation_number = as.character(operation_number))
+
+  x2 <- list(df = naeyc1 %>% 
+               dplyr::bind_rows(naeyc2) %>% 
+               dplyr::distinct() %>% 
+               dplyr::mutate(naeyc = TRUE)) %>%
+    col.operation_number()
+
+  x$df <- x$df %>%
+    dplyr::left_join(x2$df) %>%
+    dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc))
+
+  return(x)
+}
+
 #' @title Assign deserts
 #' @description Assign deserts based on provider types. Note Head Start is 
 #' included as a subsidy provider, a TRS and TRS 4 star provider.
+#' @param x object.
+#' @return object
 col.assign_deserts <- function(x) {
-
-  naeyc <- readxl::read_excel(x$naeyc_pth1) %>%
-    dplyr::filter(`32566_NAEYC` == "Yes") %>%
-    dplyr::select(operation_number = `OP Number`) %>% 
-    dplyr::bind_rows(readxl::read_excel(x$naeyc_pth2) %>%
-                       dplyr::select(operation_number = `Program ID`) %>% 
-                       dplyr::mutate(operation_number = as.character(operation_number))) %>% 
-    dplyr::distinct() %>% 
-    col.operation_number() %>% 
-    dplyr::mutate(naeyc = TRUE)
 
   x$df <- x$df %>%
     dplyr::left_join(x$df_twc) %>%
@@ -239,7 +270,7 @@ col.assign_deserts <- function(x) {
                   sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start | naeyc, TRUE, FALSE),
                   sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start | naeyc, TRUE, FALSE))
 
-  qual_type <- df %>%
+  qual_type <- x$df %>%
     dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
     tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
                         -operation_number) %>% 
@@ -264,11 +295,12 @@ col.assign_deserts <- function(x) {
 #' @return object
 col.ccl_select <- function(x) {
 
-  x$df %>%
+  x$df <- x$df %>%
     test_input(x$input_columns) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::rename(licensed_capacity = total_capacity) %>%
     dplyr::mutate(download_date = Sys.Date())
+  return(x)
 }
 
 #' @title HHSC CCL data management
@@ -276,8 +308,11 @@ col.ccl_select <- function(x) {
 #' select variables
 #' @return data.frame
 dm.hhsc_ccl <- function(x) {
-browser()
+
+  x <- tx_bounding_box(x)
+
   x <- x %>%
+    col.ccl_select() %>%
     col.operation_number() %>%
     col.county() %>%
     col.location_address_geo() %>%
@@ -286,6 +321,7 @@ browser()
     col.operation_name() %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
+    col.dm_naeyc() %>%
     col.assign_deserts()
 
   return(x$df)
@@ -295,23 +331,14 @@ browser()
 #' @description Returns the most recent HHSC CCL Daycare and Residential 
 #' Operations 
 #' Data. Link to data: https://data.texas.gov/resource/bc5r-88dy.csv
-#' @param name string. The name to write the raw data to.
-#' @param raw_pth string. The path to write the raw to.
-#' @param url string. The url to the data.
 #' @export
-dwnld.hhsc_ccl <- function(name,
-                           raw_pth,
-                           url = "https://data.texas.gov/api/views/bc5r-88dy/rows.csv?accessType=DOWNLOAD",
-                           ext = "csv",
-                           ...) {
-  
-  dwnld_pth <- file.path(raw_pth, paste(name, ext, sep = "."))
-  
-  download.file(url, destfile = dwnld_pth, mode = "wb")
-  
-  df <- readr::read_csv(dwnld_pth)
-  
-  return(df)
+dwnld.hhsc_ccl <- function(x) {
+
+  dwnld_pth <- file.path(x$pth, paste(x$name, x$ext, sep = "."))
+  download.file(x$url, destfile = dwnld_pth, mode = "wb")
+  x$df <- readr::read_csv(dwnld_pth)
+
+  return(x)
 }
 
 #' @title Process the CCL data
