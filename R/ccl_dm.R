@@ -252,6 +252,41 @@ col.dm_naeyc <- function(x) {
   return(x)
 }
 
+#' @title Resolve TWC
+#' @description Resolve differences between TWC and CCL data because some of the
+#' providers in CCL are not in TWC. We assume CCL providers which are not in TWC
+#' data are not TRS providers.
+col.resolve_twc <- function(x) {
+
+  x$df <- x$df %>%
+    dplyr::left_join(x$df_twc %>% dplyr::select(-twc_date)) %>%
+    dplyr::mutate(trs_prvdr = ifelse(is.na(trs_prvdr), FALSE, trs_prvdr),
+                  trs4_prvdr = ifelse(is.na(trs4_prvdr), FALSE, trs4_prvdr),
+                  subsidy_prvdr = ifelse(is.na(subsidy_prvdr), subsidy, subsidy_prvdr)) %>%
+    dplyr::select(-subsidy)
+
+  assertthat::assert_that(all(x$df %>%
+                                dplyr::filter(trs_prvdr) %>%
+                                dplyr::pull(subsidy_prvdr)))
+  assertthat::assert_that(all(!is.na(x$df$trs_prvdr)))
+  assertthat::assert_that(all(!is.na(x$df$trs4_prvdr)))
+  assertthat::assert_that(all(!is.na(x$df$subsidy_prvdr)))
+
+  return(x)
+}
+
+#' @title Assign provider designation
+col.prvdr_dsgntn <- function(x) {
+
+  x$df <- x$df %>%
+    dplyr::mutate(all_prvdr = !after_school_school_age_only,
+                  qual_prvdr = trs_prvdr | head_start | naeyc,
+                  high_qual_prvdr = trs_star_level == 4 | head_start | naeyc,
+                  low_inc_prvdr = subsidy_prvdr | head_start | naeyc)
+
+  return(x)
+}
+
 #' @title Assign deserts
 #' @description Assign deserts based on provider types.
 #' @param x object.
@@ -259,14 +294,10 @@ col.dm_naeyc <- function(x) {
 col.assign_deserts <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::left_join(x$df_twc) %>%
-    dplyr::mutate(all_provider = !after_school_school_age_only,
-                  sub_provider = all_provider & (subsidy_provider | head_start | naeyc),
-                  sub_provider = ifelse(trs_provider, TRUE, sub_provider),
-                  sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
-                  sub_trs_provider = (sub_provider & trs_provider) | head_start | naeyc,
-                  sub_trs4_provider = (sub_trs_provider & trs_star_level == 4) | head_start | naeyc
-                  )
+    dplyr::mutate(sup_all_prvdr = !after_school_school_age_only,
+                  sup_low_inc_prvdr = sup_all_prvdr & low_inc_prvdr,
+                  sup_qual_low_inc_prvdr = sup_low_inc_prvdr & qual_prvdr)
+
   return(x)
 }
 
@@ -274,7 +305,7 @@ col.assign_deserts <- function(x) {
 #' @description Assigns a quality for the provider. Note Head Start is 
 #' included as a subsidy provider, a TRS and TRS 4 star provider.
 col.quality <- function(x) {
-browser()
+
   qual_type <- x$df %>%
     dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
     tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
@@ -327,6 +358,8 @@ dm.hhsc_ccl <- function(x) {
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.dm_naeyc() %>%
+    col.resolve_twc() %>%
+    col.prvdr_dsgntn() %>%
     col.assign_deserts() %>%
     col.quality()
 
