@@ -28,7 +28,7 @@ attr.twc <- function(pth,
 col.subsidy_provider <- function(x) {
   
   x$df <- x$df %>% 
-    dplyr::mutate(subsidy_provider = tolower(twc) == "y") %>% 
+    dplyr::mutate(subsidy_prvdr = tolower(twc) == "y") %>% 
     dplyr::select(-twc)
 
   return(x)
@@ -41,8 +41,9 @@ col.subsidy_provider <- function(x) {
 col.trs_provider <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::mutate(trs_provider = ifelse(trs_flag == "Regular", F, T),
-                  trs_star_level = as.numeric(gsub("\\D", "", trs_flag))) %>%
+    dplyr::mutate(trs_prvdr = ifelse(trs_flag == "Regular", F, T),
+                  trs_star_level = as.numeric(gsub("\\D", "", trs_flag)),
+                  trs4_prvdr = trs_prvdr & trs_star_level == 4) %>%
     dplyr::select(-trs_flag)
 
   return(x)
@@ -56,11 +57,15 @@ col.trs_provider <- function(x) {
 col.confirm_sub <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::mutate(subsidy_provider = ifelse(trs_provider, TRUE, subsidy_provider))
+    dplyr::mutate(subsidy_prvdr = ifelse(trs_prvdr, TRUE, subsidy_prvdr))
   
   assertthat::assert_that(all(x$df %>%
-                                dplyr::filter(trs_provider) %>%
-                                dplyr::pull(subsidy_provider)))
+                                dplyr::filter(trs_prvdr) %>%
+                                dplyr::pull(subsidy_prvdr)))
+  
+  assertthat::assert_that(all(x$df %>%
+                                dplyr::filter(trs4_prvdr) %>%
+                                dplyr::pull(trs_prvdr)))
 
   return(x)
 }
