@@ -28,7 +28,13 @@ attr.ccl <- function(pth,
                      naeyc_pth1 = "BP4K - NAEYC List - 5.26.21.xlsx",
                      naeyc_pth2 = "NAEYC Providers - NAEYC - 5.26.21.xlsx",
                      name = "HHSC_CCL",
-                     bb_url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv") {
+                     bb_url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv",
+                     geocode = list(url = "http://www.mapquestapi.com",
+                                    path = "/geocoding/v1/batch",
+                                    limit = 100,
+                                    qualityCode = "A1|A3|A4"),
+                     reverse_geocode = list(url = "https://geo.fcc.gov",
+                                            path = "/api/census/block/find")) {
 
   list(pth = pth,
        input_columns = input_columns,
@@ -39,7 +45,9 @@ attr.ccl <- function(pth,
        df_twc = df_twc,
        url = url,
        ext = ext,
-       bb_url = bb_url)
+       bb_url = bb_url,
+       geocode = geocode,
+       reverse_geocode = reverse_geocode)
 }
 
 #' @title Data management steps for the operation number column
@@ -112,29 +120,40 @@ col.location_address_geo <- function(x) {
                     into = c("address", "lat", "long"),
                     sep = "([(,)])") %>% 
     dplyr::mutate(address = gsub("\n", "", address),
+                  address = stringr::str_to_title(address),
                   lat = stringr::str_trim(lat, "both"),
+                  lat = ifelse(lat == "NA", NA, as.numeric(lat)),
                   long = stringr::str_trim(long, "both"),
+                  long = ifelse(lat == "NA", NA, as.numeric(long)),
                   tract = NA) %>%
     dplyr::ungroup()
 
   x <- x %>%
     check_tx_bounds()
 
-  # x$df <- x$df %>%
-  #   dplyr::left_join(DF_HHSC_CCL %>%
-  #                      dplyr::select(operation_number, lat, long, tract) %>%
-  #                      dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
-  #                      )) %>%
-  #   dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
-  #                 long = ifelse(is.na(long), long2, long),
-  #                 tract = ifelse(is.na(tract), tract2, tract),
-  #                 address = stringr::str_to_title(address)) %>%
-  #   dplyr::select(-c(lat2, long2, tract2)) %>%
-  #   # dm.geocode_address() %>%
-  #   # dm.reverse_geocode() %>%
-  #   
-  # x <- x %>%
-  #   check_tx_bounds()
+  x$df <- x$df %>%
+    dplyr::rename(lat2 = lat, long2 = long, tract2 = tract)
+
+  return(x)
+}
+
+#' @title Update location with old CCL data for consistency
+col.update_loc_old <- function(x) {
+
+  x$df <- x$df %>%
+    dplyr::left_join(DF_HHSC_CCL %>%
+                       dplyr::select(operation_number, lat, long, tract)) %>%
+    dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
+                  long = ifelse(is.na(long), long2, long),
+                  tract = ifelse(is.na(tract), tract2, tract)) %>%
+    dplyr::select(-c(lat2, long2, tract2))
+  
+  x <- x %>%
+    dm.geocode_address() #%>%
+    # dm.reverse_geocode()
+
+  x <- x %>%
+    check_tx_bounds()
 
   return(x)
 }
@@ -344,6 +363,7 @@ dm.hhsc_ccl <- function(x) {
     col.operation_number() %>%
     col.county() %>%
     col.location_address_geo() %>%
+    col.update_loc_old() %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
     col.operation_name() %>%

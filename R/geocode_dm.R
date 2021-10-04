@@ -18,9 +18,7 @@ tx_bounding_box <- function(x) {
 check_tx_bounds <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::mutate(lat = as.numeric(lat),
-                  long = as.numeric(long),
-                  lat = ifelse(lat >= x$bb$lr$lat & lat <= x$bb$ul$lat & 
+    dplyr::mutate(lat = ifelse(lat >= x$bb$lr$lat & lat <= x$bb$ul$lat & 
                                  long >= x$bb$ul$lng & long <= x$bb$lr$lng, lat, NA),
                   long = ifelse(long >= x$bb$ul$lng & long <= x$bb$lr$lng & 
                                   lat >= x$bb$lr$lat & lat <= x$bb$ul$lat, long, NA))
@@ -48,12 +46,11 @@ split_calls <- function(v, limit) {
 #' @export
 dm.geocode_request <- function(results, call) {
 
-  l <- lapply(1:length(results), function(x) {
+  lapply(1:length(results), function(x) {
 
     row <- results[[x]]$locations[[1]]
 
-    data.frame(
-               street = row$street,
+    data.frame(street = row$street,
                neighborhood = row$adminArea6,
                city  = row$adminArea5,
                county = row$adminArea4,
@@ -64,25 +61,25 @@ dm.geocode_request <- function(results, call) {
                geocodeQualityCode = row$geocodeQualityCode,
                mapURl= row$mapUrl,
                stringsAsFactors = FALSE
-    )
+               )
     }) %>% 
     dplyr::bind_rows() %>%
     dplyr::bind_cols(address = call)
-
 }
 
 #' @title Drops poor quality geocodes
 #' @description Use the geocodeQualityCode value returned to determine the quality of the geocode. https://developer.mapquest.com/documentation/geocoding-api/quality-codes/.
 #' @export
-dm.drop_poor_quality <- function(df,
-                                 qualityCode = "A1|A3|A4") {
+dm.drop_poor_quality <- function(x) {
 
-  poorQuality <- stringr::str_starts(string = df$geocodeQualityCode, 
-                                     pattern = qualityCode)
+  poorQuality <- stringr::str_starts(string = x$df$geocodeQualityCode, 
+                                     pattern = x$geocode$qualityCode)
 
-  df %>%
+  x$df <- x$df %>%
     dplyr::mutate(lat = ifelse(poorQuality, NA, lat),
                   long = ifelse(poorQuality, NA, long))
+
+  return(x)
 }
 
 #' @title Geocode addresses
@@ -90,28 +87,23 @@ dm.drop_poor_quality <- function(df,
 #' @param addresses vector. The list of addresses to geocode.
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @export
-dm.geocode_address <- function(df,
-                               version = "v1",
-                               url = "http://www.mapquestapi.com",
-                               path = "/geocoding/v1/batch",
-                               limit = 100) {
-
-  subset <- df %>%
+dm.geocode_address <- function(x) {
+browser()
+  subset <- x$df %>%
     dplyr::filter(is.na(lat) | is.na(long)) %>%
     dplyr::select(operation_number, address)
 
   calls <- split_calls(v = subset$address,
-                       limit = limit)
+                       limit = x$geocode$limit)
 
-  key <- get_key.mapquest()
-  url <- httr::modify_url(url = url, path = path)
+  url <- httr::modify_url(url = x$geocode$url, path = x$geocode$path)
 
   l <- lapply(calls, function(call, url, key) {
 
     r <- httr::POST(url = url,
                     query = list(key = key),
                     body = list(locations = call,
-                                boundingBox = bb,
+                                boundingBox = x$bb,
                                 maxResults = 1,
                                 outFormat ="json"),
                     encode = "json")
@@ -128,14 +120,17 @@ dm.geocode_address <- function(df,
       warning("status not 200")
     }
 
-  }, url = url, key = key) %>%
+  }, url = url, key = get_key.mapquest()) %>%
     dplyr::bind_rows() %>%
     dplyr::bind_cols(subset %>%
                         dplyr::select(operation_number)) %>%
-    dm.drop_poor_quality() %>%
-    dplyr::mutate(lat2 = lat,
-                  long2 = long) %>% 
-    dplyr::select(operation_number, lat2, long2)
+    dm.drop_poor_quality()
+  
+  
+  # %>%
+  #   dplyr::mutate(lat2 = lat,
+  #                 long2 = long) %>% 
+  #   dplyr::select(operation_number, lat2, long2)
 
   df %>%
     dplyr::left_join(l) %>% 
@@ -154,9 +149,7 @@ fcc_request <- function(result) {
 
 #' @title Geocode addresses
 #' @description Geocodes addresses using FCC
-dm.reverse_geocode <- function(df,
-                               url = "https://geo.fcc.gov",
-                               path = "/api/census/block/find") {
+dm.reverse_geocode <- function(x) {
 
   url <- httr::modify_url(url = url, path = path)
 
