@@ -260,12 +260,13 @@ col.assign_deserts <- function(x) {
 
   x$df <- x$df %>%
     dplyr::left_join(x$df_twc) %>%
-    dplyr::mutate(all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
-                  sub_provider = ifelse(all_provider & (subsidy_provider | head_start | naeyc), TRUE, FALSE),
+    dplyr::mutate(all_provider = !after_school_school_age_only,
+                  sub_provider = all_provider & (subsidy_provider | head_start | naeyc),
                   sub_provider = ifelse(trs_provider, TRUE, sub_provider),
                   sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
-                  sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start | naeyc, TRUE, FALSE),
-                  sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start | naeyc, TRUE, FALSE))
+                  sub_trs_provider = (sub_provider & trs_provider) | head_start | naeyc,
+                  sub_trs4_provider = (sub_trs_provider & trs_star_level == 4) | head_start | naeyc
+                  )
   return(x)
 }
 
