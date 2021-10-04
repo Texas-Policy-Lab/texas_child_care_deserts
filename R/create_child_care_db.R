@@ -1,24 +1,3 @@
-#' @title Add default parameters for ACS tables
-#' @inheritParams child_care_db
-acs_tables <- function(acs_year,
-                       acs_state_code,
-                       acs_geography,
-                       acs_county,
-                       raw_pth) {
-
-  list(tbls = 
-         list(B23008 = list(year = acs_year,
-                            state = acs_state_code,
-                            geography = acs_geography,
-                            county = acs_county),
-              B17024 = list(year = acs_year,
-                            state = acs_state_code,
-                            geography = acs_geography,
-                            county = acs_county)
-         ),
-         raw_pth = raw_pth)
-}
-
 #' @title Create child care data base
 #' @param root string. Path to the root directory to create the DB.
 #' @param acf_qtr_years vector. Default is 'Q2-2019'.
