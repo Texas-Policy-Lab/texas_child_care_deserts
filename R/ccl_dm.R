@@ -90,19 +90,10 @@ col.county <- function(x) {
 col.licensed_to_serve_ages <- function(x) {
 
   x$df <- x$df %>%
-    dplyr::mutate(infant = ifelse(grepl("infant",
-                                        tolower(licensed_to_serve_ages)),
-                                  TRUE, FALSE),
-                  toddler = ifelse(grepl("toddler",
-                                         tolower(licensed_to_serve_ages)),
-                                   TRUE, FALSE),
-                  prek = ifelse(grepl("pre-kindergarten",
-                                      tolower(licensed_to_serve_ages)),
-                                TRUE, FALSE),
-                  school = ifelse(grepl("school",
-                                        tolower(licensed_to_serve_ages)),
-                                  TRUE, FALSE),
-    ) %>%
+    dplyr::mutate(infant = grepl("infant", tolower(licensed_to_serve_ages)),
+                  toddler = grepl("toddler", tolower(licensed_to_serve_ages)),
+                  prek = grepl("pre-kindergarten", tolower(licensed_to_serve_ages)),
+                  school = grepl("school", tolower(licensed_to_serve_ages))) %>%
     dplyr::select(-licensed_to_serve_ages)
 
   assertthat::assert_that(all(c(x$df$infant, x$df$toddler, x$df$prek, x$df$school) 
