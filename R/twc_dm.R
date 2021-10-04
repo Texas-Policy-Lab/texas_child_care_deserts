@@ -14,16 +14,19 @@ attr.twc <- function(pth,
                                           `TRS Flag` = "character",
                                           `Number of Current Referrals` = "numeric",
                                           twc_date = "Date"),
-                     twc_val = c("Y", "N"),
-                     trs_flag_val = c("Regular", "TRS 2 Star", "TRS 4 Star", "TRS 3 Star")) {
+                     twc_var = list(var_name = "twc",
+                                    values = c("Y", "N")),
+                     trs_flag_var = list(
+                       var_name = "trs_flag",
+                       values = c("Regular", "TRS 2 Star", "TRS 4 Star", "TRS 3 Star"))) {
 
   list(pth = pth,
        name = name,
        sheet = sheet,
        na = na,
        input_columns = input_columns,
-       twc_val = twc_val,
-       trs_flag_val = trs_flag_val,
+       twc_var = twc_var,
+       trs_flag_var = trs_flag_var,
        data_name = data_name)
 }
 
@@ -33,16 +36,13 @@ attr.twc <- function(pth,
 #' @return object
 col.subsidy_provider <- function(x) {
 
-  var <- x$df$twc
-  values <- x$twc_val
-  var_name <- "twc"
   data_name <- x$data_name
 
-  check.values(var, values, var_name, data_name)
-  check.no_na(var, var_name, data_name)
+  check.values(df = x$df, var_attr = x$twc_var, data_name)
+  check.no_na(df = x$df, var_attr = x$twc_var, data_name)
 
   x$df <- x$df %>% 
-    dplyr::mutate(subsidy_prvdr = tolower(twc) == "y") %>% 
+    dplyr::mutate(subsidy_prvdr = twc == "Y") %>% 
     dplyr::select(-twc)
 
   return(x)
@@ -54,13 +54,10 @@ col.subsidy_provider <- function(x) {
 #' @return object
 col.trs_provider <- function(x) {
 
-  var <- x$df$trs_flag
-  values <- x$trs_flag_val
-  var_name <- "trs_flag"
   data_name <- x$data_name
 
-  check.values(var, values, var_name, data_name)
-  check.no_na(var, var_name, data_name)
+  check.values(df = x$df, var_attr = x$trs_flag_var, data_name)
+  check.no_na(df = x$df, var_attr = x$trs_flag_var, data_name)
 
   x$df <- x$df %>%
     dplyr::mutate(trs_prvdr = trs_flag != "Regular",
