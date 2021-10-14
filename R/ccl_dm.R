@@ -73,11 +73,14 @@ col.licensed_to_serve_ages <- function(df) {
 col.location_address_geo <- function(df, state_fips) {
   
   bb <- tx_bounding_box(state_fips = state_fips)
-  
+  browser()
   df <- df %>%
     tidyr::separate(location_address_geo,
-                    into = c("address", "lat", "long"),
-                    sep = "([(,)])") %>% 
+                    into = c("address", "lat_long"),
+                    sep = "([()])") %>% 
+    tidyr::separate(lat_long,
+                    into = c("lat", "long"),
+                    sep = "([,])")  %>% 
     dplyr::mutate(address = gsub("\n", "", address),
                   lat = stringr::str_trim(lat, "both"),
                   long = stringr::str_trim(long, "both"),
