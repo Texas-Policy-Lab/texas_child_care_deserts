@@ -30,6 +30,17 @@ col.trs_provider <- function(df){
     dplyr::select(-trs_flag)
 }
 
+#' @title Data management for open status
+#' @description Manage status: filter to only open providers
+#' @param df
+#' @return data.frame
+col.open_status <- function(df){
+  
+  df <- df %>% 
+    dplyr::filter(status == "Open") %>% 
+    dplyr::select(-status)
+}
+
 #' @title Download TWC provider data
 #' @description TWC provider data is emailed by Shay when we request
 dwnld.twc <- function(raw_pth, 
@@ -48,6 +59,7 @@ dm.twc <- function(df,
                                         `TWC`= "character",
                                         `TRS Flag` = "character",
                                         `Number of Current Referrals` = "numeric",
+                                        `Status`  = "character",
                                         twc_date = "Date")){
   
   df <- df %>% 
@@ -57,7 +69,8 @@ dm.twc <- function(df,
                   n_subsidy_kids = number_of_current_referrals) %>% 
     col.operation_number() %>% 
     col.trs_provider() %>% 
-    col.subsidy_provider()
+    col.subsidy_provider() %>% 
+    col.open_status()
   
 }
 

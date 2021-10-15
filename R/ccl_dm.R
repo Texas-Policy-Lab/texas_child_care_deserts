@@ -202,8 +202,8 @@ col.assign_deserts <- function(df, df_twc, naeyc_pth1, naeyc_pth2) {
     col.operation_number() %>% 
     dplyr::mutate(naeyc = TRUE)
 
-  df <- df %>%
-    dplyr::left_join(df_twc) %>%
+  df <- df_twc %>%
+    dplyr::left_join(df) %>%
     dplyr::left_join(naeyc) %>%
     dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
                   all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
