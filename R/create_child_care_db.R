@@ -76,6 +76,8 @@ child_care_db <- function(root,
 
   env$XWALK_NEIGHBORHOOD_TRACT <- process.xwalk_neighborhood_tract(raw_pth = raw_pth)
   
+  env$XWALK_ZIP_TRACT <- process.zip(raw_pth = raw_pth)
+  
   env$DF_TRACT_SVI <- process.svi(raw_pth = raw_pth)
 
   save(env, file = file.path(processed_pth, db_name))
