@@ -8,7 +8,8 @@ parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
 }
 
 #' @title Data management for date column
-#' @description Manage date
+#' @description Manage date: filter date to be less than export date so that future dates for which 
+#' providers have not yet entered data will be excluded.
 #' @param df
 #' @return data.frame
 col.date <- function(df){
