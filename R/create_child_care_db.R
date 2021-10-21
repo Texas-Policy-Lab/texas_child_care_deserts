@@ -31,7 +31,7 @@ child_care_db <- function(root,
   create_folder_str(pths = pths)
 
   load_env(file.path(processed_pth, db_name))
-  browser()
+
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
@@ -275,7 +275,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
     env <- sapply(names(config), function(county_fips) {
 
       l <- list()
-      
+
       config <- config[[county_fips]]
       
       l$COUNTY_FIPS <- county_fips
@@ -295,6 +295,9 @@ save_subset_child_care_db_03 <- function(pth, config) {
                                       county_fips = county_fips)
       
       l$XWALK_NEIGHBORHOOD_TRACT <- XWALK_NEIGHBORHOOD_TRACT %>% 
+        dplyr::filter(tract %in% l$XWALK_TRACTS$anchor_tract)
+      
+      l$XWALK_ZIP_TRACT <- XWALK_ZIP_TRACT %>% 
         dplyr::filter(tract %in% l$XWALK_TRACTS$anchor_tract)
       
       l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
@@ -389,8 +392,14 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$NEIGHBORHOOD_DESERT <- neighborhood_desert(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    df_ratio = l$DF_MKT_RATIO)
       
+      l$ZIP_DESERT <- zip_desert(xwalk_zip_tract = XWALK_ZIP_TRACT,
+                                 df_ratio = l$DF_MKT_RATIO)
+      
       l$NEIGHBORHOOD_DEMAND <- neighborhood_demand(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                                    tract_demand = l$DF_TRACT_DEMAND)
+      
+      l$ZIP_DEMAND <- zip_demand(xwalk_zip_tract = XWALK_ZIP_TRACT,
+                                 tract_demand = l$DF_TRACT_DEMAND)
       
       l$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code == county_fips)
@@ -398,9 +407,16 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                              tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
+      l$ZIP_SVI <- zip_svi(xwalk_zip_tract = XWALK_ZIP_TRACT,
+                           tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
+      
       l$NEIGHBORHOOD_ATTRS <- neighborhood_attributes(neighborhood_desert = l$NEIGHBORHOOD_DESERT,
                                                       neighborhood_demand = l$NEIGHBORHOOD_DEMAND,
                                                       neighborhood_svi = l$NEIGHBORHOOD_SVI)
+      
+      l$ZIP_ATTRS <- zip_attributes(zip_desert = l$ZIP_DESERT,
+                                    zip_demand = l$ZIP_DEMAND,
+                                    zip_svi = l$ZIP_SVI)
       
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,

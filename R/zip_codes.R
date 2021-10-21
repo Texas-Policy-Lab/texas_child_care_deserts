@@ -22,7 +22,7 @@ process.zip <- function(raw_pth) {
 #' @export
 zip_desert <- function(xwalk_zip_tract,
                        df_ratio) {
-  browser()
+
   xwalk_zip_tract %>% 
     dplyr::inner_join(df_ratio %>% dplyr::select(anchor_tract,
                                                  desert_type,
@@ -34,7 +34,7 @@ zip_desert <- function(xwalk_zip_tract,
 #' @export
 zip_demand <- function(xwalk_zip_tract,
                        tract_demand) {
-  browser()
+
   xwalk_zip_tract %>% 
     dplyr::inner_join(tract_demand) %>% 
     dplyr::ungroup() %>% 
@@ -45,7 +45,7 @@ zip_demand <- function(xwalk_zip_tract,
 #' @title Find SVI stats for each zip code
 zip_svi <- function(xwalk_zip_tract,
                     tract_svi) {
-  browser()
+
   xwalk_zip_tract %>% 
     dplyr::inner_join(tract_svi) %>% 
     dplyr::group_by(zip) %>% 
@@ -60,7 +60,7 @@ zip_svi <- function(xwalk_zip_tract,
 zip_attributes <- function(zip_desert,
                            zip_demand,
                            zip_svi) {
-  
+
   zip_desert %>%
     dplyr::left_join(zip_demand, by = c("zip", "desert_type" = "desert")) %>% 
     dplyr::group_by(zip, desert_type) %>% 
