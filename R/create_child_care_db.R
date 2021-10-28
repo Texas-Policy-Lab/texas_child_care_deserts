@@ -349,8 +349,9 @@ save_subset_child_care_db_03 <- function(pth, config) {
                                                        df_hhsc_ccl = DF_HHSC_CCL)
 
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
-                                       df_prek = NULL,
-                                       surround_tracts = l$SURROUND_TRACTS) 
+                                       df_prek = DF_PREK,
+                                       surround_tracts = l$SURROUND_TRACTS,
+                                       lt_age = 4) 
       
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
