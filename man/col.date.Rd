@@ -4,10 +4,10 @@
 \alias{col.date}
 \title{Data management for date column}
 \usage{
-col.date(df)
+col.date(x, date_format = "\%m-\%d-\%Y")
 }
 \value{
-data.frame
+object
 }
 \description{
 Manage date

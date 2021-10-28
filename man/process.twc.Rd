@@ -4,7 +4,7 @@
 \alias{process.twc}
 \title{Process the TWC data}
 \usage{
-process.twc(raw_pth)
+process.twc(pth)
 }
 \description{
 Process the TWC data

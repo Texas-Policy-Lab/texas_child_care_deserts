@@ -4,7 +4,7 @@
 \alias{dm.reverse_geocode}
 \title{Geocode addresses}
 \usage{
-\method{dm}{reverse_geocode}(df, url = "https://geo.fcc.gov", path = "/api/census/block/find")
+\method{dm}{reverse_geocode}(x)
 }
 \description{
 Geocodes addresses using FCC

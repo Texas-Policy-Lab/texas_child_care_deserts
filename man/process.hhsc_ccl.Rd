@@ -4,7 +4,7 @@
 \alias{process.hhsc_ccl}
 \title{Process the CCL data}
 \usage{
-process.hhsc_ccl(cls)
+process.hhsc_ccl(pth, state_code, df_twc)
 }
 \description{
 Process the CCL data

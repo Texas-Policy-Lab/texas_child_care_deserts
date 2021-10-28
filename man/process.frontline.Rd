@@ -4,7 +4,7 @@
 \alias{process.frontline}
 \title{Process the frontline data}
 \usage{
-process.frontline(raw_pth)
+process.frontline(pth)
 }
 \description{
 Process the frontline data

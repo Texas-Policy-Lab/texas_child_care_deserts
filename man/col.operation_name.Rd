@@ -4,13 +4,13 @@
 \alias{col.operation_name}
 \title{Data management steps to clean the operation name column}
 \usage{
-col.operation_name(df)
+col.operation_name(x)
 }
 \arguments{
-\item{df}{data.frame. The dataframe}
+\item{x}{object.}
 }
 \value{
-data.frame
+object
 }
 \description{
 Data management steps to clean the operation name column

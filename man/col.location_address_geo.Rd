@@ -4,13 +4,13 @@
 \alias{col.location_address_geo}
 \title{Data management steps to clean the operation type column}
 \usage{
-col.location_address_geo(df, state_fips)
+col.location_address_geo(x)
 }
 \arguments{
-\item{df}{data.frame. The dataframe}
+\item{x}{object.}
 }
 \value{
-data.frame
+object
 }
 \description{
 Data management steps to clean the operation type column

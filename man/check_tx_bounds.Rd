@@ -4,7 +4,7 @@
 \alias{check_tx_bounds}
 \title{Check Texas Bounds}
 \usage{
-check_tx_bounds(df, bb)
+check_tx_bounds(x)
 }
 \value{
 data.frame

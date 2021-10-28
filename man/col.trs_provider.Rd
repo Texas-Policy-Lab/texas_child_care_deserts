@@ -4,10 +4,10 @@
 \alias{col.trs_provider}
 \title{Data management for trs_provider column}
 \usage{
-col.trs_provider(df)
+col.trs_provider(x)
 }
 \value{
-data.frame
+object
 }
 \description{
 Manage trs status: binary status, convert star level to num

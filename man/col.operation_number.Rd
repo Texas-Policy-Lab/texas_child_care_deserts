@@ -4,10 +4,7 @@
 \alias{col.operation_number}
 \title{Data management steps for the operation number column}
 \usage{
-col.operation_number(df)
-}
-\arguments{
-\item{df}{data.frame. The dataframe}
+col.operation_number(x)
 }
 \value{
 data.frame

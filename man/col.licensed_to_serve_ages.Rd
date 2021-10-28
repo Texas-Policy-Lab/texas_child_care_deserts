@@ -4,10 +4,7 @@
 \alias{col.licensed_to_serve_ages}
 \title{Data management steps to clean the licensed to serve ages column}
 \usage{
-col.licensed_to_serve_ages(df)
-}
-\arguments{
-\item{df}{data.frame. The dataframe}
+col.licensed_to_serve_ages(x)
 }
 \value{
 data.frame

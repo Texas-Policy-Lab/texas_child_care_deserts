@@ -4,7 +4,11 @@
 \alias{create_supply}
 \title{Create Supply}
 \usage{
-create_supply(df_hhsc_ccl, supply_adjustment_03 = NULL)
+create_supply(
+  df_hhsc_ccl,
+  supply_adjustment_sub = NULL,
+  supply_adjustment_03 = NULL
+)
 }
 \description{
 Create Supply

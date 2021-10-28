@@ -4,10 +4,10 @@
 \alias{col.availability}
 \title{Data management for availability data}
 \usage{
-col.availability(df)
+col.availability(x)
 }
 \value{
-data.frame
+object
 }
 \description{
 Manage availability: sum 0-3 availability and total availability

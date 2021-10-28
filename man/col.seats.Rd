@@ -4,11 +4,12 @@
 \alias{col.seats}
 \title{Data management for total seats}
 \usage{
-col.seats(df)
+col.seats(x)
 }
 \value{
-data.frame
+object
 }
 \description{
-Find total seats for each provider by summing enrollment and availability
+Find total seats for each provider by summing enrollment and 
+availability
 }

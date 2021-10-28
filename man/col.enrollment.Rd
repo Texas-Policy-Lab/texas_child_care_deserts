@@ -4,10 +4,10 @@
 \alias{col.enrollment}
 \title{Data management for enrollment data}
 \usage{
-col.enrollment(df)
+col.enrollment(x)
 }
 \value{
-data.frame
+object
 }
 \description{
 Manage enrollment: sum 0-3 enrollment and total enrollment

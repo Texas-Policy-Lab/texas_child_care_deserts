@@ -4,10 +4,10 @@
 \alias{col.subsidy_provider}
 \title{Data management for subsidy_provider column}
 \usage{
-col.subsidy_provider(df)
+col.subsidy_provider(x)
 }
 \value{
-data.frame
+object
 }
 \description{
 Manage subsidy status

@@ -4,11 +4,7 @@
 \alias{dwnld.twc}
 \title{Download TWC provider data}
 \usage{
-dwnld.twc(
-  raw_pth,
-  name = "Closure Report 05.17.21.xlsx",
-  sheet = "All Provider Level"
-)
+dwnld.twc(x)
 }
 \description{
 TWC provider data is emailed by Shay when we request

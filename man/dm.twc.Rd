@@ -4,11 +4,7 @@
 \alias{dm.twc}
 \title{Data management for TWC provider data}
 \usage{
-\method{dm}{twc}(
-  df,
-  input_columns = list(`License Number` = "numeric", TWC = "character", `TRS Flag` =
-    "character", `Number of Current Referrals` = "numeric", twc_date = "Date")
-)
+\method{dm}{twc}(x)
 }
 \description{
 Manage TWC data, specifically TRS status and level, subsidy status, and

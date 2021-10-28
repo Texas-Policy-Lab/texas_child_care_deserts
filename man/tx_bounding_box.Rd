@@ -4,11 +4,7 @@
 \alias{tx_bounding_box}
 \title{Pulls down bounding box parameters for Texas}
 \usage{
-tx_bounding_box(
- 
-    url = "https://gist.githubusercontent.com/a8dx/2340f9527af64f8ef8439366de981168/raw/81d876daea10eab5c2675811c39bcd18a79a9212/US_State_Bounding_Boxes.csv",
-  state_fips
-)
+tx_bounding_box(x)
 }
 \description{
 Pulls down bounding box parameters for Texas

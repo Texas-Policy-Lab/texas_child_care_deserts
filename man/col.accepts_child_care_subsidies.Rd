@@ -4,13 +4,13 @@
 \alias{col.accepts_child_care_subsidies}
 \title{Data management steps to clean the accepts child care subsidies column}
 \usage{
-col.accepts_child_care_subsidies(df)
+col.accepts_child_care_subsidies(x)
 }
 \arguments{
-\item{df}{data.frame. The dataframe}
+\item{x}{object.}
 }
 \value{
-data.frame
+object
 }
 \description{
 Data management steps to clean the accepts child care subsidies column

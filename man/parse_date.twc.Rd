@@ -4,7 +4,7 @@
 \alias{parse_date.twc}
 \title{Parse TWC date}
 \usage{
-parse_date.twc(x, format = "\%m.\%d.\%y")
+parse_date.twc(x, date_format = "\%m.\%d.\%y")
 }
 \arguments{
 \item{format}{string. The format to use to parse the string. Default is

@@ -4,13 +4,13 @@
 \alias{col.programs_provided}
 \title{Data management steps to clean the programs provided column}
 \usage{
-col.programs_provided(df)
+col.programs_provided(x)
 }
 \arguments{
-\item{df}{data.frame. The dataframe}
+\item{x}{object.}
 }
 \value{
-data.frame
+object
 }
 \description{
 Data management steps to clean the programs provided column

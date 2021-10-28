@@ -4,14 +4,7 @@
 \alias{dm.geocode_address}
 \title{Geocode addresses}
 \usage{
-\method{dm}{geocode_address}(
-  df,
-  bb,
-  version = "v1",
-  url = "http://www.mapquestapi.com",
-  path = "/geocoding/v1/batch",
-  limit = 100
-)
+\method{dm}{geocode_address}(x)
 }
 \arguments{
 \item{addresses}{vector. The list of addresses to geocode.}

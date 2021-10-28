@@ -4,15 +4,12 @@
 \alias{col.mod_date}
 \title{Data management for modification date column}
 \usage{
-col.mod_date(df, start_date = as.Date("07082021", "\%m\%d\%Y"))
-}
-\arguments{
-\item{start_date.}{If there is a date that Frontline/Bowtie tells us has a processing/data error, 
-set this as start_date, use only modification dates after this date}
+col.mod_date(x, date_format = "\%m\%d\%Y")
 }
 \value{
-data.frame
+object
 }
 \description{
-Manage modification date: pick most recent modification for each provider
+Returns a data.frame with the most recent modification date for 
+each provider.
 }

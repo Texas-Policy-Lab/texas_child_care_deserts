@@ -2,17 +2,11 @@
 % Please edit documentation in R/frontline_dm.R
 \name{dm.frontline}
 \alias{dm.frontline}
-\title{Data management for frontline provider data}
+\title{Fronline provider data management steps}
 \usage{
-\method{dm}{frontline}(
-  df,
-  input_columns = list(`OP Number` = "character", `Infant Capacity` = "numeric",
-    `Toddler Capacity` = "numeric", `Pre- K Capacity` = "numeric", `School Aged Capacity`
-    = "numeric", Infant_enrollment = "numeric", Toddler_enrollment = "numeric",
-    Preschool_enrollment = "numeric", SchoolAge_enrollment = "numeric",
-    last_modified_at_A = "character", Date = "character", export_date = "Date")
-)
+\method{dm}{frontline}(x)
 }
 \description{
-Manage frontline data, specifically enrollment and attendance numbers
+Data management steps, including, specifically enrollment and 
+attendance, summation of seats
 }

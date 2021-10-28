@@ -4,7 +4,7 @@
 \alias{parse_date.frontline}
 \title{Parse frontline date}
 \usage{
-parse_date.frontline(x, format = "\\\\d{4}-\\\\d{2}-\\\\d{2}")
+parse_date.frontline(x, date_format = "\\\\d{4}-\\\\d{2}-\\\\d{2}")
 }
 \arguments{
 \item{format}{string. The format to use to parse the string. Default is

@@ -6,8 +6,6 @@
 \usage{
 child_care_db(
   root,
-  naeyc_pth1,
-  naeyc_pth2,
   state_code = 48,
   acf_qtr_years = NULL,
   acs_year = 2019,

@@ -2,16 +2,16 @@
 % Please edit documentation in R/ccl_dm.R
 \name{col.operation_type}
 \alias{col.operation_type}
-\title{Data management steps to clean the location address geo column}
+\title{Data management steps to clean the operation_type column}
 \usage{
-col.operation_type(df)
+col.operation_type(x)
 }
 \arguments{
-\item{df}{data.frame. The dataframe}
+\item{x}{object}
 }
 \value{
-data.frame
+object
 }
 \description{
-Data management steps to clean the location address geo column
+Data management steps to clean the operation_type column
 }

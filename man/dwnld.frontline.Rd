@@ -4,11 +4,12 @@
 \alias{dwnld.frontline}
 \title{Download Frontline provider data}
 \usage{
-dwnld.frontline(
-  raw_pth,
-  name = "frontline/export_translation_Daily_Vacancy_2021-08-30_04_43_51.csv"
-)
+dwnld.frontline(x)
+}
+\value{
+object
 }
 \description{
-Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
+Frontline provider data comes from the childcare.bowtiebi.com 
+portal (currently, only Sadie has login)
 }
