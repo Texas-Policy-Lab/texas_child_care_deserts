@@ -106,7 +106,17 @@ process.prek <- function(raw_pth) {
   dwnld.isd(raw_pth = raw_pth) %>%
     dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>% 
     dplyr::left_join(dwnld.prek_3(raw_pth = raw_pth)) %>% 
-    dplyr::left_join(dwnld.rating(raw_pth = raw_pth)) %>% 
+    dplyr::left_join(dwnld.rating(raw_pth = raw_pth)) %>%   
+    dplyr::mutate(tract = NA) %>% 
+    dplyr::left_join(DF_PREK %>%
+                       dplyr::select(campus_id, lat, long, tract
+                       ) %>%
+                       dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
+                       )) %>%
+    dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
+                  long = ifelse(is.na(long), long2, long),
+                  tract = ifelse(is.na(tract), tract2, tract)) %>% 
+    dplyr::select(-c(lat2, long2, tract2)) %>% 
     dm.geocode_lat_long() %>% 
     dplyr::mutate(county_code = substr(tract, 1, 5))
 
