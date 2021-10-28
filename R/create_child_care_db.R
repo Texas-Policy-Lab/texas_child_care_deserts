@@ -31,12 +31,13 @@ child_care_db <- function(root,
   create_folder_str(pths = pths)
 
   load_env(file.path(processed_pth, db_name))
-  browser()
+
   env <- new.env()
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
-  env$DF_TWC <- process.twc(raw_pth = raw_pth)
+  env$DF_TWC <- process.twc(raw_pth = raw_pth,
+                            state_fips = state_code)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
@@ -346,7 +347,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-      
+
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
                                        df_prek = NULL,
                                        surround_tracts = l$SURROUND_TRACTS) 
