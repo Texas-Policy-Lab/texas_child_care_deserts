@@ -50,36 +50,13 @@ dm.geocode_request <- function(results, call) {
 
     row <- results[[x]]$locations[[1]]
 
-    data.frame(street = row$street,
-               neighborhood = row$adminArea6,
-               city  = row$adminArea5,
-               county = row$adminArea4,
-               state = row$adminArea3,
-               zip = row$postalCode,
-               lat = row$latLng$lat,
-               long = row$latLng$lng,
+    data.frame(lat2 = row$latLng$lat,
+               long2 = row$latLng$lng,
                geocodeQualityCode = row$geocodeQualityCode,
-               mapURl= row$mapUrl,
                stringsAsFactors = FALSE
                )
     }) %>% 
-    dplyr::bind_rows() %>%
-    dplyr::bind_cols(address = call)
-}
-
-#' @title Drops poor quality geocodes
-#' @description Use the geocodeQualityCode value returned to determine the quality of the geocode. https://developer.mapquest.com/documentation/geocoding-api/quality-codes/.
-#' @export
-dm.drop_poor_quality <- function(x) {
-
-  poorQuality <- stringr::str_starts(string = x$df$geocodeQualityCode, 
-                                     pattern = x$geocode$qualityCode)
-
-  x$df <- x$df %>%
-    dplyr::mutate(lat = ifelse(poorQuality, NA, lat),
-                  long = ifelse(poorQuality, NA, long))
-
-  return(x)
+    dplyr::bind_rows()
 }
 
 #' @title Geocode addresses
@@ -88,7 +65,7 @@ dm.drop_poor_quality <- function(x) {
 #' @param key string. The api key registered with your personal Mapquest account.
 #' @export
 dm.geocode_address <- function(x) {
-browser()
+
   subset <- x$df %>%
     dplyr::filter(is.na(lat) | is.na(long)) %>%
     dplyr::select(operation_number, address)
@@ -98,7 +75,7 @@ browser()
 
   url <- httr::modify_url(url = x$geocode$url, path = x$geocode$path)
 
-  l <- lapply(calls, function(call, url, key) {
+  geo <- lapply(calls, function(call, url, key) {
 
     r <- httr::POST(url = url,
                     query = list(key = key),
@@ -107,7 +84,7 @@ browser()
                                 maxResults = 1,
                                 outFormat ="json"),
                     encode = "json")
-  
+
     if (r$status_code == 200) {
 
       if (httr::http_type(r) != "application/json") {
@@ -121,22 +98,23 @@ browser()
     }
 
   }, url = url, key = get_key.mapquest()) %>%
-    dplyr::bind_rows() %>%
+    dplyr::bind_rows()
+  
+  geo <- geo %>%
+    dplyr::mutate(poorQuality = stringr::str_starts(string = geocodeQualityCode, 
+                                                     pattern = x$geocode$qualityCode),
+                  lat2 = ifelse(poorQuality, NA, lat2),
+                  long2 = ifelse(poorQuality, NA, long2)) %>%
     dplyr::bind_cols(subset %>%
-                        dplyr::select(operation_number)) %>%
-    dm.drop_poor_quality()
-  
-  
-  # %>%
-  #   dplyr::mutate(lat2 = lat,
-  #                 long2 = long) %>% 
-  #   dplyr::select(operation_number, lat2, long2)
+                        dplyr::select(operation_number)) 
 
-  df %>%
+  x$df <- x$df %>%
     dplyr::left_join(l) %>% 
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long)) %>% 
     dplyr::select(-c(lat2, long2))
+
+  return(x)
 }
 
 #' @title Unlist FCC request
