@@ -121,10 +121,8 @@ col.location_address_geo <- function(x) {
                     sep = "([(,)])") %>% 
     dplyr::mutate(address = gsub("\n", "", address),
                   address = stringr::str_to_title(address),
-                  lat = stringr::str_trim(lat, "both"),
-                  lat = ifelse(lat == "NA", NA, as.numeric(lat)),
-                  long = stringr::str_trim(long, "both"),
-                  long = ifelse(lat == "NA", NA, as.numeric(long))) %>%
+                  lat = as.numeric(stringr::str_trim(lat, "both")),
+                  long = as.numeric(stringr::str_trim(long, "both"))) %>%
     dplyr::ungroup()
 
   x <- x %>%
@@ -145,10 +143,10 @@ col.update_loc_old <- function(x) {
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long)) %>%
     dplyr::select(-c(lat2, long2))
-  
+
   x <- x %>%
-    dm.geocode_address() #%>%
-    # dm.reverse_geocode()
+    dm.geocode_address() %>%
+    dm.reverse_geocode()
 
   x <- x %>%
     check_tx_bounds()
