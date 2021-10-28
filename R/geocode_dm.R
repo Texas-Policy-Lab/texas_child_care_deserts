@@ -109,10 +109,10 @@ dm.geocode_address <- function(x) {
                         dplyr::select(operation_number)) 
 
   x$df <- x$df %>%
-    dplyr::left_join(l) %>% 
+    dplyr::left_join(geo) %>% 
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
                   long = ifelse(is.na(long), long2, long)) %>% 
-    dplyr::select(-c(lat2, long2))
+    dplyr::select(-c(lat2, long2, geocodeQualityCode, poorQuality))
 
   return(x)
 }
