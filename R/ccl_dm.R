@@ -314,14 +314,14 @@ col.assign_deserts <- function(x) {
 col.quality <- function(x) {
 
   qual_type <- x$df %>%
-    dplyr::select(operation_number, naeyc, trs_provider, head_start) %>% 
+    dplyr::select(operation_number, naeyc, trs_prvdr, head_start) %>% 
     tidyr::pivot_longer(names_to = "quality_type", values_to = "quality",
                         -operation_number) %>% 
     tidyr::drop_na() %>%
     dplyr::filter(quality) %>%
     dplyr::select(-quality) %>%
     dplyr::mutate(quality_desc = dplyr::case_when(quality_type == "head_start" ~ "Head Start",
-                                                  quality_type == "trs_provider" ~ "TRS",
+                                                  quality_type == "trs_prvdr" ~ "TRS",
                                                   quality_type == "naeyc" ~ "NAEYC")) %>%
     dplyr::group_by(operation_number) %>%
     dplyr::summarise(quality_desc = paste(quality_desc, collapse = ", "))
@@ -362,7 +362,9 @@ dm.hhsc_ccl <- function(x) {
     col.update_loc_old() %>%
     col.licensed_to_serve_ages() %>%
     col.operation_type() %>%
-    col.operation_name() %>%
+    col.operation_name() 
+  
+  x <- x %>%
     col.programs_provided() %>%
     col.accepts_child_care_subsidies() %>%
     col.dm_naeyc() %>%
