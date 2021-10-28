@@ -129,36 +129,38 @@ fcc_request <- function(result) {
 #' @description Geocodes addresses using FCC
 dm.reverse_geocode <- function(x) {
 
-  url <- httr::modify_url(url = url, path = path)
+  url <- httr::modify_url(url = x$reverse_geocode$url, path = x$reverse_geocode$path)
 
-  subset <- df %>%
+  subset <- x$df %>%
     dplyr::filter(is.na(tract))
 
-  df %>%
-    dplyr::left_join(
-      lapply(1:nrow(subset), function(i) {
+  geo <- lapply(1:nrow(subset), function(i) {
+      
+      r <- httr::GET(url = url,
+                     query = list(latitude=subset$lat[i],
+                                  longitude=subset$long[i],
+                                  showall="true",
+                                  format="json"),
+                     encode = "json")
+      
+      resp <- httr::content(r)
+      
+      if (httr::http_type(r) != "application/json") {
+        stop("API did not return json", call. = FALSE)
+      }
+      
+      fcc_request(resp) %>% 
+        dplyr::mutate(operation_number = subset$operation_number[i])
+    }) %>% dplyr::bind_rows()
 
-        r <- httr::GET(url = url,
-                       query = list(latitude=subset$lat[i],
-                                    longitude=subset$long[i],
-                                    showall="true",
-                                    format="json"),
-                       encode = "json")
-
-        resp <- httr::content(r)
-
-        if (httr::http_type(r) != "application/json") {
-          stop("API did not return json", call. = FALSE)
-        }
-
-        fcc_request(resp) %>% 
-          dplyr::mutate(operation_number = subset$operation_number[i])
-      }) %>% dplyr::bind_rows()
-    ) %>%
+  x$df <- x$df %>%
+    dplyr::left_join(geo) %>%
     dplyr::mutate(tract2 = ifelse(county_code != county_code2, NA, tract2),
                   tract2 = substr(tract2, 1, 11),
                   tract = ifelse(is.na(tract), tract2, tract)) %>% 
     dplyr::select(-c(tract2, county_code2))
+  
+  return(x)
 }
 
 dm.geocode_lat_long <- function(df,
