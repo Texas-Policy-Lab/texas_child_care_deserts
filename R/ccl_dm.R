@@ -124,15 +124,14 @@ col.location_address_geo <- function(x) {
                   lat = stringr::str_trim(lat, "both"),
                   lat = ifelse(lat == "NA", NA, as.numeric(lat)),
                   long = stringr::str_trim(long, "both"),
-                  long = ifelse(lat == "NA", NA, as.numeric(long)),
-                  tract = NA) %>%
+                  long = ifelse(lat == "NA", NA, as.numeric(long))) %>%
     dplyr::ungroup()
 
   x <- x %>%
     check_tx_bounds()
 
   x$df <- x$df %>%
-    dplyr::rename(lat2 = lat, long2 = long, tract2 = tract)
+    dplyr::rename(lat2 = lat, long2 = long)
 
   return(x)
 }
@@ -144,9 +143,8 @@ col.update_loc_old <- function(x) {
     dplyr::left_join(DF_HHSC_CCL %>%
                        dplyr::select(operation_number, lat, long, tract)) %>%
     dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
-                  long = ifelse(is.na(long), long2, long),
-                  tract = ifelse(is.na(tract), tract2, tract)) %>%
-    dplyr::select(-c(lat2, long2, tract2))
+                  long = ifelse(is.na(long), long2, long)) %>%
+    dplyr::select(-c(lat2, long2))
   
   x <- x %>%
     dm.geocode_address() #%>%
