@@ -34,8 +34,6 @@ acs_tables <- function(acs_year,
 #' child_care_db(root = root)
 #' }
 child_care_db <- function(root,
-                          naeyc_pth1,
-                          naeyc_pth2,
                           state_code = 48,
                           acf_qtr_years = NULL,
                           acs_year = 2019,
@@ -59,7 +57,9 @@ child_care_db <- function(root,
 
   env$DF_TWC <- process.twc(pth = raw_pth)
 
-  env$DF_HHSC_CCL <- process.hhsc_ccl(pth = raw_pth)
+  env$DF_HHSC_CCL <- process.hhsc_ccl(pth = raw_pth,
+                                      state_code = state_code,
+                                      df_twc = env$DF_TWC)
 
   env$DF_FRONTLINE <- process.frontline(pth = raw_pth)
 
