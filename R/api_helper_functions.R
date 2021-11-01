@@ -1,9 +1,11 @@
 #' @title Set API Key
 #' @param key. String. The API key credential. 
+#' @export
 api_key <- function(key) UseMethod("api_key")
 
 #' @title Set Census API Key
 #' @inheritParams api_key
+#' @export
 api_key.census <- function(key) {
   Sys.setenv(CENSUS_API_KEY = key)
 }

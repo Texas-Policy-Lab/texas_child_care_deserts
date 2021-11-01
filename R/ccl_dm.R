@@ -110,11 +110,13 @@ col.operation_type <- function(df) {
     dplyr::mutate(home_prvdr = ifelse(grepl("home", 
                                             tolower(operation_type)), TRUE, FALSE),
                   center_prvdr = ifelse(grepl("center", 
-                                              tolower(operation_type)), TRUE, FALSE)
+                                              tolower(operation_type)), TRUE, FALSE),
+                  licensedhome_prvdr = ifelse(home_prvdr & grepl("licensed", tolower(operation_type)), TRUE, FALSE),
+                  registeredhome_prvdr = ifelse(home_prvdr & grepl("registered", tolower(operation_type)), TRUE, FALSE)
     ) %>% 
     dplyr::select(-operation_type)
   
-  assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(TRUE, FALSE)),
+  assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr, df$licensedhome_prvdr, df$registeredhome_prvdr) %in% c(TRUE, FALSE)),
                           msg = "Operation type not binary")
   
   return(df)

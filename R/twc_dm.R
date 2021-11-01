@@ -33,7 +33,7 @@ col.trs_provider <- function(df){
 #' @title Download TWC provider data
 #' @description TWC provider data is emailed by Shay when we request
 dwnld.twc <- function(raw_pth, 
-                      name = "Closure Report 05.17.21.xlsx",
+                      name = "Weekly Closure Report 9.7.21.xlsx",
                       sheet = "All Provider Level") {
   
   df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>% 

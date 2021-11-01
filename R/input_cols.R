@@ -47,7 +47,7 @@ check_type.numeric <- function(v,
 
 #' @title Test for date column or vector
 #' @inheritParams check_type
-check_type.date <- function(v, 
+check_type.Date <- function(v, 
                             msg = "Not a date vector") {
 
   assertthat::assert_that(class(v) == "Date",
