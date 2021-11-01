@@ -310,7 +310,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$GEO_TRACTS <- GEO_TRACTS %>%
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
-        dplyr::select(tract, county_code, anchor_county, geometry)
+        dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
       
       l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
         
