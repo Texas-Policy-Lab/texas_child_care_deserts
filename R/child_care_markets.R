@@ -1,39 +1,35 @@
 #' @title Create Supply
 create_supply <- function(df_hhsc_ccl,
-                          config) {
-
-  test_config(x = config$home_prvdr_non_sub_capacity, 
-              str = "home_prvdr_non_sub_capacity")
-  test_config(x = config$center_prvdr_non_sub_capacity,
-              str = "center_prvdr_non_sub_capacity")
-  test_config(x = config$home_prvdr_sub_capacity,
-              str = "home_prvdr_sub_capacity")
-  test_config(x = config$center_prvdr_sub_capacity,
-              str = "center_prvdr_sub_capacity")
-  
-  test_config_pct(x = config$home_prvdr_non_sub_capacity,
-                  str = "home_prvdr_non_sub_capacity")
-  test_config_pct(x = config$center_prvdr_non_sub_capacity,
-                  str = "center_prvdr_non_sub_capacity")
-  test_config_pct(x = config$home_prvdr_sub_capacity,
-                  str = "home_prvdr_sub_capacity")
-  test_config_pct(x = config$center_prvdr_sub_capacity,
-                  str = "center_prvdr_sub_capacity")
-
+                          supply_adjustment_sub = NULL,
+                          supply_adjustment_03 = NULL) {
+  browser()
   df <- df_hhsc_ccl %>%
-    dplyr::mutate(adj_capacity = dplyr::case_when(home_prvdr & !sub_provider ~ licensed_capacity*config$home_prvdr_non_sub_capacity,
-                                                  center_prvdr & !sub_provider ~ licensed_capacity*config$center_prvdr_non_sub_capacity,
-                                                  home_prvdr & sub_provider ~ licensed_capacity*config$home_prvdr_sub_capacity,
-                                                  center_prvdr & sub_provider ~ licensed_capacity*config$center_prvdr_sub_capacity,
-                                                  prek_prvdr ~ licensed_capacity,
-                                                  TRUE ~ NA_real_)) %>%
-    dplyr::select(operation_number, tract, county_code, adj_capacity,
+    dplyr::left_join(supply_adjustment_sub) %>% 
+    dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
+  
+  if (!is.null(supply_adjustment_03)) {
+    df <- df %>% 
+      dplyr::left_join(supply_adjustment_03) %>% 
+      dplyr::mutate(adj_all_capacity = licensed_capacity * desired_pct_capacity)
+    
+  } else {
+    df <- df %>% 
+      dplyr::mutate(adj_all_capacity = licensed_capacity * .85)
+  }
+  
+  df <- df %>%  
+    dplyr::mutate(adj_all_capacity = ifelse(prek_prvdr, licensed_capacity, adj_all_capacity),
+                              adj_sub_capacity = ifelse(prek_prvdr, licensed_capacity, adj_sub_capacity)) %>% 
+    dplyr::select(operation_number, tract, county_code, adj_all_capacity, adj_sub_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 
                         cols = -c(operation_number, tract, county_code,
-                                  adj_capacity)) %>%
+                                  adj_all_capacity, adj_sub_capacity)) %>%     
     dplyr::filter(supply) %>%
-    dplyr::select(-supply)
+    dplyr::select(-supply) %>% 
+    dplyr::mutate(adj_capacity = dplyr::case_when(desert == "all_provider" ~ adj_all_capacity,
+                                                  desert != "all_provider" ~ adj_sub_capacity)) %>% 
+    dplyr::select(-c(adj_all_capacity, adj_sub_capacity))
 }
 
 #' @title Create tract supply
@@ -53,17 +49,26 @@ create_market_supply <- function(tract_supply, tracts, xwalk_tract_desert) {
     dplyr::summarise(mkt_supply = sum(tract_supply, na.rm = T)) %>%
     dplyr::ungroup() %>% 
     dplyr::right_join(xwalk_tract_desert) %>% 
-    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply))
+    dplyr::mutate(mkt_supply = ifelse(is.na(mkt_supply), 0, mkt_supply),
+                  anchor_county = ifelse(is.na(anchor_county), substr(anchor_tract, 1, 5), anchor_county))
 }
 
 #' @title Create tract demand
-create_tract_demand <- function(demand) {
+create_tract_demand <- function(demand,
+                                lt_age = 5) {
+  if (lt_age == 4){
+    n_kids_working_parents <- "n_kids_working_parents_lt4"
+    n_kids_working_under200_pct <- "n_kids_lt4_working_under200_pct"
+  } else if (lt_age == 5) {
+    n_kids_working_parents <- "n_kids_working_parents_lt5"
+    n_kids_working_under200_pct <- "n_kids_lt5_working_under200_pct"
+  }
 
   demand %>%
-    dplyr::select(tract, county_code, n_kids_working_parents_lt5, 
-                  n_kids_lt5_working_under200_pct) %>%
-    dplyr::rename(all_provider = n_kids_working_parents_lt5,
-                  sub_provider = n_kids_lt5_working_under200_pct) %>%
+    dplyr::select(tract, county_code, n_kids_working_parents, 
+                  n_kids_working_under200_pct) %>%
+    dplyr::rename(all_provider = n_kids_working_parents,
+                  sub_provider = n_kids_working_under200_pct) %>%
     dplyr::mutate(sub_trs4_provider = sub_provider,
                   sub_trs_provider = sub_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "tract_demand", 

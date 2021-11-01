@@ -11,11 +11,24 @@ dwnld.prek <- function(raw_pth,
   df <- readr::read_csv(file.path(raw_pth, name), skip = 4) %>%
     dplyr::rename_all(tolower) %>%
     dplyr::filter(grade %in% c("Pre-kindergarten", "Early Education")) %>%
-    dplyr::mutate(earlyed_prek_enrollment = as.numeric(gsub("<", "", enrollment))) %>% 
+    dplyr::mutate(prek_3_4_enrollment = as.numeric(gsub("<", "", enrollment))) %>% 
     dplyr::group_by(year, region, `county name`, district, `district name`, campus, `campus name`, `grade group name`) %>% 
-    dplyr::summarise(earlyed_prek_enrollment = sum(earlyed_prek_enrollment)) %>% 
+    dplyr::summarise(prek_3_4_enrollment = sum(prek_3_4_enrollment)) %>% 
     dplyr::ungroup() %>% 
-    dplyr::select(campus_id = campus, earlyed_prek_enrollment)
+    dplyr::select(campus_id = campus, prek_3_4_enrollment)
+}
+
+#' @title Download prek 3 year old data
+#' @description data requested from TEA through Public Information Request
+#' @note School Year: 2020-2021
+#' Downloaded as CSV file
+dwnld.prek_3 <- function(raw_pth, 
+                         name = "artf392256_21.csv") {
+  
+  df <- readr::read_csv(file.path(raw_pth, name), na = c("-999")) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::mutate(prek_3_enrollment = as.numeric(pre_k_3_yr_olds)) %>% 
+    dplyr::select(campus_id = campus, prek_3_enrollment)
 }
 
 #' @title Download ISD characteristics
@@ -92,7 +105,18 @@ process.prek <- function(raw_pth) {
 
   dwnld.isd(raw_pth = raw_pth) %>%
     dplyr::inner_join(dwnld.prek(raw_pth = raw_pth)) %>% 
-    dplyr::left_join(dwnld.rating(raw_pth = raw_pth)) %>% 
+    dplyr::left_join(dwnld.prek_3(raw_pth = raw_pth)) %>% 
+    dplyr::left_join(dwnld.rating(raw_pth = raw_pth)) %>%   
+    dplyr::mutate(tract = NA) %>% 
+    dplyr::left_join(DF_PREK %>%
+                       dplyr::select(campus_id, lat, long, tract
+                       ) %>%
+                       dplyr::rename(lat2 = lat, long2 = long, tract2 = tract
+                       )) %>%
+    dplyr::mutate(lat = ifelse(is.na(lat), lat2, lat),
+                  long = ifelse(is.na(long), long2, long),
+                  tract = ifelse(is.na(tract), tract2, tract)) %>% 
+    dplyr::select(-c(lat2, long2, tract2)) %>% 
     dm.geocode_lat_long() %>% 
     dplyr::mutate(county_code = substr(tract, 1, 5))
 
