@@ -199,30 +199,36 @@ dm.geocode_lat_long <- function(df,
                                 vintage = "Census2010_Current",
                                 query = "benchmark={benchmark}&vintage={vintage}&x={x}&y={y}") {
 
-  lapply(1:nrow(df), function(i) {
-
-    x <- df %>%
-      dplyr::slice(i) %>% 
-      dplyr::pull(long)
-    
-    y <- df %>% 
-      dplyr::slice(i) %>% 
-      dplyr::pull(lat)
-    
-    r <- httr::GET(httr::modify_url(url = url, 
-                                    path = glue::glue(path,
-                                                      searchtype = searchtype,
-                                                      returntype = returntype,
-                                                      query = glue::glue(query, 
-                                                                         benchmark = benchmark, 
-                                                                         vintage = vintage,
-                                                                         x = x, 
-                                                                         y = y)))) %>% 
-      httr::content()
-
-    df %>%
-      dplyr::slice(i) %>%
-      dplyr::mutate(tract = r$result$geographies$`Census Tracts`[[1]]$GEOID)
-
-  }) %>% dplyr::bind_rows()
+  subset <- df %>%
+    dplyr::filter(is.na(tract))
+  
+  df %>% 
+    dplyr::left_join(
+      lapply(1:nrow(subset), function(i) {
+        
+        x <- df %>%
+          dplyr::slice(i) %>% 
+          dplyr::pull(long)
+        
+        y <- df %>% 
+          dplyr::slice(i) %>% 
+          dplyr::pull(lat)
+        
+        r <- httr::GET(httr::modify_url(url = url, 
+                                        path = glue::glue(path,
+                                                          searchtype = searchtype,
+                                                          returntype = returntype,
+                                                          query = glue::glue(query, 
+                                                                             benchmark = benchmark, 
+                                                                             vintage = vintage,
+                                                                             x = x, 
+                                                                             y = y)))) %>% 
+          httr::content()
+        
+        df %>%
+          dplyr::slice(i) %>%
+          dplyr::mutate(tract = r$result$geographies$`Census Tracts`[[1]]$GEOID)
+        
+      }) %>% dplyr::bind_rows()
+    )
 }

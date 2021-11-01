@@ -24,11 +24,26 @@ subset_surround_tracts <- function(xwalk_tracts) {
 #' @title Subset HHSC
 subset_hhsc_ccl <- function(df_hhsc_ccl,
                             df_prek = NULL,
-                            surround_tracts) {
+                            surround_tracts,
+                            lt_age = NULL) {
 
   if (!is.null(df_prek)) {
+
+    if (lt_age == 4){
+
+      df_prek <- df_prek %>% 
+        dplyr::select(-prek_3_4_enrollment) %>% 
+        dplyr::filter(!is.na(prek_3_enrollment)) %>% 
+        dplyr::rename(prek_enrollment = prek_3_enrollment)
+    } else {
+      
+      df_prek <- df_prek %>% 
+        dplyr::select(-prek_3_enrollment) %>% 
+        dplyr::rename(prek_enrollment = prek_3_4_enrollment)
+    }
+    
     df <- df_prek %>% 
-      dplyr::rename(licensed_capacity = earlyed_prek_enrollment,
+      dplyr::rename(licensed_capacity = prek_enrollment,
                     operation_number = campus_id,
                     operation_name = campus_name) %>%
       dplyr::mutate(infant = FALSE,

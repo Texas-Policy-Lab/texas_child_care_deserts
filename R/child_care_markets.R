@@ -2,7 +2,7 @@
 create_supply <- function(df_hhsc_ccl,
                           supply_adjustment_sub = NULL,
                           supply_adjustment_03 = NULL) {
-
+  browser()
   df <- df_hhsc_ccl %>%
     dplyr::left_join(supply_adjustment_sub) %>% 
     dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
@@ -17,7 +17,9 @@ create_supply <- function(df_hhsc_ccl,
       dplyr::mutate(adj_all_capacity = licensed_capacity * .85)
   }
   
-  df <- df %>%
+  df <- df %>%  
+    dplyr::mutate(adj_all_capacity = ifelse(prek_prvdr, licensed_capacity, adj_all_capacity),
+                              adj_sub_capacity = ifelse(prek_prvdr, licensed_capacity, adj_sub_capacity)) %>% 
     dplyr::select(operation_number, tract, county_code, adj_all_capacity, adj_sub_capacity,
                   all_provider, sub_provider, sub_trs_provider, sub_trs4_provider) %>%
     tidyr::pivot_longer(names_to = "desert", values_to = "supply", 

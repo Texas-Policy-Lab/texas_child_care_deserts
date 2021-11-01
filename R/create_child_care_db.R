@@ -36,7 +36,8 @@ child_care_db <- function(root,
 
   env$NEIGHBORHOOD_CENTER <- process.neighborhood_center(cls = list(raw_pth = raw_pth))
 
-  env$DF_TWC <- process.twc(raw_pth = raw_pth)
+  env$DF_TWC <- process.twc(raw_pth = raw_pth,
+                            state_fips = state_code)
 
   env$DF_HHSC_CCL <- process.hhsc_ccl(cls = list(raw_pth = raw_pth,
                                                  processed_pth = processed_pth,
@@ -351,10 +352,11 @@ save_subset_child_care_db_03 <- function(pth, config) {
       
       l$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = l$XWALK_TRACTS,
                                                        df_hhsc_ccl = DF_HHSC_CCL)
-      
+
       l$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
-                                       df_prek = NULL,
-                                       surround_tracts = l$SURROUND_TRACTS) 
+                                       df_prek = DF_PREK,
+                                       surround_tracts = l$SURROUND_TRACTS,
+                                       lt_age = 4) 
       
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,

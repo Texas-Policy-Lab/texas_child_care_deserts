@@ -12,10 +12,10 @@ calc.capacity_adjustment_03 <- function(df_hhsc_ccl,
                                         df_frontline,
                                         grouping_vars = NULL) {
   
-
   pct_03 <- df_frontline %>%
     dplyr::inner_join(df_hhsc_ccl) %>% 
-    dplyr::mutate(pct_03_ofcapacity = seats_03/licensed_capacity)
+    dplyr::mutate(pct_03_ofcapacity = seats_03/licensed_capacity) %>% 
+    dplyr::filter(is.finite(pct_03_ofcapacity))
   
   pct_03_by_group <- pct_03 %>% 
     dplyr::group_by_at(dplyr::vars(grouping_vars)) %>% 
