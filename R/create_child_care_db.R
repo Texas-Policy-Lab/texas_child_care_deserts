@@ -313,6 +313,9 @@ save_subset_child_care_db_03 <- function(pth, config) {
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry)
       
+      l$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(l$GEO_TRACTS, 'Spatial')) %>%
+        sf::st_as_sf()
+      
       l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
         
         BB <- l$GEO_TRACTS %>% 
