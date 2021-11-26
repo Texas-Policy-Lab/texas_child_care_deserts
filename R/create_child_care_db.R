@@ -312,10 +312,13 @@ save_subset_child_care_db_03 <- function(pth, config) {
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry)
-      
+
       l$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(l$GEO_TRACTS, 'Spatial')) %>%
         sf::st_as_sf()
-      
+
+      l$BB <- l$GEO_TRACTS %>% 
+        sf::st_bbox()
+
       l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
         
         BB <- l$GEO_TRACTS %>% 
@@ -355,7 +358,10 @@ save_subset_child_care_db_03 <- function(pth, config) {
                                        df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS,
                                        lt_age = 4) 
-      
+
+      l$DF_HHSC_CCL <- l$DF_HHSC_CCL %>% 
+        dplyr::filter(lat > l$BB[[2]] & lat < l$BB[[4]] & long > l$BB[[1]] & long < l$BB[[3]])
+
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
                                                             grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
