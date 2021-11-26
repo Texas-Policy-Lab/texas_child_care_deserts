@@ -304,36 +304,39 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = l$XWALK_TRACTS)
       
       l$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = l$XWALK_TRACTS)
-      
+
       l$ANCHOR_TRACTS <- l$XWALK_TRACTS %>% 
         dplyr::distinct(anchor_tract) %>% 
         dplyr::pull(anchor_tract)
-      
+
       l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
         dplyr::distinct(surround_county) %>% 
         dplyr::pull(surround_county)
-      
+
       l$GEO_TRACTS <- GEO_TRACTS %>%
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
-      
+
+      l$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(l$GEO_TRACTS, 'Spatial')) %>%
+        sf::st_as_sf()
+
       l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
-        
+
         BB <- l$GEO_TRACTS %>% 
           dplyr::filter(tract == t) %>%
           sf::st_bbox()
-        
+
         data.frame(tract = t,
                    xmin = BB[[1]],
                    ymin = BB[[2]],
                    xmax = BB[[3]],
                    ymax = BB[[4]])
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
-      
+
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-      
+
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
       l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
@@ -341,7 +344,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$GEO_CITY <- get_geo.city(county_name = l$COUNTY_NAME)
 
       l$GEO_PARK <- get_geo.park(county_name = l$COUNTY_NAME)
-      
+
       l$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% l$SURROUND_TRACTS),
                                                lt_age = 4)
