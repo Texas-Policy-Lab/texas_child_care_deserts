@@ -148,6 +148,16 @@ dwnld.geo_tracts <- function(state_fips) {
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
     dplyr::select(tract, county_code, geometry)
   
+  centroids <- geo %>% 
+    sf::st_centroid() %>% 
+    dplyr::mutate(cent_long = unlist(purrr::map(geometry,1)),
+                  cent_lat = unlist(purrr::map(geometry,2))) %>% 
+    sf::st_drop_geometry()
+  
+  geo <- geo %>% 
+    dplyr::left_join(centroids)
+    
+  
 }
 
 #' @title Get the Harris County Neighborhood to census tract data
