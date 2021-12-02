@@ -267,7 +267,7 @@ save_subset_child_care_db <- function(pth, config) {
 #' save_subset_child_care_db_03(pth = pth, county = county)
 #' }
 #' @export
-save_subset_child_care_db_03 <- function(pth, config) {
+save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
 
   if(file.exists(pth)) {
     
@@ -451,7 +451,13 @@ save_subset_child_care_db_03 <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
     
-    save(env, file = file.path(dirname(pth), paste("03",
+    if (dev) {
+      d <- "development"
+    } else {
+      d <- "production"
+    }
+    
+    save(env, file = file.path(dirname(pth), d, paste("03",
                                                    paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
     
