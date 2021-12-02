@@ -326,15 +326,17 @@ save_subset_child_care_db_03 <- function(pth, config) {
 
       l$BB_TRACTS <- sapply(l$SURROUND_TRACTS, function(t) {
         
-        BB <- l$GEO_TRACTS %>% 
-          dplyr::filter(tract == t) %>%
-          sf::st_bbox()
-        
+        BB <- l$XWALK_TRACTS %>%
+          dplyr::filter(anchor_tract == t) %>%
+          dplyr::inner_join(l$GEO_TRACTS %>%
+                              dplyr::select(-anchor_county), by = c("surround_tract" = "tract"))
+        BB <- sf::st_bbox(BB$geometry)
+
         data.frame(tract = t,
-                   xmin = BB[[1]],
-                   ymin = BB[[2]],
-                   xmax = BB[[3]],
-                   ymax = BB[[4]])
+                   xmin = BB$xmin,
+                   ymin = BB$ymin,
+                   xmax = BB$xmax,
+                   ymax = BB$ymax)
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
       
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
