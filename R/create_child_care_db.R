@@ -324,7 +324,7 @@ save_subset_child_care_db_03 <- function(pth, config) {
       l$BB <- l$GEO_TRACTS %>% 
         sf::st_bbox()
 
-      l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
+      l$BB_TRACTS <- sapply(l$SURROUND_TRACTS, function(t) {
         
         BB <- l$GEO_TRACTS %>% 
           dplyr::filter(tract == t) %>%
