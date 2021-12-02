@@ -4,7 +4,7 @@
 \alias{subset_hhsc_ccl}
 \title{Subset HHSC}
 \usage{
-subset_hhsc_ccl(df_hhsc_ccl, df_prek = NULL, surround_tracts)
+subset_hhsc_ccl(df_hhsc_ccl, df_prek = NULL, surround_tracts, lt_age = NULL)
 }
 \description{
 Subset HHSC
