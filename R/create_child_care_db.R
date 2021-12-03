@@ -259,7 +259,8 @@ save_subset_child_care_db <- function(pth, config) {
 
 #' @title Save a subset of the child care database for children 0-3
 #' @param pth string. Path to the root directory to create the DB.
-#' @param county string. County 5-digit FIPS code.
+#' @param config object. Object containing parameters to create the DB.
+#' @param dev boolean. St dev = FALSE to save the db to the production environment. Default is TRUE.
 #' @examples
 #' \dontrun{
 #' pth <- "C:/"
@@ -267,7 +268,7 @@ save_subset_child_care_db <- function(pth, config) {
 #' save_subset_child_care_db_03(pth = pth, county = county)
 #' }
 #' @export
-save_subset_child_care_db_03 <- function(pth, config) {
+save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
 
   if(file.exists(pth)) {
     
@@ -462,7 +463,13 @@ save_subset_child_care_db_03 <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
     
-    save(env, file = file.path(dirname(pth), paste("03",
+    if (dev) {
+      d <- "development"
+    } else {
+      d <- "production"
+    }
+    
+    save(env, file = file.path(dirname(pth), d, paste("03",
                                                    paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
     

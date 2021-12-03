@@ -7,7 +7,10 @@
 \method{dm}{twc}(
   df,
   input_columns = list(`License Number` = "numeric", TWC = "character", `TRS Flag` =
-    "character", `Number of Current Referrals` = "numeric", twc_date = "Date")
+    "character", `Number of Current Referrals` = "numeric", Status = "character",
+    `Reported Capacity` = "numeric", `Provider Type` = "character", County = "character",
+    `Provider Name` = "character", `Board Name` = "character", twc_date = "Date"),
+  state_fips
 )
 }
 \description{
