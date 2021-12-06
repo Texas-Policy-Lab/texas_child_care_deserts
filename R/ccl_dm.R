@@ -73,7 +73,8 @@ col.licensed_to_serve_ages <- function(df) {
 col.location_address_geo <- function(df, state_fips) {
   
   bb <- tx_bounding_box(state_fips = state_fips)
-  browser()
+  county_bb <- county_bounding_box(state_fips = state_fips)
+
   df <- df %>%
     tidyr::separate(location_address_geo,
                     into = c("address", "lat_long"),
@@ -86,7 +87,6 @@ col.location_address_geo <- function(df, state_fips) {
                   long = stringr::str_trim(long, "both"),
                   tract = NA) %>%
     dplyr::ungroup() %>% 
-    check_tx_bounds(bb = bb) %>%
     dplyr::left_join(DF_HHSC_CCL %>%
                        dplyr::select(operation_number, lat, long, tract
                        ) %>%
@@ -97,6 +97,7 @@ col.location_address_geo <- function(df, state_fips) {
                   tract = ifelse(is.na(tract), tract2, tract),
                   address = stringr::str_to_title(address)) %>%
     dplyr::select(-c(lat2, long2, tract2)) %>%
+    check_county_bounds(county_bb = county_bb) %>%
     dm.geocode_address(bb = bb) %>%
     dm.reverse_geocode() %>%
     check_tx_bounds(bb = bb)
