@@ -330,10 +330,23 @@ save_subset_child_care_db_03 <- function(pth, config) {
                    xmax = BB[[3]],
                    ymax = BB[[4]])
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
-      
+
+      coords <- sf::st_coordinates(l$GEO_TRACTS) %>%
+        as.data.frame()
+
+      grouping_var <- tail(names(coords), 1)
+
+      names(coords)[grep(grouping_var, names(coords))] <- "group"
+
+      l$GEO_TRACTS <- coords %>%
+        dplyr::ungroup() %>%
+        dplyr::select(X, Y, group) %>%
+        dplyr::inner_join(l$GEO_TRACTS %>%
+                            dplyr::mutate(group = seq(1, dplyr::n(), 1)))
+
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-      
+
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
       l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
