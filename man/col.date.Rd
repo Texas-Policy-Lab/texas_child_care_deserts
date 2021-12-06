@@ -10,5 +10,6 @@ col.date(df)
 data.frame
 }
 \description{
-Manage date
+Manage date: filter date to be less than export date so that future dates for which 
+providers have not yet entered data will be excluded.
 }

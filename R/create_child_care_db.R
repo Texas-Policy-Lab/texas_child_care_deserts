@@ -259,7 +259,8 @@ save_subset_child_care_db <- function(pth, config) {
 
 #' @title Save a subset of the child care database for children 0-3
 #' @param pth string. Path to the root directory to create the DB.
-#' @param county string. County 5-digit FIPS code.
+#' @param config object. Object containing parameters to create the DB.
+#' @param dev boolean. St dev = FALSE to save the db to the production environment. Default is TRUE.
 #' @examples
 #' \dontrun{
 #' pth <- "C:/"
@@ -267,7 +268,7 @@ save_subset_child_care_db <- function(pth, config) {
 #' save_subset_child_care_db_03(pth = pth, county = county)
 #' }
 #' @export
-save_subset_child_care_db_03 <- function(pth, config) {
+save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
 
   if(file.exists(pth)) {
     
@@ -317,18 +318,26 @@ save_subset_child_care_db_03 <- function(pth, config) {
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
-      
-      l$BB_TRACTS <- sapply(l$ANCHOR_TRACTS, function(t) {
+
+      l$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(l$GEO_TRACTS, 'Spatial')) %>%
+        sf::st_as_sf()
+
+      l$BB <- l$GEO_TRACTS %>% 
+        sf::st_bbox()
+
+      l$BB_TRACTS <- sapply(l$SURROUND_TRACTS, function(t) {
         
-        BB <- l$GEO_TRACTS %>% 
-          dplyr::filter(tract == t) %>%
-          sf::st_bbox()
-        
+        BB <- l$XWALK_TRACTS %>%
+          dplyr::filter(anchor_tract == t) %>%
+          dplyr::inner_join(l$GEO_TRACTS %>%
+                              dplyr::select(-anchor_county), by = c("surround_tract" = "tract"))
+        BB <- sf::st_bbox(BB$geometry)
+
         data.frame(tract = t,
-                   xmin = BB[[1]],
-                   ymin = BB[[2]],
-                   xmax = BB[[3]],
-                   ymax = BB[[4]])
+                   xmin = BB$xmin,
+                   ymin = BB$ymin,
+                   xmax = BB$xmax,
+                   ymax = BB$ymax)
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
 
       l$GEO_TRACTS <- get_coords(l$GEO_TRACTS)
@@ -359,7 +368,10 @@ save_subset_child_care_db_03 <- function(pth, config) {
                                        df_prek = DF_PREK,
                                        surround_tracts = l$SURROUND_TRACTS,
                                        lt_age = 4) 
-      
+
+      l$DF_HHSC_CCL <- l$DF_HHSC_CCL %>% 
+        dplyr::filter(lat > l$BB[[2]] & lat < l$BB[[4]] & long > l$BB[[1]] & long < l$BB[[3]])
+
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
                                                             grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
@@ -453,7 +465,13 @@ save_subset_child_care_db_03 <- function(pth, config) {
       return(l)
     }, USE.NAMES = TRUE, simplify = FALSE)
     
-    save(env, file = file.path(dirname(pth), paste("03",
+    if (dev) {
+      d <- "development"
+    } else {
+      d <- "production"
+    }
+    
+    save(env, file = file.path(dirname(pth), d, paste("03",
                                                    paste(names(config), collapse = "_"), 
                                                    basename(pth), sep = "_")))
     

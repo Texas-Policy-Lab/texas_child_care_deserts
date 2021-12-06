@@ -2,7 +2,7 @@
 create_supply <- function(df_hhsc_ccl,
                           supply_adjustment_sub = NULL,
                           supply_adjustment_03 = NULL) {
-  browser()
+
   df <- df_hhsc_ccl %>%
     dplyr::left_join(supply_adjustment_sub) %>% 
     dplyr::mutate(adj_sub_capacity = licensed_capacity * desired_pct_sub_capacity)
