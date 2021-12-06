@@ -1,46 +1,3 @@
-#' @title Download ACS
-#' @description Passes in a list of parameters to download the ACS census
-#' data using functions from the tidycensus package
-#' @param tbls list. List of census tables with attributes to download
-#' @param raw_pth. Path to save the raw data.
-#' @details To find a list of parameters to pass see documentation for 
-#' tidycensus::get_acs
-#' @examples 
-#' \dontrun{
-#' tbls <- list(B23008 = list(year = 2019, state = 48, 
-#'                                geography = "tract", county = 439))
-#' raw_pth <- "C:/"
-#' dwnld.acs(tbls = tbls, raw_pth = raw_pth)
-#' }
-dwnld.acs <- function(tbls, raw_pth, ...) {
-
-  get_key.census()
-
-  f <- function(name, tbls, pth) {
-
-    attr <- tbls[[name]]
-    attr$table <- name
-
-    test_attr(attr)
-
-    df <- do.call(tidycensus::get_acs, attr)
-
-    if (!is.null(pth)) {
-      readr::write_csv(df, file.path(pth, paste0(name, ".csv")))
-    }
-
-    attr$df <- df
-    return(structure(attr, class = name))
-  }
-  
-  sapply(names(tbls),
-         f,
-         tbls = tbls,
-         pth = raw_pth,
-         USE.NAMES = TRUE,
-         simplify = FALSE)
-}
-
 #' @title Get HHSC CCL data
 #' @description Returns the most recent HHSC CCL Daycare and Residential 
 #' Operations 
@@ -131,6 +88,24 @@ dwnld.xwalk_zip_county <- function(pth = "https://www2.census.gov/geo/docs/maps-
   return(df)
 }
 
+#' @title Get census tract and ZCTA (zip code) Crosswalk
+#' @description Downloads the crosswalk between census tract codes and ZCTA 
+#' for Texas.
+#' @param pth Link to data: 
+#' https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt
+#' @param data_in_name string. The name to of the data to read in.
+#' @param data_in_pth string. The path to read the data in from.
+#' @export
+dwnld.xwalk_zip_tract <- function(pth = "https://www2.census.gov/geo/docs/maps-data/data/rel/zcta_tract_rel_10.txt",
+                                   state_fips) {
+  
+  df <- read.csv(url(pth)) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::filter(state == state_fips)
+  
+  return(df)
+}
+
 #' @title Get ZCTA (Zip Code) and Latitude/Longitude Coordinate Crosswalk
 #' @description Downloads the crosswalk between zip codes and latitude longitude
 #' coordinates of the center for Texas
@@ -172,6 +147,16 @@ dwnld.geo_tracts <- function(state_fips) {
     dplyr::rename(tract = geoid) %>%
     dplyr::mutate(county_code = paste0(statefp, countyfp)) %>%
     dplyr::select(tract, county_code, geometry)
+  
+  centroids <- geo %>% 
+    sf::st_centroid() %>% 
+    dplyr::mutate(cent_long = unlist(purrr::map(geometry,1)),
+                  cent_lat = unlist(purrr::map(geometry,2))) %>% 
+    sf::st_drop_geometry()
+  
+  geo <- geo %>% 
+    dplyr::left_join(centroids)
+    
   
 }
 

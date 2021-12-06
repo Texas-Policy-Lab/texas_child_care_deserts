@@ -82,6 +82,22 @@ save_subset_child_care_db(pth = pth,
                           config = config)
 ```
 
+6. Subset the database to a specific county AND 0-3 age range for application development
+
+*Note*: The tract_radius (in miles) and capacity estimates should be informed by analysis using the above functions.
+
+Dev should be set to FALSE to create the db for the production environment
+The default of dev is TRUE, so if dev is not set it will create the db for the development environment.
+```{r}
+pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
+config <- list(`48439` = list(tract_radius = 3),
+               `48201` = list(tract_radius = 3))
+
+save_subset_child_care_db_03(pth = pth,
+                             config = config,
+                             dev = FALSE)
+```
+
 ## Project workflow
 
 ### Clone the analysis and set-up the environment
@@ -104,6 +120,7 @@ save_subset_child_care_db(pth = pth,
 1. Make changes to the code according the to ticket you are working on
 2. Load the package `devtools::load_all()`
 3. Run the `child_care_db` function
+
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
 child_care_db(root = root)

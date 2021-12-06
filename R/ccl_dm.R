@@ -113,11 +113,13 @@ col.operation_type <- function(df) {
     dplyr::mutate(home_prvdr = ifelse(grepl("home", 
                                             tolower(operation_type)), TRUE, FALSE),
                   center_prvdr = ifelse(grepl("center", 
-                                              tolower(operation_type)), TRUE, FALSE)
+                                              tolower(operation_type)), TRUE, FALSE),
+                  licensedhome_prvdr = ifelse(home_prvdr & grepl("licensed", tolower(operation_type)), TRUE, FALSE),
+                  registeredhome_prvdr = ifelse(home_prvdr & grepl("registered", tolower(operation_type)), TRUE, FALSE)
     ) %>% 
     dplyr::select(-operation_type)
   
-  assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr) %in% c(TRUE, FALSE)),
+  assertthat::assert_that(all(c(df$home_prvdr, df$center_prvdr, df$licensedhome_prvdr, df$registeredhome_prvdr) %in% c(TRUE, FALSE)),
                           msg = "Operation type not binary")
   
   return(df)
@@ -148,7 +150,7 @@ col.programs_provided <- function(df) {
                   after_school_only = grepl("afterschool|after school|after-school|school age", tolower(operation_name)),
                   school_age_only = ifelse(!infant & !toddler & !prek & school, TRUE, FALSE),
                   after_school_school_age_only = ifelse(after_school_only | school_age_only, TRUE, FALSE)) %>%
-    dplyr::select(-programs_provided)
+    dplyr::select(-c(programs_provided, operation_name))
   
   assertthat::assert_that(all(c(df$after_school) %in% c(TRUE, FALSE)),
                           msg = "Operation characteristics not binary") 
@@ -192,7 +194,7 @@ col.total_capacity <- function(df) {
 #' @description Assign deserts based on provider types. Note Head Start is 
 #' included as a subsidy provider, a TRS and TRS 4 star provider.
 col.assign_deserts <- function(df, df_twc, naeyc_pth1, naeyc_pth2) {
-  
+
   naeyc <- readxl::read_excel(naeyc_pth1) %>%
     dplyr::filter(`32566_NAEYC` == "Yes") %>%
     dplyr::select(operation_number = `OP Number`) %>% 
@@ -203,14 +205,13 @@ col.assign_deserts <- function(df, df_twc, naeyc_pth1, naeyc_pth2) {
     col.operation_number() %>% 
     dplyr::mutate(naeyc = TRUE)
 
-  df <- df %>%
-    dplyr::left_join(df_twc) %>%
+  df <- df_twc %>%
+    dplyr::left_join(df) %>%
     dplyr::left_join(naeyc) %>%
     dplyr::mutate(naeyc = ifelse(is.na(naeyc), FALSE, naeyc),
                   all_provider = ifelse(!after_school_school_age_only, TRUE, FALSE),
                   sub_provider = ifelse(all_provider & (subsidy_provider | head_start | naeyc), TRUE, FALSE),
                   sub_provider = ifelse(trs_provider, TRUE, sub_provider),
-                  sub_provider = ifelse(is.na(sub_provider), subsidy, sub_provider),
                   sub_trs_provider = ifelse((sub_provider & trs_provider) | head_start | naeyc, TRUE, FALSE),
                   sub_trs4_provider = ifelse((sub_trs_provider & trs_star_level == 4) | head_start | naeyc, TRUE, FALSE))
   
@@ -244,13 +245,10 @@ col.assign_deserts <- function(df, df_twc, naeyc_pth1, naeyc_pth2) {
 dm.hhsc_ccl <- function(df,
                         input_columns = list(OPERATION_NUMBER = "character",
                                              OPERATION_NAME = "character",
-                                             OPERATION_TYPE = "character",
                                              Location_address_geo = "character",
                                              COUNTY= "character",
-                                             TOTAL_CAPACITY = "numeric",
                                              LICENSED_TO_SERVE_AGES= "character",
                                              PROGRAMS_PROVIDED= "character",
-                                             ACCEPTS_CHILD_CARE_SUBSIDIES= "character",
                                              email_address = "character",
                                              PHONE_NUMBER = "character"),
                         county_fips = NULL,
@@ -260,19 +258,15 @@ dm.hhsc_ccl <- function(df,
                         naeyc_pth1,
                         naeyc_pth2,
                         ...) {
-  
+
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::rename_all(tolower) %>%
     col.operation_number() %>%
-    col.county(state_fips = state_fips) %>%
+    col.county(state_fips = state_fips) %>% 
     col.location_address_geo(state_fips = state_fips) %>%
     col.licensed_to_serve_ages() %>%
-    col.operation_type() %>%
-    col.operation_name() %>%
     col.programs_provided() %>%
-    col.accepts_child_care_subsidies() %>%
-    col.total_capacity() %>%
     col.assign_deserts(df_twc = df_twc, 
                        naeyc_pth1 = naeyc_pth1, 
                        naeyc_pth2 = naeyc_pth2) %>%
