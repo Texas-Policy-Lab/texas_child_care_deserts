@@ -1,3 +1,22 @@
+#' @title Get coords
+#' @description Extracts the coordinates from geography variable
+#' @return data.frame
+get_coords <- function(GEO_TRACTS) {
+
+  coords <- sf::st_coordinates(GEO_TRACTS) %>%
+    as.data.frame()
+
+  grouping_var <- tail(names(coords), 1)
+
+  names(coords)[grep(grouping_var, names(coords))] <- "group"
+
+  coords %>%
+    dplyr::ungroup() %>%
+    dplyr::select(X, Y, group) %>%
+    dplyr::inner_join(GEO_TRACTS %>%
+                        dplyr::mutate(group = seq(1, dplyr::n(), 1)))
+}
+
 #' @title Get geo landmark
 get_geo <- function(county_name, key, value, geo_type) {
   Sys.sleep(10)

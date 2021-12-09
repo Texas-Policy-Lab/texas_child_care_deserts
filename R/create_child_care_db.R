@@ -339,10 +339,12 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                    xmax = BB$xmax,
                    ymax = BB$ymax)
       }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
-      
+
+      l$GEO_TRACTS <- get_coords(l$GEO_TRACTS)
+
       l$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
         dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-      
+
       l$GEO_WATERWAY <- get_geo.waterway(county_name = l$COUNTY_NAME)
 
       l$GEO_HIGHWAY <- get_geo.highway(county_name = l$COUNTY_NAME)
