@@ -107,4 +107,40 @@ create_pct_dsrt_prvdr <- function(mkt_ratio,
     dplyr::select(-n_desert)
 }
 
+#' @title Find high need table for each county
+#' @export
+high_need_table <- function(county_fips,
+                            neighborhood_attrs,
+                            zip_attrs,
+                            sub_labels,
+                            quality_labels,
+                            demand_cutoff,
+                            svi_cutoff){
+  browser()
+  
+  if (county_fips == "48201") {
+    df <-  neighborhood_attrs %>%
+      dplyr::rename(unit_analysis = neighborhood,
+                    demand = neighborhood_demand)
+  } else {
+    df <- zip_attrs %>%
+      dplyr::rename(unit_analysis = zip,
+                    demand = zip_demand)
+  }
+  
+  high_need <- df %>% 
+    dplyr::select(-tract) %>% 
+    dplyr::mutate(high_need = dplyr::case_when(desert_type == "all_provider" & label %in% sub_labels & 
+                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
+                                               desert_type == "sub_provider" & label %in% sub_labels & 
+                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
+                                               desert_type == "sub_trs_provider" & label %in% quality_labels & 
+                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
+                                               desert_type == "sub_trs4_provider" & label %in% quality_labels & 
+                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE)) %>% 
+    dplyr::filter(high_need)
+  
+  return(high_need)
+  
+}
 
