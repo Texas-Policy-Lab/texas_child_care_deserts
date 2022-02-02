@@ -144,3 +144,35 @@ high_need_table <- function(county_fips,
   
 }
 
+#' @title Find providers serving high need areas
+#' @export
+prvdrs_serving_high_need <- function(county_fips,
+                                     high_need,
+                                     xwalk_neighborhood_tract,
+                                     xwalk_zip_tract,
+                                     providers){
+  browser()
+  if (county_fips == "48201") {
+    df <-  xwalk_neighborhood_tract %>%
+      dplyr::rename(unit_analysis = neighborhood)
+  } else {
+    df <- xwalk_zip_tract %>%
+      dplyr::rename(unit_analysis = zip)
+  }
+  
+  df <- df %>% 
+    dplyr::filter(unit_analysis %in% high_need$unit_analysis)
+  
+  providers_in_high_need_nbrhd <- providers %>% 
+    dplyr::left_join(`48201`$XWALK_NEIGHBORHOOD_TRACT) %>% 
+    dplyr::left_join(tract_neighborhood_need_hq) %>% 
+    dplyr::filter(high_need_neighborhood)
+  
+}
+
+df <- xwalk_zip_tract %>%
+  dplyr::rename(unit_analysis = zip)
+
+df2 <- df %>% 
+  dplyr::left_join(high_need) %>% 
+  dplyr::inner_join(providers)

@@ -442,6 +442,12 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                                            demand_cutoff = 1000,
                                            svi_cutoff = .5)
       
+      l$PRVDRS_SERVING_HIGH_NEED <- prvdrs_serving_high_need(county_fips = l$COUNTY_FIPS,
+                                                             high_need = l$HIGH_NEED_TABLE,
+                                                             xwalk_neighborhood_tract = l$XWALK_NEIGHBORHOOD_TRACT,
+                                                             xwalk_zip_tract = l$XWALK_ZIP_TRACT,
+                                                             providers = l$DF_HHSC_CCL)
+      
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
                                                   xwalk_tracts = l$XWALK_TRACTS)
