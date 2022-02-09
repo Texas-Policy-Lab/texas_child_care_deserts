@@ -23,6 +23,19 @@ col.date <- function(df){
   return(df)
 }
 
+#' @title Data management for reporting column
+#' @description Filter to only "reporting"
+#' @param df
+#' @return data.frame
+col.reporting <- function(df){
+  
+  df <- df %>% 
+    dplyr::mutate(reporting = ifelse(reporting_status == "Reporting", T, F)) %>% 
+    dplyr::filter(reporting)
+  
+  return(df)
+}
+
 #' @title Data management for modification date column
 #' @description Manage modification date: pick most recent modification for each provider
 #' @param df
@@ -33,7 +46,7 @@ col.date <- function(df){
 #' @return data.frame
 col.mod_date <- function(df, 
                          start_date = as.Date("07082021", "%m%d%Y"),
-                         max_date = as.Date("08042021", "%m%d%Y")){
+                         max_date = as.Date("11162021", "%m%d%Y")){
 
   df <- df %>% 
     dplyr::mutate(mod_date = as.Date(ifelse(grepl("-", last_modified_at_a),
@@ -44,7 +57,7 @@ col.mod_date <- function(df,
                                      origin = "1970-01-01"),
                   days_since_mod = max_date - mod_date) %>% 
     dplyr::select(-last_modified_at_a) %>% 
-    dplyr::filter(days_since_mod >= 0 & days_since_mod <= 14) %>% 
+    dplyr::filter(days_since_mod >= 0 & days_since_mod <= 15) %>% 
     dplyr::group_by(operation_number) %>% 
     dplyr::slice(which.max(mod_date))
   
@@ -100,40 +113,42 @@ col.seats <- function(df){
 }
 
 #' @title Download Frontline provider data
-#' @description Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
+#' @description Frontline provider data comes from the childcare.bowtiebi.com portal. Current sheet was emailed by Myriam Guillen 11/16.
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv") {
+                            name = "frontline/Rice File Given on 11.16.21_Daily_Vacancy_Golden_Sheet_2021-11-16.xlsx",
+                            sheet = "Rice File") {
 
-  df <- readr::read_csv(file.path(raw_pth, name)) %>%
+  df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>%
     dplyr::mutate(export_date = parse_date.frontline(name))
 }
 
 #' @title Data management for frontline provider data
 #' @description Manage frontline data, specifically enrollment and attendance numbers
 dm.frontline <- function(df,
-                         input_columns = list(`OP Number` = "character",
-                                              `Infant Capacity` = "numeric",
-                                              `Toddler Capacity` = "numeric",
-                                              `Pre- K Capacity` = "numeric",
-                                              `School Aged Capacity` = "numeric",
+                         input_columns = list(`OP_Number` = "character",
+                                              Infant_Capacity = "numeric",
+                                              Toddler_Capacity = "numeric",
+                                              Pre_K_Capacity = "numeric",
+                                              School_Aged_Capacity = "numeric",
                                               Infant_enrollment = "numeric",
                                               Toddler_enrollment = "numeric",
                                               Preschool_enrollment = "numeric",
                                               SchoolAge_enrollment = "numeric",
                                               last_modified_at_A = "character",
                                               Date = "character",
-                                              export_date = "Date"
+                                              export_date = "Date",
+                                              Reporting_Status = "character"
                                               )){
 
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::select_all(~gsub(" ", "_", tolower(.))) %>% 
     dplyr::rename(operation_number = op_number,
-                  prek_capacity = "pre-_k_capacity",
+                  prek_capacity = "pre_k_capacity",
                   prek_enrollment = "preschool_enrollment",
                   school_capacity = "school_aged_capacity",
                   school_enrollment = "schoolage_enrollment") %>% 
-    col.date()  %>% 
+    col.reporting()  %>% 
     col.mod_date() %>% 
     col.operation_number() %>% 
     col.availability() %>% 
