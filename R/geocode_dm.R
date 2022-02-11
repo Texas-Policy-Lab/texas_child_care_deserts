@@ -30,7 +30,7 @@ check_tx_bounds <- function(df,
 #' @export
 county_bounding_box <- function(url = "https://raw.githubusercontent.com/stucka/us-county-bounding-boxes/master/bounding.csv",
                             state_fips) {
-  
+
   county_bb <- readr::read_csv(url) %>% 
     dplyr::filter(statefips == state_fips) %>% 
     dplyr::mutate(county_code = paste0(statefips, countyfips)) %>% 
@@ -39,7 +39,14 @@ county_bounding_box <- function(url = "https://raw.githubusercontent.com/stucka/
                   min_lat = extents,
                   max_long = extente,
                   min_long = extentw)
-  
+
+  assertthat::assert_that(is.numeric(county_bb$max_lat))
+  assertthat::assert_that(is.numeric(county_bb$min_lat))
+  assertthat::assert_that(is.numeric(county_bb$max_long))
+  assertthat::assert_that(is.numeric(county_bb$min_long))
+  assertthat::assert_that(all(nchar(df$county_code) == 5))
+
+  return(county_bb)
 }
 
 #' @title Check county bounds
@@ -49,15 +56,15 @@ county_bounding_box <- function(url = "https://raw.githubusercontent.com/stucka/
 check_county_bounds <- function(df,
                                 county_bb) {
   
+  assertthat::assert_that(as.numeric(df$lat))
+  assertthat::assert_that(as.numeric(df$long))
+  
   df %>% 
     dplyr::left_join(county_bb) %>% 
-    dplyr::mutate(lat = as.numeric(lat),
-                  long = as.numeric(long),
-                  lat = ifelse(lat >= min_lat & lat <= max_lat & long >= min_long & long <= max_long, lat, NA),
+    dplyr::mutate(lat = ifelse(lat >= min_lat & lat <= max_lat & long >= min_long & long <= max_long, lat, NA),
                   long = ifelse(long >= min_long & long <= max_long & lat >= min_lat & lat <= max_lat, long, NA),
                   tract = ifelse(long >= min_long & long <= max_long & lat >= min_lat & lat <= max_lat, tract, NA)) %>% 
     dplyr::select(-c(min_lat, max_lat, min_long, max_long))
-
 }
 
 
