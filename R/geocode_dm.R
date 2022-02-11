@@ -33,13 +33,20 @@ county_bounding_box <- function(url = "https://raw.githubusercontent.com/stucka/
   
   county_bb <- readr::read_csv(url) %>% 
     dplyr::filter(statefips == state_fips) %>% 
-    dplyr::mutate(county_code = paste0(statefips, countyfips)) %>% 
+    dplyr::rename(county_code = geoid10) %>% 
     dplyr::select(county_code,
                   max_lat = extentn,
                   min_lat = extents,
                   max_long = extente,
                   min_long = extentw)
-  
+
+  assertthat::assert_that(all(nchar(county_bb$county_code) == 5))
+  assertthat::assert_that(is.numeric(county_bb$max_lat))
+  assertthat::assert_that(is.numeric(county_bb$min_lat))
+  assertthat::assert_that(is.numeric(county_bb$max_long))
+  assertthat::assert_that(is.numeric(county_bb$min_long))
+
+  return(county_bb)
 }
 
 #' @title Check county bounds
