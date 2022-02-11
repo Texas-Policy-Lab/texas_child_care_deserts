@@ -30,7 +30,7 @@ col.date <- function(df){
 col.reporting <- function(df){
   
   df <- df %>% 
-    dplyr::mutate(reporting = ifelse(reporting_status == "Reporting", T, F)) %>% 
+    dplyr::mutate(reporting = reporting_status == "Reporting") %>% 
     dplyr::filter(reporting)
   
   return(df)
