@@ -15,7 +15,7 @@ col.reporting <- function(df){
   
   df <- df %>% 
     dplyr::filter(reporting_status == "Reporting") %>% 
-    dplyr::select(-reporting)
+    dplyr::select(-reporting_status)
   
   return(df)
 }
