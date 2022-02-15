@@ -83,8 +83,8 @@ col.location_address_geo <- function(df, state_fips) {
                     into = c("lat", "long"),
                     sep = "([,])")  %>% 
     dplyr::mutate(address = gsub("\n", "", address),
-                  lat = stringr::str_trim(lat, "both"),
-                  long = stringr::str_trim(long, "both"),
+                  lat = as.numeric(stringr::str_trim(lat, "both")),
+                  long = as.numeric(stringr::str_trim(long, "both")),
                   tract = NA) %>%
     dplyr::ungroup() %>% 
     dplyr::left_join(DF_HHSC_CCL %>%
@@ -97,10 +97,12 @@ col.location_address_geo <- function(df, state_fips) {
                   tract = ifelse(is.na(tract), tract2, tract),
                   address = stringr::str_to_title(address)) %>%
     dplyr::select(-c(lat2, long2, tract2)) %>%
+    check_tx_bounds(bb = bb) %>%
     check_county_bounds(county_bb = county_bb) %>%
     dm.geocode_address(bb = bb) %>%
     dm.reverse_geocode() %>%
-    check_tx_bounds(bb = bb)
+    check_tx_bounds(bb = bb) %>%
+    check_county_bounds(county_bb = county_bb)
   
   return(df)
 }
