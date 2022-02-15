@@ -7,22 +7,6 @@ parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
   date <- lubridate::ymd(stringr::str_extract(x, format))
 }
 
-#' @title Data management for date column
-#' @description Manage date: filter date to be less than export date so that future dates for which 
-#' providers have not yet entered data will be excluded.
-#' @param df
-#' @return data.frame
-col.date <- function(df){
-
-  df <- df %>% 
-    dplyr::mutate(date = as.Date(date, format = "%m-%d-%Y")) %>% 
-    dplyr::filter(date <= export_date)
-  
-  assertthat::assert_that(all(df$date <= df$export_date))
-  
-  return(df)
-}
-
 #' @title Data management for reporting column
 #' @description Filter to only "reporting"
 #' @param df
@@ -30,8 +14,8 @@ col.date <- function(df){
 col.reporting <- function(df){
   
   df <- df %>% 
-    dplyr::mutate(reporting = ifelse(reporting_status == "Reporting", T, F)) %>% 
-    dplyr::filter(reporting)
+    dplyr::filter(reporting_status == "Reporting") %>% 
+    dplyr::select(-reporting_status)
   
   return(df)
 }
