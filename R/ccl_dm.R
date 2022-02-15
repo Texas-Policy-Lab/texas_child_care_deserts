@@ -73,17 +73,20 @@ col.licensed_to_serve_ages <- function(df) {
 col.location_address_geo <- function(df, state_fips) {
   
   bb <- tx_bounding_box(state_fips = state_fips)
-  
+  county_bb <- county_bounding_box(state_fips = state_fips)
+
   df <- df %>%
     tidyr::separate(location_address_geo,
-                    into = c("address", "lat", "long"),
-                    sep = "([(,)])") %>% 
+                    into = c("address", "lat_long"),
+                    sep = "([()])") %>% 
+    tidyr::separate(lat_long,
+                    into = c("lat", "long"),
+                    sep = "([,])")  %>% 
     dplyr::mutate(address = gsub("\n", "", address),
-                  lat = stringr::str_trim(lat, "both"),
-                  long = stringr::str_trim(long, "both"),
+                  lat = as.numeric(stringr::str_trim(lat, "both")),
+                  long = as.numeric(stringr::str_trim(long, "both")),
                   tract = NA) %>%
     dplyr::ungroup() %>% 
-    check_tx_bounds(bb = bb) %>%
     dplyr::left_join(DF_HHSC_CCL %>%
                        dplyr::select(operation_number, lat, long, tract
                        ) %>%
@@ -94,9 +97,12 @@ col.location_address_geo <- function(df, state_fips) {
                   tract = ifelse(is.na(tract), tract2, tract),
                   address = stringr::str_to_title(address)) %>%
     dplyr::select(-c(lat2, long2, tract2)) %>%
+    check_tx_bounds(bb = bb) %>%
+    check_county_bounds(county_bb = county_bb) %>%
     dm.geocode_address(bb = bb) %>%
     dm.reverse_geocode() %>%
-    check_tx_bounds(bb = bb)
+    check_tx_bounds(bb = bb) %>%
+    check_county_bounds(county_bb = county_bb)
   
   return(df)
 }
