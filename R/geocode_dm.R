@@ -63,7 +63,7 @@ check_county_bounds <- function(df,
     dplyr::left_join(county_bb) %>% 
     dplyr::mutate(lat = ifelse(lat >= min_lat & lat <= max_lat & long >= min_long & long <= max_long, lat, NA),
                   long = ifelse(lat >= min_lat & lat <= max_lat & long >= min_long & long <= max_long, long, NA),
-                  tract = ifelse(is.na(lat) | is.na(long), tract, NA)) %>% 
+                  tract = ifelse(is.na(lat) | is.na(long), NA, tract)) %>% 
     dplyr::select(-c(min_lat, max_lat, min_long, max_long))
 }
 
