@@ -14,7 +14,7 @@ parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
 col.reporting <- function(df){
   
   df <- df %>% 
-    dplyr::filter(reporting == "Reporting") %>% 
+    dplyr::filter(reporting_status == "Reporting") %>% 
     dplyr::select(-reporting)
   
   return(df)
