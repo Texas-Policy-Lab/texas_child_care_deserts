@@ -213,7 +213,8 @@ dm.reverse_geocode <- function(df,
                        query = list(latitude=subset$lat[i],
                                     longitude=subset$long[i],
                                     showall="true",
-                                    format="json"),
+                                    format="json",
+                                    censusYear="2010"),
                        encode = "json")
 
         resp <- httr::content(r)
