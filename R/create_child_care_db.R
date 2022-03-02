@@ -446,6 +446,7 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                                                              high_need = l$HIGH_NEED_TABLE,
                                                              xwalk_neighborhood_tract = l$XWALK_NEIGHBORHOOD_TRACT,
                                                              xwalk_zip_tract = l$XWALK_ZIP_TRACT,
+                                                             df_supply = l$DF_SUPPLY,
                                                              providers = l$DF_HHSC_CCL)
       
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,

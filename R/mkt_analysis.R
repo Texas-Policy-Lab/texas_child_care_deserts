@@ -116,8 +116,7 @@ high_need_table <- function(county_fips,
                             quality_labels,
                             demand_cutoff,
                             svi_cutoff){
-  browser()
-  
+
   if (county_fips == "48201") {
     df <-  neighborhood_attrs %>%
       dplyr::rename(unit_analysis = neighborhood,
@@ -150,6 +149,7 @@ prvdrs_serving_high_need <- function(county_fips,
                                      high_need,
                                      xwalk_neighborhood_tract,
                                      xwalk_zip_tract,
+                                     df_supply,
                                      providers){
   browser()
   if (county_fips == "48201") {
@@ -163,16 +163,11 @@ prvdrs_serving_high_need <- function(county_fips,
   df <- df %>% 
     dplyr::filter(unit_analysis %in% high_need$unit_analysis)
   
-  providers_in_high_need_nbrhd <- providers %>% 
-    dplyr::left_join(`48201`$XWALK_NEIGHBORHOOD_TRACT) %>% 
-    dplyr::left_join(tract_neighborhood_need_hq) %>% 
-    dplyr::filter(high_need_neighborhood)
+  providers_in_high_need_nbrhd <- df_supply %>% 
+    dplyr::left_join(df) %>% 
+    dplyr::inner_join(high_need, by = c("unit_analysis", "desert" = "desert_type")) %>% 
+    dplyr::left_join(providers)
+  
+  return(providers_in_high_need_nbrhd)
   
 }
-
-df <- xwalk_zip_tract %>%
-  dplyr::rename(unit_analysis = zip)
-
-df2 <- df %>% 
-  dplyr::left_join(high_need) %>% 
-  dplyr::inner_join(providers)
