@@ -440,7 +440,7 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                                            sub_labels = c("< 5 seats", ">= 5 and < 15", ">= 15 and < 25", ">= 25 and < 33"),
                                            quality_labels = c("< 5 seats", ">= 5 and < 15"),
                                            demand_cutoff = 1000,
-                                           svi_cutoff = .5)
+                                           svi_cutoff = .8)
       
       l$PRVDRS_SERVING_HIGH_NEED <- prvdrs_serving_high_need(county_fips = l$COUNTY_FIPS,
                                                              high_need = l$HIGH_NEED_TABLE,

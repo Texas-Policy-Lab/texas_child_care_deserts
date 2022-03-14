@@ -151,7 +151,7 @@ prvdrs_serving_high_need <- function(county_fips,
                                      xwalk_zip_tract,
                                      df_supply,
                                      providers){
-  browser()
+
   if (county_fips == "48201") {
     df <-  xwalk_neighborhood_tract %>%
       dplyr::rename(unit_analysis = neighborhood)
