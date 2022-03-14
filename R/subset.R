@@ -104,15 +104,16 @@ subset_hhsc_ccl <- function(df_hhsc_ccl,
     dplyr::mutate(prvdr_type_desc = as.factor(prvdr_type_desc),
                   subsidy_desc = ifelse(sub_provider, "Yes", "No"),
                   trs_desc = ifelse(trs_provider, "Yes", "No"),
-                  subsidy_trs_desc = dplyr::case_when(prek_prvdr ~ "Pre-K",
-                                                      !subsidy_provider & !prek_prvdr ~ "Non-subsidy",
-                                                      subsidy_provider & !trs_provider ~ "Subsidy, non-TRS",
-                                                      trs_provider ~ paste("TRS ", trs_star_level)),
-                  prvdr_size_desc = dplyr::case_when(home_prvdr & licensedhome_prvdr ~ "Licensed Home",
-                                                     home_prvdr & registeredhome_prvdr ~ "Registered Home",
-                                                     center_prvdr & licensed_capacity <= 50 ~ "Small Center (0-50)",
-                                                     center_prvdr & licensed_capacity > 50 & licensed_capacity <= 99 ~ "Medium Center (51-99)",
-                                                     center_prvdr & licensed_capacity > 99 ~ "Large Center (100+)")) %>%
+                  subsidy_trs_desc = factor(dplyr::case_when(prek_prvdr ~ "Pre-K",
+                                                             !subsidy_provider & !prek_prvdr ~ "Non-subsidy",
+                                                             subsidy_provider & !trs_provider ~ "Subsidy, non-TRS",
+                                                             trs_provider ~ paste("TRS", trs_star_level)),
+                                            levels = c("Non-subsidy", "Subsidy, non-TRS", "TRS 2", "TRS 3", "TRS 4", "Pre-K")),
+                  prvdr_size_desc = as.factor(dplyr::case_when(home_prvdr & licensedhome_prvdr ~ "Licensed Home",
+                                                               home_prvdr & registeredhome_prvdr ~ "Registered Home",
+                                                               center_prvdr & licensed_capacity <= 50 ~ "Small Center (0-50)",
+                                                               center_prvdr & licensed_capacity > 50 & licensed_capacity <= 99 ~ "Medium Center (51-99)",
+                                                               center_prvdr & licensed_capacity > 99 ~ "Large Center (100+)"))) %>%
     dplyr::left_join(tigris::fips_codes %>%
                        dplyr::mutate(county_code = paste(state_code, county_code, sep = "")) %>%
                        dplyr::select(county_code, county))
