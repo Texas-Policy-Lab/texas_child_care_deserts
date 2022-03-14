@@ -111,11 +111,7 @@ create_pct_dsrt_prvdr <- function(mkt_ratio,
 #' @export
 high_need_table <- function(county_fips,
                             neighborhood_attrs,
-                            zip_attrs,
-                            sub_labels,
-                            quality_labels,
-                            demand_cutoff,
-                            svi_cutoff){
+                            zip_attrs){
 
   if (county_fips == "48201") {
     df <-  neighborhood_attrs %>%
@@ -128,16 +124,7 @@ high_need_table <- function(county_fips,
   }
   
   high_need <- df %>% 
-    dplyr::select(-tract) %>% 
-    dplyr::mutate(high_need = dplyr::case_when(desert_type == "all_provider" & label %in% sub_labels & 
-                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
-                                               desert_type == "sub_provider" & label %in% sub_labels & 
-                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
-                                               desert_type == "sub_trs_provider" & label %in% quality_labels & 
-                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE,
-                                               desert_type == "sub_trs4_provider" & label %in% quality_labels & 
-                                                 demand > demand_cutoff & med_svi > svi_cutoff ~ TRUE)) %>% 
-    dplyr::filter(high_need)
+    dplyr::select(-tract) 
   
   return(high_need)
   
@@ -159,9 +146,6 @@ prvdrs_serving_high_need <- function(county_fips,
     df <- xwalk_zip_tract %>%
       dplyr::rename(unit_analysis = zip)
   }
-  
-  df <- df %>% 
-    dplyr::filter(unit_analysis %in% high_need$unit_analysis)
   
   providers_in_high_need_nbrhd <- df_supply %>% 
     dplyr::left_join(df) %>% 
