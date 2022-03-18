@@ -107,4 +107,49 @@ create_pct_dsrt_prvdr <- function(mkt_ratio,
     dplyr::select(-n_desert)
 }
 
+#' @title Find high need table for each county
+#' @export
+high_need_table <- function(county_fips,
+                            neighborhood_attrs,
+                            zip_attrs) {
 
+  if (county_fips == "48201") {
+    df <- neighborhood_attrs %>%
+      dplyr::rename(unit_analysis = neighborhood,
+                    demand = neighborhood_demand)
+  } else {
+    df <- zip_attrs %>%
+      dplyr::rename(unit_analysis = zip,
+                    demand = zip_demand)
+  }
+  
+  high_need <- df %>% 
+    dplyr::select(-tract) 
+  
+  return(high_need)
+}
+
+#' @title Find providers serving high need areas
+#' @export
+prvdrs_serving_high_need <- function(county_fips,
+                                     high_need,
+                                     xwalk_neighborhood_tract,
+                                     xwalk_zip_tract,
+                                     df_supply,
+                                     providers) {
+
+  if (county_fips == "48201") {
+    df <- xwalk_neighborhood_tract %>%
+      dplyr::rename(unit_analysis = neighborhood)
+  } else {
+    df <- xwalk_zip_tract %>%
+      dplyr::rename(unit_analysis = zip)
+  }
+  
+  providers_in_high_need_nbrhd <- df_supply %>% 
+    dplyr::left_join(df) %>% 
+    dplyr::inner_join(high_need, by = c("unit_analysis", "desert" = "desert_type")) %>% 
+    dplyr::left_join(providers)
+  
+  return(providers_in_high_need_nbrhd)
+}

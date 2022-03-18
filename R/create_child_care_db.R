@@ -271,7 +271,7 @@ save_subset_child_care_db <- function(pth, config) {
 save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
 
   if(file.exists(pth)) {
-    
+
     load_env(file.path(pth))
     
     env <- sapply(names(config), function(county_fips) {
@@ -433,6 +433,17 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       l$ZIP_ATTRS <- zip_attributes(zip_desert = l$ZIP_DESERT,
                                     zip_demand = l$ZIP_DEMAND,
                                     zip_svi = l$ZIP_SVI)
+
+      l$HIGH_NEED_TABLE <- high_need_table(county_fips = l$COUNTY_FIPS,
+                                           neighborhood_attrs = l$NEIGHBORHOOD_ATTRS,
+                                           zip_attrs = l$ZIP_ATTRS)
+
+      l$PRVDRS_SERVING_HIGH_NEED <- prvdrs_serving_high_need(county_fips = l$COUNTY_FIPS,
+                                                             high_need = l$HIGH_NEED_TABLE,
+                                                             xwalk_neighborhood_tract = l$XWALK_NEIGHBORHOOD_TRACT,
+                                                             xwalk_zip_tract = l$XWALK_ZIP_TRACT,
+                                                             df_supply = l$DF_SUPPLY,
+                                                             providers = l$DF_HHSC_CCL)
       
       l$PCT_DESERT_PRVDR <- create_pct_dsrt_prvdr(mkt_ratio = l$DF_MKT_RATIO,
                                                   df_supply = l$DF_SUPPLY,
