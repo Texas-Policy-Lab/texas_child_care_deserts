@@ -111,10 +111,10 @@ create_pct_dsrt_prvdr <- function(mkt_ratio,
 #' @export
 high_need_table <- function(county_fips,
                             neighborhood_attrs,
-                            zip_attrs){
+                            zip_attrs) {
 
   if (county_fips == "48201") {
-    df <-  neighborhood_attrs %>%
+    df <- neighborhood_attrs %>%
       dplyr::rename(unit_analysis = neighborhood,
                     demand = neighborhood_demand)
   } else {
@@ -127,7 +127,6 @@ high_need_table <- function(county_fips,
     dplyr::select(-tract) 
   
   return(high_need)
-  
 }
 
 #' @title Find providers serving high need areas
@@ -137,10 +136,10 @@ prvdrs_serving_high_need <- function(county_fips,
                                      xwalk_neighborhood_tract,
                                      xwalk_zip_tract,
                                      df_supply,
-                                     providers){
+                                     providers) {
 
   if (county_fips == "48201") {
-    df <-  xwalk_neighborhood_tract %>%
+    df <- xwalk_neighborhood_tract %>%
       dplyr::rename(unit_analysis = neighborhood)
   } else {
     df <- xwalk_zip_tract %>%
@@ -153,5 +152,4 @@ prvdrs_serving_high_need <- function(county_fips,
     dplyr::left_join(providers)
   
   return(providers_in_high_need_nbrhd)
-  
 }

@@ -433,7 +433,7 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       l$ZIP_ATTRS <- zip_attributes(zip_desert = l$ZIP_DESERT,
                                     zip_demand = l$ZIP_DEMAND,
                                     zip_svi = l$ZIP_SVI)
-      browser()
+
       l$HIGH_NEED_TABLE <- high_need_table(county_fips = l$COUNTY_FIPS,
                                            neighborhood_attrs = l$NEIGHBORHOOD_ATTRS,
                                            zip_attrs = l$ZIP_ATTRS)
