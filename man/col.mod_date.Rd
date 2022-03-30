@@ -7,7 +7,7 @@
 col.mod_date(
   df,
   start_date = as.Date("07082021", "\%m\%d\%Y"),
-  max_date = as.Date("08042021", "\%m\%d\%Y")
+  max_date = as.Date("11162021", "\%m\%d\%Y")
 )
 }
 \arguments{
