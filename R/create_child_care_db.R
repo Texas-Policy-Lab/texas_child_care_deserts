@@ -495,7 +495,9 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
 
 #' @title Save a subset of the child care database for children 0-3 for a group of counties
 #' @param pth string. Path to the root directory to create the DB.
-#' @param config object. Object containing parameters to create the DB.
+#' @param config object. Object containing parameters to create the DB. 
+#' Config should be named list with 3 components: "label" for naming, "county_names" list of counties 
+#' to include, "tract_radius"
 #' @param dev boolean. St dev = FALSE to save the db to the production environment. Default is TRUE.
 #' @export
 save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
@@ -514,7 +516,7 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
                                       adj_tracts = ADJ_TRACTS ,
                                       tract_radius = config$tract_radius,
-                                      county_fips = config$county_codes)
+                                      county_fips = env$county_codes)
     
     env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
     
@@ -530,7 +532,7 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     
     env$GEO_TRACTS <- GEO_TRACTS %>%
         dplyr::filter(tract %in% env$SURROUND_TRACTS) %>%
-        dplyr::mutate(anchor_county = ifelse(substr(tract, 0, 5) %in% county_codes, T, F)) %>%
+        dplyr::mutate(anchor_county = ifelse(substr(tract, 0, 5) %in% env$county_codes, T, F)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
     
     env$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(env$GEO_TRACTS, 'Spatial')) %>%
@@ -556,9 +558,6 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     
     env$GEO_TRACTS <- get_coords(env$GEO_TRACTS)
     
-    env$LU_COUNTY_CODE <- LU_COUNTY_CODE %>% 
-      dplyr::filter(county_code %in% l$SURROUND_COUNTY)
-    
     env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
                                                  dplyr::filter(tract %in% env$SURROUND_TRACTS),
                                                lt_age = 4)
@@ -576,7 +575,7 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
                                        lt_age = 4) 
     
     env$DF_HHSC_CCL <- env$DF_HHSC_CCL %>% 
-      dplyr::filter(lat > l$BB[[2]] & lat < l$BB[[4]] & long > l$BB[[1]] & long < l$BB[[3]])
+      dplyr::filter(lat > env$BB[[2]] & lat < env$BB[[4]] & long > env$BB[[1]] & long < env$BB[[3]])
     
     env$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = env$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
@@ -601,7 +600,7 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
                                             mkt_demand = env$DF_MKT_DEMAND)
     
     env$TRACT_SVI <- DF_TRACT_SVI %>% 
-        dplyr::filter(county_code %in% county_codes)
+        dplyr::filter(county_code %in% env$county_codes)
     
     if (dev) {
       d <- "development"
@@ -610,7 +609,7 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     }
     
     save(env, file = file.path(dirname(pth), d, paste("03",
-                                                      paste(names(config), collapse = "_"), 
+                                                      paste(config$label, collapse = "_"), 
                                                       basename(pth), sep = "_")))
     
   } else {
