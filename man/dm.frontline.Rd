@@ -6,11 +6,12 @@
 \usage{
 \method{dm}{frontline}(
   df,
-  input_columns = list(`OP Number` = "character", `Infant Capacity` = "numeric",
-    `Toddler Capacity` = "numeric", `Pre- K Capacity` = "numeric", `School Aged Capacity`
-    = "numeric", Infant_enrollment = "numeric", Toddler_enrollment = "numeric",
+  input_columns = list(OP_Number = "character", Infant_Capacity = "numeric",
+    Toddler_Capacity = "numeric", Pre_K_Capacity = "numeric", School_Aged_Capacity =
+    "numeric", Infant_enrollment = "numeric", Toddler_enrollment = "numeric",
     Preschool_enrollment = "numeric", SchoolAge_enrollment = "numeric",
-    last_modified_at_A = "character", Date = "character", export_date = "Date")
+    last_modified_at_A = "character", Date = "character", export_date = "Date",
+    Reporting_Status = "character")
 )
 }
 \description{

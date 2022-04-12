@@ -492,3 +492,129 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                                   the universe of child care data before subsetting.")
   }
 }
+
+#' @title Save a subset of the child care database for children 0-3 for a group of counties
+#' @param pth string. Path to the root directory to create the DB.
+#' @param config object. Object containing parameters to create the DB. 
+#' Config should be named list with 3 components: "label" for naming, "county_names" list of counties 
+#' to include, "tract_radius"
+#' @param dev boolean. St dev = FALSE to save the db to the production environment. Default is TRUE.
+#' @export
+save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
+  
+  if(file.exists(pth)) {
+    
+    load_env(file.path(pth))
+    
+    env <- new.env()
+    
+    env$county_codes <- tigris::list_counties(state = 48) %>% 
+      dplyr::filter(county %in% config$county_names) %>% 
+      dplyr::mutate(county_code = paste0("48", county_code)) %>% 
+      dplyr::pull(county_code)
+    
+    env$XWALK_TRACTS <- subset_tracts(xwalk_tracts = XWALK_TRACTS,
+                                      adj_tracts = ADJ_TRACTS ,
+                                      tract_radius = config$tract_radius,
+                                      county_fips = env$county_codes)
+    
+    env$XWALK_TRACT_DESERT <- xwalk_tract_desert(tracts = env$XWALK_TRACTS)
+    
+    env$SURROUND_TRACTS <- subset_surround_tracts(xwalk_tracts = env$XWALK_TRACTS)
+    
+    env$ANCHOR_TRACTS <- env$XWALK_TRACTS %>% 
+        dplyr::distinct(anchor_tract) %>% 
+        dplyr::pull(anchor_tract)
+    
+    env$SURROUND_COUNTY <- env$XWALK_TRACTS %>% 
+        dplyr::distinct(surround_county) %>% 
+        dplyr::pull(surround_county)
+    
+    env$GEO_TRACTS <- GEO_TRACTS %>%
+        dplyr::filter(tract %in% env$SURROUND_TRACTS) %>%
+        dplyr::mutate(anchor_county = ifelse(substr(tract, 0, 5) %in% env$county_codes, T, F)) %>%
+        dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
+    
+    env$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(env$GEO_TRACTS, 'Spatial')) %>%
+        sf::st_as_sf()
+    
+    env$BB <- env$GEO_TRACTS %>% 
+        sf::st_bbox()
+    
+    env$BB_TRACTS <- sapply(env$SURROUND_TRACTS, function(t) {
+        
+        BB <- env$XWALK_TRACTS %>%
+          dplyr::filter(anchor_tract == t) %>%
+          dplyr::inner_join(env$GEO_TRACTS %>%
+                              dplyr::select(-anchor_county), by = c("surround_tract" = "tract"))
+        BB <- sf::st_bbox(BB$geometry)
+        
+        data.frame(tract = t,
+                   xmin = BB$xmin,
+                   ymin = BB$ymin,
+                   xmax = BB$xmax,
+                   ymax = BB$ymax)
+      }, USE.NAMES = T, simplify = F) %>% dplyr::bind_rows()
+    
+    env$GEO_TRACTS <- get_coords(env$GEO_TRACTS)
+    
+    env$DF_TRACT_DEMAND <- create_tract_demand(demand = DF_DEMAND %>%
+                                                 dplyr::filter(tract %in% env$SURROUND_TRACTS),
+                                               lt_age = 4)
+    
+    env$DF_MKT_DEMAND <- create_market_demand(tract_demand = env$DF_TRACT_DEMAND, 
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
+    
+    env$XWALK_TRACT_PRVDR <- process.xwalk_tract_prvdr(xwalk_tracts = env$XWALK_TRACTS,
+                                                       df_hhsc_ccl = DF_HHSC_CCL)
+    
+    env$DF_HHSC_CCL <- subset_hhsc_ccl(df_hhsc_ccl = DF_HHSC_CCL,
+                                       df_prek = DF_PREK,
+                                       surround_tracts = env$SURROUND_TRACTS,
+                                       lt_age = 4) 
+    
+    env$DF_HHSC_CCL <- env$DF_HHSC_CCL %>% 
+      dplyr::filter(lat > env$BB[[2]] & lat < env$BB[[4]] & long > env$BB[[1]] & long < env$BB[[3]])
+    
+    env$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = env$DF_HHSC_CCL,
+                                                            df_frontline = DF_FRONTLINE,
+                                                            grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
+    
+    env$SUPPLY_ADJUSTMENT_SUB <- calc.capacity_adjustment_sub(df_hhsc_ccl = env$DF_HHSC_CCL,
+                                                              df_frontline = DF_FRONTLINE,
+                                                              df_supply_adjustment_03 = env$SUPPLY_ADJUSTMENT_03,
+                                                              grouping_vars = c("sub_provider", "sub_trs_provider", "center_prvdr", "prvdr_size_desc"))
+    
+    env$DF_SUPPLY <- create_supply(df_hhsc_ccl = env$DF_HHSC_CCL,
+                                   supply_adjustment_sub = env$SUPPLY_ADJUSTMENT_SUB,
+                                   supply_adjustment_03 = env$SUPPLY_ADJUSTMENT_03)
+    
+    env$DF_TRACT_SUPPLY <- create_tract_supply(supply = env$DF_SUPPLY)
+    
+    env$DF_MKT_SUPPLY <- create_market_supply(tract_supply = env$DF_TRACT_SUPPLY,
+                                              tracts = env$XWALK_TRACTS,
+                                              xwalk_tract_desert = env$XWALK_TRACT_DESERT)
+    
+    env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
+                                            mkt_demand = env$DF_MKT_DEMAND)
+    
+    env$TRACT_SVI <- DF_TRACT_SVI %>% 
+        dplyr::filter(county_code %in% env$county_codes)
+    
+    if (dev) {
+      d <- "development"
+    } else {
+      d <- "production"
+    }
+    
+    save(env, file = file.path(dirname(pth), d, paste("03",
+                                                      paste(config$label, collapse = "_"), 
+                                                      basename(pth), sep = "_")))
+    
+  } else {
+    assertthat::assert_that(FALSE, 
+                            msg = "Please run child_care_db() function to create
+                                  the universe of child care data before subsetting.")
+  }
+}
