@@ -112,7 +112,7 @@ col.operation_name_twc <- function(df) {
 #' @title Download TWC provider data
 #' @description TWC provider data is emailed by Shay when we request
 dwnld.twc <- function(raw_pth, 
-                      name = "Closure Report 11.8.21.xlsx",
+                      name = "Provider Closure Report - April 2022.xlsx",
                       sheet = "All Provider Level") {
   
   df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>% 
