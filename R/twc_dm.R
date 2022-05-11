@@ -1,8 +1,8 @@
 #' @title Parse TWC date
 #' @param format string. The format to use to parse the string. Default is
-#' '%m.%d.%y'.
+#' '%m/%Y'.
 #' @return date
-parse_date.twc <- function(x, format = "%m.%d.%y"){
+parse_date.twc <- function(x, format = "%m/%Y"){
   
   date <- lubridate::parse_date_time(x, format)
 }
