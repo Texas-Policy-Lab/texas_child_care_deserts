@@ -54,14 +54,13 @@ col.mod_date <- function(df,
 col.availability <- function(df){
 
   df <- df %>%  
-    dplyr::mutate(dplyr::across(ends_with("capacity"), function(x) tidyr::replace_na(as.numeric(x), 0)),
-                  availability_03 = infant_capacity + toddler_capacity + prek_capacity/2,
-                  availability_05 = infant_capacity + toddler_capacity + prek_capacity,
-                  availability_total = infant_capacity + toddler_capacity + prek_capacity + school_capacity) %>% 
-    dplyr::select(-c(infant_capacity,
-                     toddler_capacity,
-                     prek_capacity,
-                     school_capacity))
+    dplyr::mutate(availability_03 = infant_availability + toddler_availability + prek_availability/2,
+                  availability_05 = infant_availability + toddler_availability + prek_availability,
+                  availability_total = infant_availability + toddler_availability + prek_availability + school_availability) %>% 
+    dplyr::select(-c(infant_availability,
+                     toddler_availability,
+                     prek_availability,
+                     school_availability))
   
 }
 
@@ -72,8 +71,7 @@ col.availability <- function(df){
 col.enrollment <- function(df){
 
   df <- df %>%  
-    dplyr::mutate(dplyr::across(ends_with("enrollment"), function(x) tidyr::replace_na(as.numeric(x), 0)),
-                  enrollment_03 = infant_enrollment + toddler_enrollment + prek_enrollment/2,
+    dplyr::mutate(enrollment_03 = infant_enrollment + toddler_enrollment + prek_enrollment/2,
                   enrollment_05 = infant_enrollment + toddler_enrollment + prek_enrollment,
                   enrollment_total = infant_enrollment + toddler_enrollment + prek_enrollment + school_enrollment) %>% 
     dplyr::select(-c(infant_enrollment,
@@ -96,44 +94,76 @@ col.seats <- function(df){
   
 }
 
+#' @title Merge availability and enrollment data
+#' @description If "frontline" availability and enrollment data come in two separate sheets,
+#' merge based on operation number
+merge.frontline_sheets <- function(raw_pth,
+                                   ava_file_name,
+                                   enr_file_name,
+                                   full_file_name){
+  
+  availability <- readxl::read_excel(file.path(raw_pth, ava_file_name))
+  enrollment <- readxl::read_excel(file.path(raw_pth, enr_file_name))
+  
+  ava_enr <- enrollment %>% 
+    dplyr::rename("OpNumber" = `Op Number`) %>% 
+    dplyr::full_join(availability, by = "OpNumber") %>% 
+    dplyr::select(OpNumber,
+                  starts_with(c("Enr", "Avail"))) %>% 
+    dplyr::select_all(~gsub(": ", "", .))
+  
+  write.csv(ava_enr, file.path(raw_pth, full_file_name), row.names = F)
+}
+
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com portal. Current sheet was emailed by Myriam Guillen 11/16.
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/Rice File Given on 11.16.21_Daily_Vacancy_Golden_Sheet_2021-11-16.xlsx",
-                            sheet = "Rice File") {
-
-  df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>%
-    dplyr::mutate(export_date = parse_date.frontline(name))
+                            full_file_name = "frontline/2022-04-07_ava_enr.csv",
+                            ava_file_name = "frontline/Availability Report_040722_Public.xlsx",
+                            enr_file_name = "frontline/Spring Enrollment for TPL.xlsx") {
+  
+  ava_enr_pth <- file.path(raw_pth, full_file_name)
+  already_run <- file.exists(ava_enr_pth)
+  
+  if (!already_run) {
+    
+    merge.frontline_sheets(raw_pth,
+                           ava_file_name,
+                           enr_file_name,
+                           full_file_name)
+    
+  }
+  
+  df <- read.csv(file.path(raw_pth, full_file_name)) %>%
+    dplyr::mutate(export_date = parse_date.frontline(full_file_name))
 }
 
 #' @title Data management for frontline provider data
 #' @description Manage frontline data, specifically enrollment and attendance numbers
 dm.frontline <- function(df,
-                         input_columns = list(`OP_Number` = "character",
-                                              Infant_Capacity = "numeric",
-                                              Toddler_Capacity = "numeric",
-                                              Pre_K_Capacity = "numeric",
-                                              School_Aged_Capacity = "numeric",
-                                              Infant_enrollment = "numeric",
-                                              Toddler_enrollment = "numeric",
-                                              Preschool_enrollment = "numeric",
-                                              SchoolAge_enrollment = "numeric",
-                                              last_modified_at_A = "character",
-                                              Date = "character",
-                                              export_date = "Date",
-                                              Reporting_Status = "character"
-                                              )){
+                         input_columns = list(OpNumber = "integer",
+                                              AvailSlotsInfants = "integer",
+                                              AvailSlotsToddlers = "integer",
+                                              AvailSlotsPreschool = "integer",
+                                              AvailSlotsSchoolAge = "integer",
+                                              EnrInfants = "integer",
+                                              EnrToddlers = "integer",
+                                              EnrPreschool = "integer",
+                                              EnrSchoolAge = "integer",
+                                              export_date = "Date")){
 
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::select_all(~gsub(" ", "_", tolower(.))) %>% 
-    dplyr::rename(operation_number = op_number,
-                  prek_capacity = "pre_k_capacity",
-                  prek_enrollment = "preschool_enrollment",
-                  school_capacity = "school_aged_capacity",
-                  school_enrollment = "schoolage_enrollment") %>% 
-    col.reporting()  %>% 
-    col.mod_date() %>% 
+    dplyr::rename(operation_number = opnumber,
+                  infant_availability = "availslotsinfants",
+                  infant_enrollment = "enrinfants",
+                  toddler_availability = "availslotstoddlers",
+                  toddler_enrollment = "enrtoddlers",
+                  prek_availability = "availslotspreschool",
+                  prek_enrollment = "enrpreschool",
+                  school_availability = "availslotsschoolage",
+                  school_enrollment = "enrschoolage") %>% 
     col.operation_number() %>% 
     col.availability() %>% 
     col.enrollment() %>% 
