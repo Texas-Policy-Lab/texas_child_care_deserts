@@ -8,6 +8,9 @@ API to create data for any count on child care deserts in Texas
 
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
+naeyc_pth2 <- "NAEYC Providers - NAEYC - 5.26.21.xlsx"
+naeyc_pth1 <- "BP4K - NAEYC List - 5.26.21.xlsx"
+
 child_care_db(root = root,
               naeyc_pth1 = naeyc_pth1,
               naeyc_pth2 = naeyc_pth2)
