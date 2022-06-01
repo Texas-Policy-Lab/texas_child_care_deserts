@@ -45,6 +45,15 @@ check_type.numeric <- function(v,
                           msg = msg)
 }
 
+#' @title Test for integer column or vector
+#' @inheritParams check_type
+check_type.integer <- function(v, 
+                               msg = "Not an integer vector") {
+  
+  assertthat::assert_that(class(v) == "integer",
+                          msg = msg)
+}
+
 #' @title Test for date column or vector
 #' @inheritParams check_type
 check_type.Date <- function(v, 
