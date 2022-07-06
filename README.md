@@ -1,4 +1,10 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # Texas Child Care Deserts
+# This is Patricia making a small change to see how it's done
 
 API to create data for any count on child care deserts in Texas
 
