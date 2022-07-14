@@ -1,9 +1,10 @@
+
 #' @title Parse frontline date
 #' @param format string. The format to use to parse the string. Default is
 #' '%m.%d.%y'.
 #' @return date
 parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
-
+  
   date <- lubridate::ymd(stringr::str_extract(x, format))
 }
 
@@ -13,7 +14,7 @@ parse_date.frontline <- function(x, format = "\\d{4}-\\d{2}-\\d{2}"){
 #' @param df
 #' @return data.frame
 col.date <- function(df){
-
+  
   df <- df %>% 
     dplyr::mutate(date = as.Date(date, format = "%m-%d-%Y")) %>% 
     dplyr::filter(date <= export_date)
@@ -34,7 +35,7 @@ col.date <- function(df){
 col.mod_date <- function(df, 
                          start_date = as.Date("07082021", "%m%d%Y"),
                          max_date = as.Date("08042021", "%m%d%Y")){
-
+  
   df <- df %>% 
     dplyr::mutate(mod_date = as.Date(ifelse(grepl("-", last_modified_at_a),
                                             as.Date(last_modified_at_a,
@@ -55,7 +56,7 @@ col.mod_date <- function(df,
 #' @param df
 #' @return data.frame
 col.availability <- function(df){
-
+  
   df <- df %>%  
     dplyr::mutate(dplyr::across(ends_with("capacity"), function(x) tidyr::replace_na(as.numeric(x), 0)),
                   availability_03 = infant_capacity + toddler_capacity + prek_capacity/2,
@@ -73,7 +74,7 @@ col.availability <- function(df){
 #' @param df
 #' @return data.frame
 col.enrollment <- function(df){
-
+  
   df <- df %>%  
     dplyr::mutate(dplyr::across(ends_with("enrollment"), function(x) tidyr::replace_na(as.numeric(x), 0)),
                   enrollment_03 = infant_enrollment + toddler_enrollment + prek_enrollment/2,
@@ -91,7 +92,7 @@ col.enrollment <- function(df){
 #' @param df
 #' @return data.frame
 col.seats <- function(df){
-
+  
   df <- df %>%  
     dplyr::mutate(seats_03 = availability_03 + enrollment_03,
                   seats_05 = availability_05 + enrollment_05,
@@ -102,8 +103,8 @@ col.seats <- function(df){
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/export_translation_Daily_Vacancy_2021-09-07_05_12_48.csv") {
-
+                            name = "frontline/2022-04-07_ava_enr.csv") {
+  
   df <- readr::read_csv(file.path(raw_pth, name)) %>%
     dplyr::mutate(export_date = parse_date.frontline(name))
 }
@@ -111,40 +112,40 @@ dwnld.frontline <- function(raw_pth,
 #' @title Data management for frontline provider data
 #' @description Manage frontline data, specifically enrollment and attendance numbers
 dm.frontline <- function(df,
-                         input_columns = list(`OP Number` = "character",
-                                              `Infant Capacity` = "numeric",
-                                              `Toddler Capacity` = "numeric",
-                                              `Pre- K Capacity` = "numeric",
-                                              `School Aged Capacity` = "numeric",
-                                              Infant_enrollment = "numeric",
-                                              Toddler_enrollment = "numeric",
-                                              Preschool_enrollment = "numeric",
-                                              SchoolAge_enrollment = "numeric",
-                                              last_modified_at_A = "character",
-                                              Date = "character",
+                         input_columns = list(OpNumber = "character",
+                                              AvailSlotsInfants = "numeric",
+                                              AvailSlotsToddlers = "numeric",
+                                              AvailSlotsPreschool = "numeric",
+                                              AvailSlotsSchoolAge = "numeric",
+                                              EnrInfants = "numeric",
+                                              EnrToddlers = "numeric",
+                                              EnrPreschool = "numeric",
+                                              EnrSchoolAge = "numeric",
                                               export_date = "Date"
-                                              )){
-
+                         )){
+  
   df <- df %>%
     test_input(input_columns) %>%
     dplyr::select_all(~gsub(" ", "_", tolower(.))) %>% 
-    dplyr::rename(operation_number = op_number,
-                  prek_capacity = "pre-_k_capacity",
-                  prek_enrollment = "preschool_enrollment",
-                  school_capacity = "school_aged_capacity",
-                  school_enrollment = "schoolage_enrollment") %>% 
-    col.date()  %>% 
-    col.mod_date() %>% 
+    dplyr::rename(operation_number = "opnumber",
+                  prek_capacity = "availslotspreschool",
+                  prek_enrollment = "enrpreschool",
+                  school_capacity = "availslotsschoolage",
+                  school_enrollment = "enrschoolage",
+                  infant_capacity = "availslotsinfants",
+                  infant_enrollment = "enrinfants",
+                  toddler_capacity = "availslotstoddlers",
+                  toddler_enrollment = "enrtoddlers") %>% 
     col.operation_number() %>% 
     col.availability() %>% 
     col.enrollment() %>% 
     col.seats()
-
+  
 }
 
 #' @title Process the frontline data
 process.frontline <- function(raw_pth) {
-
+  
   df <- dwnld.frontline(raw_pth) %>%
     dm.frontline()
 }
