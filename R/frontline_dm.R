@@ -71,9 +71,9 @@ col.seats <- function(df){
 #' @title Download Frontline provider data
 #' @description Frontline provider data comes from the childcare.bowtiebi.com portal. Current sheet was emailed by Myriam Guillen 11/16.
 dwnld.frontline <- function(raw_pth,
-                            name = "frontline/2022-04-07_ava_enr.csv") {
+                            name = "frontline/2022-06-02 Enrollment Data_TPL.xlsx") {
   
-  df <- readr::read_csv(file.path(raw_pth, name)) %>%
+  df <- readxl::read_xlsx(file.path(raw_pth, name)) %>%
     dplyr::mutate(export_date = parse_date.frontline(name))
 }
 
