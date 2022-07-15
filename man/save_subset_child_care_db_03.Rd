@@ -4,12 +4,14 @@
 \alias{save_subset_child_care_db_03}
 \title{Save a subset of the child care database for children 0-3}
 \usage{
-save_subset_child_care_db_03(pth, config)
+save_subset_child_care_db_03(pth, config, dev = TRUE)
 }
 \arguments{
 \item{pth}{string. Path to the root directory to create the DB.}
 
-\item{county}{string. County 5-digit FIPS code.}
+\item{config}{object. Object containing parameters to create the DB.}
+
+\item{dev}{boolean. St dev = FALSE to save the db to the production environment. Default is TRUE.}
 }
 \description{
 Save a subset of the child care database for children 0-3

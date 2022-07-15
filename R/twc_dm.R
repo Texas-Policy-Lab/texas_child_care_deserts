@@ -1,8 +1,8 @@
 #' @title Parse TWC date
 #' @param format string. The format to use to parse the string. Default is
-#' '%m.%d.%y'.
+#' '%m/%Y'.
 #' @return date
-parse_date.twc <- function(x, format = "%m.%d.%y"){
+parse_date.twc <- function(x, format = "%m/%Y"){
   
   date <- lubridate::parse_date_time(x, format)
 }
@@ -112,7 +112,11 @@ col.operation_name_twc <- function(df) {
 #' @title Download TWC provider data
 #' @description TWC provider data is emailed by Shay when we request
 dwnld.twc <- function(raw_pth, 
+<<<<<<< HEAD
                       name = "Closure Report 6.6.22.xlsx",
+=======
+                      name = "Provider Closure Report - April 2022.xlsx",
+>>>>>>> origin/development_03
                       sheet = "All Provider Level") {
   
   df <- readxl::read_xlsx(file.path(raw_pth, name), sheet = sheet, na = "NA") %>% 

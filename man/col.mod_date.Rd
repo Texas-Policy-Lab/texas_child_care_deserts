@@ -4,11 +4,18 @@
 \alias{col.mod_date}
 \title{Data management for modification date column}
 \usage{
-col.mod_date(df, start_date = as.Date("07082021", "\%m\%d\%Y"))
+col.mod_date(
+  df,
+  start_date = as.Date("07082021", "\%m\%d\%Y"),
+  max_date = as.Date("11162021", "\%m\%d\%Y")
+)
 }
 \arguments{
 \item{start_date.}{If there is a date that Frontline/Bowtie tells us has a processing/data error, 
 set this as start_date, use only modification dates after this date}
+
+\item{max_date.}{For now, we are manually picking the two week period with highest response. This will 
+be updated to something more dynamic in the future.}
 }
 \value{
 data.frame

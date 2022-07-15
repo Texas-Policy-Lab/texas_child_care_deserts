@@ -6,9 +6,11 @@
 \usage{
 dwnld.frontline(
   raw_pth,
-  name = "frontline/export_translation_Daily_Vacancy_2021-08-30_04_43_51.csv"
+ 
+    name = "frontline/Rice File Given on 11.16.21_Daily_Vacancy_Golden_Sheet_2021-11-16.xlsx",
+  sheet = "Rice File"
 )
 }
 \description{
-Frontline provider data comes from the childcare.bowtiebi.com portal (currently, only Sadie has login)
+Frontline provider data comes from the childcare.bowtiebi.com portal. Current sheet was emailed by Myriam Guillen 11/16.
 }

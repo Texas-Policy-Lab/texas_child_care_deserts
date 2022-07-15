@@ -8,6 +8,9 @@ API to create data for any count on child care deserts in Texas
 
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
+naeyc_pth2 <- "NAEYC Providers - NAEYC - 5.26.21.xlsx"
+naeyc_pth1 <- "BP4K - NAEYC List - 5.26.21.xlsx"
+
 child_care_db(root = root,
               naeyc_pth1 = naeyc_pth1,
               naeyc_pth2 = naeyc_pth2)
@@ -86,13 +89,16 @@ save_subset_child_care_db(pth = pth,
 
 *Note*: The tract_radius (in miles) and capacity estimates should be informed by analysis using the above functions.
 
+Dev should be set to FALSE to create the db for the production environment
+The default of dev is TRUE, so if dev is not set it will create the db for the development environment.
 ```{r}
 pth <- "F:/Early_Childhood/04_Tarrant_County/data/processed/child_care_env.RData"
 config <- list(`48439` = list(tract_radius = 3),
                `48201` = list(tract_radius = 3))
 
 save_subset_child_care_db_03(pth = pth,
-                             config = config)
+                             config = config,
+                             dev = FALSE)
 ```
 
 ## Project workflow
@@ -117,6 +123,7 @@ save_subset_child_care_db_03(pth = pth,
 1. Make changes to the code according the to ticket you are working on
 2. Load the package `devtools::load_all()`
 3. Run the `child_care_db` function
+
 ```{r}
 root <- "F:/Early_Childhood/04_Tarrant_County"
 child_care_db(root = root)
