@@ -3,7 +3,6 @@
 #' '%m/%Y'.
 #' @return date
 parse_date.twc <- function(x, format = "%m.%d.%y"){
-
   date <- lubridate::parse_date_time(x, format)
 }
 

@@ -420,6 +420,12 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       l$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code == county_fips)
       
+      l$TRACT_SVI_BORDER <- DF_TRACT_SVI %>% 
+        dplyr::filter(county_code %in% unique(c(
+            unique(l$XWALK_TRACTS$surround_tract), 
+            unique(l$XWALK_TRACTS$anchor_tract)
+            )))
+
       l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                              tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
@@ -602,6 +608,12 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     env$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code %in% env$county_codes)
     
+    env$TRACT_SVI_BORDER <- DF_TRACT_SVI %>% 
+        dplyr::filter(county_code %in% unique(c(
+            unique(env$XWALK_TRACTS$surround_tract), 
+            unique(env$XWALK_TRACTS$anchor_tract)
+            )))
+
     if (dev) {
       d <- "development"
     } else {
