@@ -136,7 +136,8 @@ save_subset_child_care_db <- function(pth, config) {
       l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
         dplyr::distinct(surround_county) %>% 
         dplyr::pull(surround_county)
-
+      
+      
       l$GEO_TRACTS <- GEO_TRACTS %>%
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
@@ -275,7 +276,6 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
     load_env(file.path(pth))
     
     env <- sapply(names(config), function(county_fips) {
-
       l <- list()
 
       config <- config[[county_fips]]
@@ -313,18 +313,18 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       l$SURROUND_COUNTY <- l$XWALK_TRACTS %>% 
         dplyr::distinct(surround_county) %>% 
         dplyr::pull(surround_county)
-      
+    
       l$GEO_TRACTS <- GEO_TRACTS %>%
         dplyr::filter(tract %in% l$SURROUND_TRACTS) %>%
         dplyr::mutate(anchor_county = grepl(l$COUNTY_FIPS, tract)) %>%
         dplyr::select(tract, county_code, anchor_county, geometry, cent_lat, cent_long)
-
+      
       l$GEO_TRACTS <- rmapshaper::ms_simplify(input = as(l$GEO_TRACTS, 'Spatial')) %>%
         sf::st_as_sf()
-
+      
       l$BB <- l$GEO_TRACTS %>% 
         sf::st_bbox()
-
+      
       l$BB_TRACTS <- sapply(l$SURROUND_TRACTS, function(t) {
         
         BB <- l$XWALK_TRACTS %>%
@@ -369,8 +369,9 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
                                        surround_tracts = l$SURROUND_TRACTS,
                                        lt_age = 4) 
 
-      l$DF_HHSC_CCL <- l$DF_HHSC_CCL %>% 
+      l$DF_HHSC_CCL <- l$DF_HHSC_CCL %>%
         dplyr::filter(lat > l$BB[[2]] & lat < l$BB[[4]] & long > l$BB[[1]] & long < l$BB[[3]])
+
 
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,
@@ -419,7 +420,13 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       
       l$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code == county_fips)
-      
+
+      l$TRACT_SVI_BORDER <- DF_TRACT_SVI %>% 
+        dplyr::filter(tract %in% unique(c(
+            unique(l$XWALK_TRACTS$surround_tract), 
+            unique(l$XWALK_TRACTS$anchor_tract)
+            )))
+
       l$NEIGHBORHOOD_SVI <- neighborhood_svi(xwalk_neighborhood_tract = XWALK_NEIGHBORHOOD_TRACT,
                                              tract_svi = DF_TRACT_SVI %>% dplyr::filter(county_code == county_fips))
       
@@ -481,11 +488,11 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
     } else {
       d <- "production"
     }
-    
+
     save(env, file = file.path(dirname(pth), d, paste("03",
-                                                   paste(names(config), collapse = "_"), 
+                                                   paste(names(config), collapse = "_"),
                                                    basename(pth), sep = "_")))
-    
+
   } else {
     assertthat::assert_that(FALSE, 
                             msg = "Please run child_care_db() function to create
@@ -602,16 +609,22 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     env$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code %in% env$county_codes)
     
+    env$TRACT_SVI_BORDER <- DF_TRACT_SVI %>% 
+        dplyr::filter(tract %in% unique(c(
+          unique(env$XWALK_TRACTS$surround_tract), 
+          unique(env$XWALK_TRACTS$anchor_tract)
+      )))
+    
     if (dev) {
       d <- "development"
     } else {
       d <- "production"
     }
-    
+
     save(env, file = file.path(dirname(pth), d, paste("03",
-                                                      paste(config$label, collapse = "_"), 
+                                                      paste(config$label, collapse = "_"),
                                                       basename(pth), sep = "_")))
-    
+
   } else {
     assertthat::assert_that(FALSE, 
                             msg = "Please run child_care_db() function to create
