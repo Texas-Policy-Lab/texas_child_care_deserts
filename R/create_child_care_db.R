@@ -488,9 +488,7 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
     } else {
       d <- "production"
     }
-    print(paste("03",
-                paste(names(config), collapse = "_"),
-                basename(pth), sep = "_"))
+
     save(env, file = file.path(dirname(pth), d, paste("03",
                                                    paste(names(config), collapse = "_"),
                                                    basename(pth), sep = "_")))
