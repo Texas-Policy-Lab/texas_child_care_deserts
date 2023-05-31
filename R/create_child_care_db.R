@@ -193,6 +193,12 @@ save_subset_child_care_db <- function(pth, config) {
       l$DF_MKT_RATIO <- create_market_ratio(mkt_supply = l$DF_MKT_SUPPLY,
                                             mkt_demand = l$DF_MKT_DEMAND)
 
+      l$DF_QUALITY_DESERT <- l$DF_MKT_RATIO %>% 
+        dplyr::select(anchor_tract, desert, desert_type) %>% 
+        dplyr::filter(desert_type == "sub_trs_provider") %>% 
+        dplyr::rename(c('is_quality_desert'='desert')) %>% 
+        dplyr::select(-desert_type)
+      
       l$AVG_CHILD_MKT <- avg_children_mkt(l$DF_MKT_RATIO)
       l$AVG_SEATS_MKT <- avg_seats_mkt(l$DF_MKT_RATIO)
       l$AVG_PRVDR_MKT <- avg_provider_mkt(l$XWALK_TRACT_PRVDR)
@@ -394,6 +400,12 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       
       l$DF_MKT_RATIO <- create_market_ratio(mkt_supply = l$DF_MKT_SUPPLY,
                                             mkt_demand = l$DF_MKT_DEMAND)
+
+      l$DF_QUALITY_DESERT <- l$DF_MKT_RATIO %>% 
+        dplyr::select(anchor_tract, desert, desert_type) %>% 
+        dplyr::filter(desert_type == "sub_trs_provider") %>% 
+        dplyr::rename(c('is_quality_desert'='desert')) %>% 
+        dplyr::select(-desert_type)
       
       l$AVG_CHILD_MKT <- avg_children_mkt(l$DF_MKT_RATIO)
       l$AVG_SEATS_MKT <- avg_seats_mkt(l$DF_MKT_RATIO)
@@ -606,6 +618,12 @@ save_subset_child_care_db_03_group <- function(pth, config, dev = TRUE) {
     env$DF_MKT_RATIO <- create_market_ratio(mkt_supply = env$DF_MKT_SUPPLY,
                                             mkt_demand = env$DF_MKT_DEMAND)
     
+    env$DF_QUALITY_DESERT <- env$DF_MKT_RATIO %>% 
+        dplyr::select(anchor_tract, desert, desert_type) %>% 
+        dplyr::filter(desert_type == "sub_trs_provider") %>% 
+        dplyr::rename(c('is_quality_desert'='desert')) %>% 
+        dplyr::select(-desert_type)
+      
     env$TRACT_SVI <- DF_TRACT_SVI %>% 
         dplyr::filter(county_code %in% env$county_codes)
     
