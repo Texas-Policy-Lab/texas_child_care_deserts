@@ -81,6 +81,9 @@ child_care_db <- function(root,
   
   env$DF_TRACT_SVI <- process.svi(raw_pth = raw_pth)
 
+  env$COORDS_PRECINCTS_HARRIS <- dwnld.precinct_boundaries(raw_pth = raw_pth, county_fips="48201")
+  env$COORDS_PRECINCTS_TARRANT <- dwnld.precinct_boundaries(raw_pth = raw_pth, county_fips="48439")
+
   save(env, file = file.path(processed_pth, db_name))
 }
 
@@ -378,6 +381,12 @@ save_subset_child_care_db_03 <- function(pth, config, dev = TRUE) {
       l$DF_HHSC_CCL <- l$DF_HHSC_CCL %>%
         dplyr::filter(lat > l$BB[[2]] & lat < l$BB[[4]] & long > l$BB[[1]] & long < l$BB[[3]])
 
+      if (county_fips == "48201") {
+        l$COORDS_PRECINCTS <- COORDS_PRECINCTS_HARRIS
+      } else {
+        l$COORDS_PRECINCTS <- COORDS_PRECINCTS_TARRANT
+      }
+      l$DF_PRECINCTS <- retrieve_precincts(l$COORDS_PRECINCTS, DF_HHSC_CCL)
 
       l$SUPPLY_ADJUSTMENT_03 <- calc.capacity_adjustment_03(df_hhsc_ccl = l$DF_HHSC_CCL,
                                                             df_frontline = DF_FRONTLINE,

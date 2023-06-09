@@ -8,19 +8,23 @@ Authors@R: c(person("Joli", "Holmes", email = "jh111@rice.edu",
              person("Rachel", "Moore", email = "rcm7@rice.edu",
                    role = c("aut")),
              person("Hadley", "Kruse", email = "hmk2@rice.edu",
-                   role = c("aut")))
+                   role = c("aut")),
+             person("Rosita", "Fu", email="rf50@rice.edu", 
+                   role = c("aut"))
+            )
 Description: Contains a set of functions to process Texas child care licensing data and other data relevant to the child care analytic landscape.
 Depends: R (>= 3.6.0)
 Imports:
     assertthat,
     dplyr,
+    geojsonsf,
     geosphere,
     ggplot2,
     httr,
     readr,
     readxl,
     rvest,
-    sf,
+    sf (>= 1.0.0),
     stringr,
     tidycensus,
     tidyr,
